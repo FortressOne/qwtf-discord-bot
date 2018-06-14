@@ -20,21 +20,21 @@ class Player
 	end
 
 	def team
-		Team.new(@data["team"])
+		@team ||= Team.new(@data["team"].to_sym)
+	end
+
+	def player_class
+		PLAYER_CLASSES[short_class]
 	end
 
 	private
 
 		def emoji
-			Emoji.new(team: team, player_class: player_class).id || ""
+			Emoji.new(self).to_s
 		end
 
 		def name
 			@data["name"]
-		end
-
-		def player_class
-			PLAYER_CLASSES[short_class]
 		end
 
 		def short_class

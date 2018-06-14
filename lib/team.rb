@@ -1,14 +1,13 @@
 class Team
 	attr_accessor :number
 
-	TEAMS = {1 => "blue", 2 => "red", 3 => "yell", 4 => "gren"}
+	TEAMS = { spec: 0, blue: 1, red: 2, yell: 3, gren: 4 }
 
-	def initialize(str)
-		@number = str if TEAMS.keys.include?(str)
-		@number = TEAMS.key(str) if TEAMS.values.include?(str)
+	def initialize(sym)
+		@number = TEAMS[sym] || 0
 	end
 
-	def colour
-		TEAMS[@number]
+	def to_s
+		TEAMS.key(@number).to_s
 	end
 end

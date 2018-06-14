@@ -24,12 +24,18 @@ class Emoji
 		}
 	} 
 
-	def initialize(team:, player_class:)
-		@team = team
-		@player_class = player_class
+	def initialize(player)
+		@player = player
 	end
 
-	def id
-		@id ||= LOOKUP[@team.colour] && LOOKUP[@team.colour][@player_class]
+	def to_s
+		id || ""
+
 	end
+
+	private
+
+		def id
+			@id ||= LOOKUP[@player.team.to_s] && LOOKUP[@player.team.to_s][@player.player_class]
+		end
 end
