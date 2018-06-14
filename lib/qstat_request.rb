@@ -1,6 +1,6 @@
 class QstatRequest
-	def initialize
-		@result = JSON.parse(%x[qstat -json -P -qws qwtf.ga]).first
+	def initialize(hostname)
+		@result = JSON.parse(%x[qstat -json -P -qws #{hostname}]).first
 	end
 
 	def output
@@ -27,7 +27,7 @@ class QstatRequest
 	end
 
 	def player_table
-		players.map(&:to_row).join("\n")
+		players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
 	end
 
 	def players
