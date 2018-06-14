@@ -30,6 +30,6 @@ class Emoji
 	end
 
 	def id
-		@id ||= LOOKUP[@team][@player_class]
+		@id ||= LOOKUP[@team.colour] && LOOKUP[@team.colour][@player_class]
 	end
 end

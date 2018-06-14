@@ -19,19 +19,18 @@ class Player
 		"#{emoji}#{name}"
 	end
 
+	def team
+		Team.new(@data["team"])
+	end
+
 	private
 
 		def emoji
-			return "" unless team && player_class
-			Emoji.new(team: team, player_class: player_class).id
+			Emoji.new(team: team, player_class: player_class).id || ""
 		end
 
 		def name
 			@data["name"]
-		end
-
-		def team
-			@data["team"]
 		end
 
 		def player_class
