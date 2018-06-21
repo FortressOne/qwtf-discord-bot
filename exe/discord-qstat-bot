@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'discord_qstat_bot'
+require 'discord_qstat_bot/cli'
+
+DiscordQstatBot::CLI.start

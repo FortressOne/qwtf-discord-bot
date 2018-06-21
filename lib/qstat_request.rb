@@ -10,29 +10,31 @@ class QstatRequest
 		HEREDOC
 	end
 
-	def address
-		@result["address"]
-	end
+	private
 
-	def map
-		@result["map"]
-	end
-
-	def numplayers
-		@result["numplayers"]
-	end
-
-	def maxplayers
-		@result["maxplayers"]
-	end
-
-	def player_table
-		players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
-	end
-
-	def players
-		@result["players"].map do |player_data|
-			Player.new(player_data)
+		def address
+			@result["address"]
 		end
-	end
+
+		def map
+			@result["map"]
+		end
+
+		def numplayers
+			@result["numplayers"]
+		end
+
+		def maxplayers
+			@result["maxplayers"]
+		end
+
+		def player_table
+			players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
+		end
+
+		def players
+			@result["players"].map do |player_data|
+				Player.new(player_data)
+			end
+		end
 end

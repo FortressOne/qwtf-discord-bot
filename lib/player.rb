@@ -16,15 +16,23 @@ class Player
 	end
 
 	def to_row
-		"#{emoji}#{name}"
+		ary = ["#{emoji}"]
+		ary << "**#{score}**" unless "#{score}".empty?
+		ary << "#{name}"
+		ary.join(" ")
 	end
 
 	def team
-		@team ||= Team.new(@data["team"].to_sym)
+		@team ||= Teams.find_by_colour(@data["team"]).join(self)
 	end
 
 	def player_class
 		PLAYER_CLASSES[short_class]
+	end
+
+	def score
+		return "" unless team.playing?
+		@data["score"]
 	end
 
 	private
@@ -38,7 +46,7 @@ class Player
 		end
 
 		def short_class
-			skin.split("_").last
+			skin.split("_").last[0,3]
 		end
 
 		def skin

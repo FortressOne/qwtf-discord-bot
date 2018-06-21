@@ -1,13 +1,19 @@
 class Team
-	attr_accessor :number
+	TEAMS = {blue: 1, red: 2, yell: 3, gren: 4}
 
-	TEAMS = { spec: 0, blue: 1, red: 2, yell: 3, gren: 4 }
+	attr_reader :colour, :number, :players
 
-	def initialize(sym)
-		@number = TEAMS[sym] || 0
+	def initialize(colour)
+		@colour = TEAMS[colour] ? colour : nil
+		@number = TEAMS[colour]
+		@players = []
 	end
 
-	def to_s
-		TEAMS.key(@number).to_s
+	def join(player)
+		@players << player unless @players.include?(player)
+	end
+
+	def playing?
+		[1, 2, 3, 4].include?(@number)
 	end
 end
