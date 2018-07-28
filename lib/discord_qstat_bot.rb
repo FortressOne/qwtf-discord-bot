@@ -9,16 +9,17 @@ require "emoji"
 require "pry"
 
 module DiscordQstatBot
-	raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
+  raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
 
-	TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip
-	HOSTNAME = "qwtf.ga"
+  TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip
+  CLIENT_ID = ENV["DISCORD_CLIENT_ID"].strip
+  HOSTNAME = "fortressone.ga"
 
-	bot = Discordrb::Commands::CommandBot.new token: TOKEN, prefix: "!"
+  bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: "!"
 
-	bot.command :server do |event|
-		QstatRequest.new(HOSTNAME).output
-	end
+  bot.command :server do |event|
+    QstatRequest.new(HOSTNAME).output
+  end
 
-	bot.run
+  bot.run
 end
