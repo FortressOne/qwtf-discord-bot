@@ -1,6 +1,6 @@
-# DiscordQstatBot
+# QwtfDiscordBot
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/discord_qstat_bot`. To experiment with that code, run `bin/console` for an interactive prompt.
+Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/qwtf_discord_bot`. To experiment with that code, run `bin/console` for an interactive prompt.
 
 TODO: Delete this and the text above, and describe your gem
 
@@ -9,7 +9,7 @@ TODO: Delete this and the text above, and describe your gem
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'discord_qstat_bot'
+gem 'qwtf_discord_bot'
 ```
 
 And then execute:
@@ -18,11 +18,11 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install discord_qstat_bot
+    $ gem install qwtf_discord_bot
 
 ## Usage
 
-    $ bundle exec exe\discord-qstat-bot server
+    $ bundle exec exe\qwtf-discord-bot server
 
 ## Development
 
@@ -32,7 +32,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/discord_qstat_bot.
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/qwtf_discord_bot.
 
 ## License
 

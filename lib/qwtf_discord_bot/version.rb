@@ -1,3 +1,3 @@
-module DiscordQstatBot
+module QwtfDiscordBot
   VERSION = "0.2.0"
 end

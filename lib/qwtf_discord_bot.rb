@@ -1,4 +1,4 @@
-require "discord_qstat_bot/version"
+require "qwtf_discord_bot/version"
 require "discordrb"
 
 require "qstat_request"
@@ -8,7 +8,7 @@ require "emoji"
 
 require "pry"
 
-module DiscordQstatBot
+module QwtfDiscordBot
   raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
 
   TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip

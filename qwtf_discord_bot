@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'qwtf_discord_bot'
+require 'qwtf_discord_bot/cli'
+
+QwtfDiscordBot::CLI.start

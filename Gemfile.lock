@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    discord_qstat_bot (0.2.0)
+    qwtf_discord_bot (0.2.0)
       discordrb
 
 GEM
@@ -67,7 +67,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
-  discord_qstat_bot!
+  qwtf_discord_bot!
   pry
   rake (~> 10.0)
   rspec (~> 3.0)

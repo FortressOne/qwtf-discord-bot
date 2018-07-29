@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "discord_qstat_bot"
+require "qwtf_discord_bot"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
