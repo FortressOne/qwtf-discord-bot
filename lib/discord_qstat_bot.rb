@@ -8,22 +8,20 @@ require "team"
 require "teams"
 require "emoji"
 
-class DiscordQstatBot::Server
-	raise "Set DISCORD_QSTAT_BOT_TOKEN environment variable" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
-	TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip
-	HOSTNAME = "qwtf.ga"
+require "pry"
 
-	def self.run
-		raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
+module DiscordQstatBot
+  raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
 
-		Teams.build
+  TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip
+  CLIENT_ID = ENV["DISCORD_CLIENT_ID"].strip
+  HOSTNAME = "fortressone.ga"
 
-		bot = Discordrb::Commands::CommandBot.new token: TOKEN, prefix: "!"
+  bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: "!"
 
-		bot.command :server do |event|
-			QstatRequest.new(HOSTNAME).output
-		end
+  bot.command :server do |event|
+    QstatRequest.new(HOSTNAME).output
+  end
 
-		bot.run
-	end
+  bot.run
 end
