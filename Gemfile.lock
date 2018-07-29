@@ -67,8 +67,8 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
-  qwtf_discord_bot!
   pry
+  qwtf_discord_bot!
   rake (~> 10.0)
   rspec (~> 3.0)
   thor
