@@ -10,6 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["shayolden@hotmail.com"]
 
   spec.description   = %q{A discord bot for checking the status of qwtf servers}
+  spec.summary       = %q{A discord bot for checking the status of qwtf servers}
   spec.homepage      = "https://github.com/drzel/qwtf_discord_bot.git"
   spec.license       = "MIT"
 
