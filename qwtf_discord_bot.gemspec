@@ -10,7 +10,6 @@ Gem::Specification.new do |spec|
   spec.email         = ["shayolden@hotmail.com"]
 
   spec.summary       = %q{A discord bot for checking the status of qwtf servers}
-  spec.description   = %q{A discord bot for checking the status of qwtf servers}
   spec.homepage      = "https://github.com/drzel/qwtf_discord_bot.git"
   spec.license       = "MIT"
 
@@ -21,11 +20,11 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "discordrb"
+  spec.add_runtime_dependency "discordrb", '~> 0'
 
-  spec.add_development_dependency "thor"
+  spec.add_development_dependency "thor", '>= 0'
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "pry"
+  spec.add_development_dependency "pry", '~> 0'
 end
