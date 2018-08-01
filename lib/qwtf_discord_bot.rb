@@ -6,8 +6,6 @@ require "player"
 require "team"
 require "emoji"
 
-require "pry"
-
 module QwtfDiscordBot
   raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
 
