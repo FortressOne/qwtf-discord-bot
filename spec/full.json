@@ -1,0 +1,382 @@
+[
+        {
+                "protocol": "qws",
+                "address": "tf.quadclub.com.br:27501",
+                "status": "online",
+                "hostname": "tf.quadclub.com.br:27501",
+                "name": "Quad Club #01",
+                "gametype": "fortress",
+                "map": "2fort7",
+                "numplayers": 7,
+                "maxplayers": 16,
+                "numspectators": 8,
+                "maxspectators": 16,
+                "ping": 360,
+                "retries": 0,
+                "players": [
+                        {
+                                "number": 62,
+                                "name": "troyzinho",
+                                "score": 0,
+                                "time": "9m0s",
+                                "ping": 141,
+                                "skin": "tf_sold",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 68,
+                                "name": "DragonF",
+                                "score": -9999,
+                                "time": "6m0s",
+                                "ping": 29,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 43,
+                                "name": "safadao",
+                                "score": -9999,
+                                "time": "6m0s",
+                                "ping": 33,
+                                "skin": "tf_scout",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 59,
+                                "name": "thcW1ggY]",
+                                "score": -9999,
+                                "time": "10m0s",
+                                "ping": 184,
+                                "skin": "base",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 69,
+                                "name": "death",
+                                "score": -9999,
+                                "time": "5m0s",
+                                "ping": 36,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 49,
+                                "name": "tdf[die]",
+                                "score": 0,
+                                "time": "10m0s",
+                                "ping": 16,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 55,
+                                "name": "blink",
+                                "score": -9999,
+                                "time": "10m0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 81,
+                                "name": "kyle",
+                                "score": -9999,
+                                "time": "0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 54,
+                                "name": "MUCA",
+                                "score": 0,
+                                "time": "10m0s",
+                                "ping": 24,
+                                "skin": "tf_sold",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 57,
+                                "name": "ku1d",
+                                "score": 0,
+                                "time": "10m0s",
+                                "ping": 149,
+                                "skin": "tf_sold",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 67,
+                                "name": "thcmille",
+                                "score": -9999,
+                                "time": "6m0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 66,
+                                "name": "zel",
+                                "score": -9999,
+                                "time": "6m0s",
+                                "ping": 408,
+                                "skin": "",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 70,
+                                "name": " MASK ",
+                                "score": 0,
+                                "time": "4m0s",
+                                "ping": 49,
+                                "skin": "tf_sold",
+                                "team": "red"
+                        },
+                        {
+                                "number": 72,
+                                "name": "nike",
+                                "score": 0,
+                                "time": "3m0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "red"
+                        },
+                        {
+                                "number": 82,
+                                "name": "noob",
+                                "score": 0,
+                                "time": "0s",
+                                "ping": 999,
+                                "skin": "",
+                                "team": ""
+                        }
+                ]
+        }
+]
+sheldon@DESKTOP-6L6JQRB:~/Workspace/FortressOne/discord_qstat_bot$ irb
+"12irb(main):001:0> "1234"[0,2]
+=> "12"
+irb(main):002:0> "1234"[0,3]
+=> "123"
+irb(main):003:0> ^C
+irb(main):003:0>
+sheldon@DESKTOP-6L6JQRB:~/Workspace/FortressOne/discord_qstat_bot$ bundle exec ruby ./lib/discord_qstat_bot.rb
+Using WSCS version: 0.3.0
+libsodium not available! You can continue to use discordrb as normal but voice support won't work.
+        Read https://github.com/meew0/discordrb/wiki/Installing-libsodium for more details.
+[INFO : websocket @ 2018-06-15 11:15:33.112] Discord using gateway protocol version: 6, requested: 6
+^CTraceback (most recent call last):
+        4: from ./lib/discord_qstat_bot.rb:11:in `<main>'
+        3: from ./lib/discord_qstat_bot.rb:24:in `<module:DiscordQstatBot>'
+        2: from /home/sheldon/.rbenv/versions/2.5.0/lib/ruby/gems/2.5.0/gems/discordrb-3.2.1/lib/discordrb/bot.rb:235:in `run'
+        1: from /home/sheldon/.rbenv/versions/2.5.0/lib/ruby/gems/2.5.0/gems/discordrb-3.2.1/lib/discordrb/gateway.rb:172:in `sync'
+/home/sheldon/.rbenv/versions/2.5.0/lib/ruby/gems/2.5.0/gems/discordrb-3.2.1/lib/discordrb/gateway.rb:172:in `join': Interrupt
+
+sheldon@DESKTOP-6L6JQRB:~/Workspace/FortressOne/discord_qstat_bot$ qstat -json -P -qws tf.quadclub.com.br:27501
+[
+        {
+                "protocol": "qws",
+                "address": "tf.quadclub.com.br:27501",
+                "status": "online",
+                "hostname": "tf.quadclub.com.br:27501",
+                "name": "Quad Club #01",
+                "gametype": "fortress",
+                "map": "2fort7",
+                "numplayers": 16,
+                "maxplayers": 16,
+                "numspectators": 5,
+                "maxspectators": 16,
+                "ping": 360,
+                "retries": 0,
+                "players": [
+                        {
+                                "number": 3,
+                                "name": "safadao",
+                                "score": 0,
+                                "time": "9m0s",
+                                "ping": 26,
+                                "skin": "tf_scout",
+                                "team": "red"
+                        },
+                        {
+                                "number": 12,
+                                "name": "t r o y",
+                                "score": 0,
+                                "time": "7m0s",
+                                "ping": 42,
+                                "skin": "tf_sold",
+                                "team": "red"
+                        },
+                        {
+                                "number": 6,
+                                "name": "psydiego",
+                                "score": 0,
+                                "time": "8m0s",
+                                "ping": 26,
+                                "skin": "tf_sold",
+                                "team": "red"
+                        },
+                        {
+                                "number": 21,
+                                "name": "thcW1ggY]",
+                                "score": 0,
+                                "time": "4m0s",
+                                "ping": 148,
+                                "skin": "tf_scout",
+                                "team": "red"
+                        },
+                        {
+                                "number": 31,
+                                "name": "death",
+                                "score": 0,
+                                "time": "2m0s",
+                                "ping": 39,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 49,
+                                "name": "tdf[die]",
+                                "score": 0,
+                                "time": "10m0s",
+                                "ping": 12,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 27,
+                                "name": "rathdie",
+                                "score": 0,
+                                "time": "3m0s",
+                                "ping": 84,
+                                "skin": "tf_demo",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 10,
+                                "name": "[03]",
+                                "score": 0,
+                                "time": "7m0s",
+                                "ping": 38,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 8,
+                                "name": "MUCA",
+                                "score": 0,
+                                "time": "8m0s",
+                                "ping": 22,
+                                "skin": "tf_eng",
+                                "team": "red"
+                        },
+                        {
+                                "number": 15,
+                                "name": "ku1d",
+                                "score": 0,
+                                "time": "6m0s",
+                                "ping": 151,
+                                "skin": "tf_scout",
+                                "team": "red"
+                        },
+                        {
+                                "number": 17,
+                                "name": "thcmille",
+                                "score": 0,
+                                "time": "5m0s",
+                                "ping": 14,
+                                "skin": "tf_medic",
+                                "team": "red"
+                        },
+                        {
+                                "number": 66,
+                                "name": "zel",
+                                "score": -9999,
+                                "time": "10m0s",
+                                "ping": 407,
+                                "skin": "",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 19,
+                                "name": "maskq",
+                                "score": 0,
+                                "time": "5m0s",
+                                "ping": 51,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 9,
+                                "name": "DragonF",
+                                "score": 0,
+                                "time": "8m0s",
+                                "ping": 28,
+                                "skin": "tf_sold",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 28,
+                                "name": "lookman",
+                                "score": 0,
+                                "time": "3m0s",
+                                "ping": 44,
+                                "skin": "tf_scout",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 90,
+                                "name": "lelo",
+                                "score": -9999,
+                                "time": "10m0s",
+                                "ping": 65,
+                                "skin": "tf_scout",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 18,
+                                "name": "nike",
+                                "score": 0,
+                                "time": "5m0s",
+                                "ping": 25,
+                                "skin": "tf_sold",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 30,
+                                "name": "carp",
+                                "score": -9999,
+                                "time": "2m0s",
+                                "ping": 27,
+                                "skin": "tf_scout",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 23,
+                                "name": "jack",
+                                "score": 0,
+                                "time": "4m0s",
+                                "ping": 64,
+                                "skin": "tf_sold",
+                                "team": "red"
+                        },
+                        {
+                                "number": 25,
+                                "name": "bw",
+                                "score": -9999,
+                                "time": "4m0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        },
+                        {
+                                "number": 26,
+                                "name": "kyle",
+                                "score": -9999,
+                                "time": "4m0s",
+                                "ping": 33,
+                                "skin": "tf_sold",
+                                "team": "observe"
+                        }
+                ]
+        }
+]
