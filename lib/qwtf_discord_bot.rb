@@ -7,10 +7,14 @@ require "team"
 require "emoji"
 
 module QwtfDiscordBot
-  raise "DISCORD_QSTAT_BOT_TOKEN environment variable not set" unless ENV["DISCORD_QSTAT_BOT_TOKEN"]
+  ENVIRONMENT_VARIABLES = ["QWTF_DISCORD_BOT_TOKEN", "QWTF_DISCORD_BOT_CLIENT_ID"]
 
-  TOKEN = ENV["DISCORD_QSTAT_BOT_TOKEN"].strip
-  CLIENT_ID = ENV["DISCORD_CLIENT_ID"].strip
+  ENVIRONMENT_VARIABLES.each do |env_var|
+    raise "#{env_var} environment variable not set" unless ENV[env_var]
+  end
+
+  TOKEN = ENV["QWTF_DISCORD_BOT_TOKEN"].strip
+  CLIENT_ID = ENV["QWTF_DISCORD_BOT_CLIENT_ID"].strip
   HOSTNAME = "fortressone.ga"
 
   bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: "!"
