@@ -12,3 +12,4 @@
 assets/
 .env
 qstat
+*.gem
