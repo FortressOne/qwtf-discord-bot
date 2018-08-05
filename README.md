@@ -2,7 +2,7 @@
 
 A Discord bot for checkig the status of QuakeWorld Team Fortress servers
 
-![screenshot of bot](blob/master/screenshot.png?raw=true "Screenshot")
+![screenshot of bot](screenshot.png)
 
 ## Installation
 
