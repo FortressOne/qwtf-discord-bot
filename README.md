@@ -1,6 +1,6 @@
 # QwtfDiscordBot
 
-A Discord bot for checkig the status of QuakeWorld Team Fortress servers
+A Discord bot for checking the status of QuakeWorld Team Fortress servers
 
 ![screenshot of bot](screenshot.png)
 
