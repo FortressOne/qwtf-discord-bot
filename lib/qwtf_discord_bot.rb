@@ -34,6 +34,7 @@ module QwtfDiscordBot
 
   THIRTY_SECONDS = 30
   TEN_MINUTES = 10 * 60
+  GENERAL_CHANNEL_ID = 417258901810184194
 
   history = {}
 
@@ -54,7 +55,7 @@ module QwtfDiscordBot
       number_of_other_players = numplayers - 1
 
       bot.send_message(
-        417258901810184194,
+        GENERAL_CHANNEL_ID,
         "*#{player}* has joined #{number_of_other_players} " \
         "#{"other player".pluralize(number_of_other_players)} on *#{HOSTNAME}*"
       )
