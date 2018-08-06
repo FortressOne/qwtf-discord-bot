@@ -8,7 +8,11 @@ require "team"
 require "emoji"
 
 module QwtfDiscordBot
-  ENVIRONMENT_VARIABLES = ["QWTF_DISCORD_BOT_TOKEN", "QWTF_DISCORD_BOT_CLIENT_ID"]
+  ENVIRONMENT_VARIABLES = [
+    "QWTF_DISCORD_BOT_TOKEN",
+    "QWTF_DISCORD_BOT_CLIENT_ID",
+    "QWTF_DISCORD_BOT_CHANNEL_ID"
+  ]
 
   ENVIRONMENT_VARIABLES.each do |env_var|
     raise "#{env_var} environment variable not set" unless ENV[env_var]
@@ -16,6 +20,7 @@ module QwtfDiscordBot
 
   TOKEN = ENV["QWTF_DISCORD_BOT_TOKEN"].strip
   CLIENT_ID = ENV["QWTF_DISCORD_BOT_CLIENT_ID"].strip
+  CHANNEL_ID = ENV["QWTF_DISCORD_BOT_CHANNEL_ID"].strip
   HOSTNAME = "fortressone.ga"
 
   bot = Discordrb::Commands::CommandBot.new(
@@ -34,7 +39,6 @@ module QwtfDiscordBot
 
   THIRTY_SECONDS = 30
   TEN_MINUTES = 10 * 60
-  GENERAL_CHANNEL_ID = 417258901810184194
 
   history = {}
 
@@ -55,7 +59,7 @@ module QwtfDiscordBot
       number_of_other_players = numplayers - 1
 
       bot.send_message(
-        GENERAL_CHANNEL_ID,
+        QWTF_DISCORD_BOT_CHANNEL_ID,
         "*#{player}* has joined #{number_of_other_players} " \
         "#{"other player".pluralize(number_of_other_players)} on *#{HOSTNAME}*"
       )
