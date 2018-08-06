@@ -63,7 +63,7 @@ module QwtfDiscordBot
 
     def seen_recently?(player, history)
       last_seen = history[player]
-      last_seen && (Time.now - last_seen >= TEN_MINUTES)
+      last_seen && (Time.now - last_seen > TEN_MINUTES)
     end
 
     def every(n)
