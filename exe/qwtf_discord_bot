@@ -1,6 +1,22 @@
 #!/usr/bin/env ruby
 
 require 'qwtf_discord_bot'
-require 'qwtf_discord_bot/cli'
+require "thor"
 
-QwtfDiscordBot::CLI.start
+class QwtfDiscordBotExe < Thor
+  def self.exit_on_failure?
+    true
+  end
+  
+  desc "server", "Runs the qwtf-discord-bot server"
+  def server
+    QwtfDiscordBot::Server.run
+  end
+
+  desc "watcher", "Runs the qwtf-discord-bot watcher"
+  def watcher
+    QwtfDiscordBot::Watcher.run
+  end
+end
+
+QwtfDiscordBotExe.start

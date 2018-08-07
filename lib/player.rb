@@ -1,47 +1,47 @@
 class Player
-	PLAYER_CLASSES = {
-		"sco" => "scout",
-		"sni" => "sniper",
-		"sol" => "soldier",
-		"dem" => "demoman",
-		"med" => "medic",
-		"pyr" => "pyro",
-		"hwg" => "hwguy",
-		"spy" => "spy",
-		"eng" => "engineer"
-	}
+  PLAYER_CLASSES = {
+    "sco" => "scout",
+    "sni" => "sniper",
+    "sol" => "soldier",
+    "dem" => "demoman",
+    "med" => "medic",
+    "pyr" => "pyro",
+    "hwg" => "hwguy",
+    "spy" => "spy",
+    "eng" => "engineer"
+  }
 
-	def initialize(data)
-		@data = data
-	end
+  def initialize(data)
+    @data = data
+  end
 
-	def to_row
-		"#{emoji}#{name}"
-	end
+  def name
+    @data["name"]
+  end
 
-	def team
-		@team ||= Team.new(@data["team"].to_sym)
-	end
+  def to_row
+    "#{emoji}#{name}"
+  end
 
-	def player_class
-		PLAYER_CLASSES[short_class]
-	end
+  def team
+    @team ||= Team.new(@data["team"].to_sym)
+  end
 
-	private
+  def player_class
+    PLAYER_CLASSES[short_class]
+  end
 
-		def emoji
-			Emoji.new(self).to_s
-		end
+  private
 
-		def name
-			@data["name"]
-		end
+    def emoji
+      Emoji.new(self).to_s
+    end
 
-		def short_class
-			skin.split("_").last
-		end
+    def short_class
+      skin.split("_").last
+    end
 
-		def skin
-			@data["skin"]
-		end
+    def skin
+      @data["skin"]
+    end
 end
