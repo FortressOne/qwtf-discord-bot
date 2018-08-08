@@ -1,6 +1,5 @@
 require "qwtf_discord_bot/version"
 require "discordrb"
-require 'active_support/core_ext/string'
 
 require "qstat_request"
 require "player"
@@ -43,12 +42,20 @@ class QwtfDiscordBot
       every(THIRTY_SECONDS) do
         request = QstatRequest.new(HOSTNAME)
         numplayers = request.numplayers
+        maxplayers = request.maxplayers
+        map = request.map
 
         if request.players
           player_names = request.players.map(&:name)
 
           player_names.each do |name|
-            report_joined(name, numplayers) unless seen_recently?(name)
+            unless seen_recently?(name)
+              report_joined(name: name,
+                            map: map,
+                            numplayers: numplayers,
+                            maxplayers: maxplayers)
+            end
+
             @history[name] = Time.now
           end
         end
@@ -57,14 +64,11 @@ class QwtfDiscordBot
 
     private
 
-      def report_joined(name, numplayers)
-        number_of_other_players = numplayers - 1
-
+      def report_joined(name:, map:, numplayers:, maxplayers:)
         Discordrb::API::Channel.create_message(
           "Bot #{TOKEN}",
           CHANNEL_ID,
-          "**#{name}** has joined **#{number_of_other_players}** " \
-          "#{"other player".pluralize(number_of_other_players)} on **#{HOSTNAME}**"
+          "**#{name}** has joined **#{HOSTNAME} | #{map} | #{numplayers}/#{maxplayers}**"
         )
       end
 
