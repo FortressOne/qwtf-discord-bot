@@ -42,12 +42,15 @@ class QwtfDiscordBot
     def run
       every(THIRTY_SECONDS) do
         request = QstatRequest.new(HOSTNAME)
-        player_names = request.players.map(&:name)
         numplayers = request.numplayers
 
-        player_names.each do |name|
-          report_joined(name, numplayers) unless seen_recently?(name)
-          @history[name] = Time.now
+        if request.players
+          player_names = request.players.map(&:name)
+
+          player_names.each do |name|
+            report_joined(name, numplayers) unless seen_recently?(name)
+            @history[name] = Time.now
+          end
         end
       end
     end

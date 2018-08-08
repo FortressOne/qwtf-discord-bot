@@ -27,11 +27,11 @@ class QstatRequest
   end
 
   def player_table
-    players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
+    players && players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
   end
 
   def players
-    @result["players"].map do |player_data|
+    @result["players"] && @result["players"].map do |player_data|
       Player.new(player_data)
     end
   end
