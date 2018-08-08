@@ -10,12 +10,14 @@ class QwtfDiscordBotExe < Thor
   
   desc "server", "Runs the qwtf-discord-bot server"
   def server
-    QwtfDiscordBot::Server.run
+    server_bot = QwtfDiscordBot::Server.new
+    server_bot.run
   end
 
   desc "watcher", "Runs the qwtf-discord-bot watcher"
   def watcher
-    QwtfDiscordBot::Watcher.run
+    watcher_bot = QwtfDiscordBot::Watcher.new
+    watcher_bot.run
   end
 end
 

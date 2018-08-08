@@ -14,18 +14,20 @@ class QwtfDiscordBot
   HOSTNAME = "fortressone.ga"
 
   class Server
-    def self.run
-      bot = Discordrb::Commands::CommandBot.new(
+    def initialize
+      @bot ||= Discordrb::Commands::CommandBot.new(
         token: TOKEN,
         client_id: CLIENT_ID,
         prefix: "!"
       )
 
-      bot.command :server do |event|
+      @bot.command :server do |event|
         QstatRequest.new(HOSTNAME).output
       end
+    end
 
-      bot.run
+    def run
+      @bot.run
     end
   end
 
@@ -33,9 +35,11 @@ class QwtfDiscordBot
     THIRTY_SECONDS = 30
     TEN_MINUTES = 10 * 60
 
-    @@history = {}
+    def initialize
+      @history = {}
+    end
 
-    def self.run
+    def run
       every(THIRTY_SECONDS) do
         request = QstatRequest.new(HOSTNAME)
         player_names = request.players.map(&:name)
@@ -43,14 +47,14 @@ class QwtfDiscordBot
 
         player_names.each do |name|
           report_joined(name, numplayers) unless seen_recently?(name)
-          @@history[name] = Time.now
+          @history[name] = Time.now
         end
       end
     end
 
     private
 
-      def self.report_joined(name, numplayers)
+      def report_joined(name, numplayers)
         number_of_other_players = numplayers - 1
 
         Discordrb::API::Channel.create_message(
@@ -61,12 +65,12 @@ class QwtfDiscordBot
         )
       end
 
-      def self.seen_recently?(name)
-        last_seen = @@history[name]
-        last_seen && (Time.now - last_seen > TEN_MINUTES)
+      def seen_recently?(name)
+        last_seen = @history[name]
+        last_seen && (Time.now - last_seen < TEN_MINUTES)
       end
 
-      def self.every(n)
+      def every(n)
         loop do
           before = Time.now
           yield
