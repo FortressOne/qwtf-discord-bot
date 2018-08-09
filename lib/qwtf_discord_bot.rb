@@ -1,26 +1,26 @@
-require "qwtf_discord_bot/version"
-require "discordrb"
+require 'qwtf_discord_bot/version'
+require 'discordrb'
 
-require "qstat_request"
-require "player"
-require "team"
-require "emoji"
+require 'qstat_request'
+require 'player'
+require 'team'
+require 'emoji'
 
 class QwtfDiscordBot
-  TOKEN = ENV["QWTF_DISCORD_BOT_TOKEN"].strip
-  CLIENT_ID = ENV["QWTF_DISCORD_BOT_CLIENT_ID"].strip
-  CHANNEL_ID = ENV["QWTF_DISCORD_BOT_CHANNEL_ID"].strip
-  HOSTNAME = "fortressone.ga"
+  TOKEN = ENV['QWTF_DISCORD_BOT_TOKEN'].strip
+  CLIENT_ID = ENV['QWTF_DISCORD_BOT_CLIENT_ID'].strip
+  CHANNEL_ID = ENV['QWTF_DISCORD_BOT_CHANNEL_ID'].strip
+  HOSTNAME = 'fortressone.ga'.freeze
 
   class Server
     def initialize
       @bot ||= Discordrb::Commands::CommandBot.new(
         token: TOKEN,
         client_id: CLIENT_ID,
-        prefix: "!"
+        prefix: '!'
       )
 
-      @bot.command :server do |event|
+      @bot.command :server do |_event|
         QstatRequest.new(HOSTNAME).output
       end
     end
@@ -64,26 +64,26 @@ class QwtfDiscordBot
 
     private
 
-      def report_joined(name:, map:, numplayers:, maxplayers:)
-        Discordrb::API::Channel.create_message(
-          "Bot #{TOKEN}",
-          CHANNEL_ID,
-          "**#{name}** has joined **#{HOSTNAME} | #{map} | #{numplayers}/#{maxplayers}**"
-        )
-      end
+    def report_joined(name:, map:, numplayers:, maxplayers:)
+      Discordrb::API::Channel.create_message(
+        "Bot #{TOKEN}",
+        CHANNEL_ID,
+        "**#{name}** has joined **#{HOSTNAME} | #{map} | #{numplayers}/#{maxplayers}**"
+      )
+    end
 
-      def seen_recently?(name)
-        last_seen = @history[name]
-        last_seen && (Time.now - last_seen < TEN_MINUTES)
-      end
+    def seen_recently?(name)
+      last_seen = @history[name]
+      last_seen && (Time.now - last_seen < TEN_MINUTES)
+    end
 
-      def every(n)
-        loop do
-          before = Time.now
-          yield
-          interval = n-(Time.now-before)
-          sleep(interval) if interval > 0
-        end
+    def every(n)
+      loop do
+        before = Time.now
+        yield
+        interval = n - (Time.now - before)
+        sleep(interval) if interval > 0
       end
+    end
   end
 end
