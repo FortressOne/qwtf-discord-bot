@@ -10,23 +10,35 @@ class QwtfDiscordBot
   TOKEN = ENV['QWTF_DISCORD_BOT_TOKEN'].strip
   CLIENT_ID = ENV['QWTF_DISCORD_BOT_CLIENT_ID'].strip
   CHANNEL_ID = ENV['QWTF_DISCORD_BOT_CHANNEL_ID'].strip
-  HOSTNAME = 'fortressone.ga'.freeze
 
   class Server
-    def initialize
-      @bot ||= Discordrb::Commands::CommandBot.new(
+    def initialize(hostname:, port:)
+      @hostname = hostname
+      @port = port
+    end
+
+    def run
+      bot = Discordrb::Commands::CommandBot.new(
         token: TOKEN,
         client_id: CLIENT_ID,
         prefix: '!'
       )
 
-      @bot.command :server do |_event|
-        QstatRequest.new(HOSTNAME).output
+      bot.command :server do |_event|
+        QstatRequest.new(endpoint).output
       end
+
+      bot.run
     end
 
-    def run
-      @bot.run
+    private
+
+    def endpoint
+      @endpoint ||= if @port == 27500
+                      @hostname
+                    else
+                      "#{@hostname}:#{@port}"
+                    end
     end
   end
 
@@ -34,13 +46,15 @@ class QwtfDiscordBot
     THIRTY_SECONDS = 30
     TEN_MINUTES = 10 * 60
 
-    def initialize
+    def initialize(hostname:, port:)
+      @hostname = hostname
+      @port = port
       @history = {}
     end
 
     def run
       every(THIRTY_SECONDS) do
-        request = QstatRequest.new(HOSTNAME)
+        request = QstatRequest.new(endpoint)
         numplayers = request.numplayers
         maxplayers = request.maxplayers
         map = request.map
@@ -64,11 +78,19 @@ class QwtfDiscordBot
 
     private
 
+    def endpoint
+      @endpoint ||= if @port == 27500
+                      @hostname
+                    else
+                      "#{@hostname}:#{@port}"
+                    end
+    end
+
     def report_joined(name:, map:, numplayers:, maxplayers:)
       Discordrb::API::Channel.create_message(
         "Bot #{TOKEN}",
         CHANNEL_ID,
-        "**#{name}** has joined **#{HOSTNAME} | #{map} | #{numplayers}/#{maxplayers}**"
+        "**#{name}** has joined **#{endpoint} | #{map} | #{numplayers}/#{maxplayers}**"
       )
     end
 
@@ -77,11 +99,11 @@ class QwtfDiscordBot
       last_seen && (Time.now - last_seen < TEN_MINUTES)
     end
 
-    def every(n)
+    def every(n_seconds)
       loop do
         before = Time.now
         yield
-        interval = n - (Time.now - before)
+        interval = n_seconds - (Time.now - before)
         sleep(interval) if interval > 0
       end
     end

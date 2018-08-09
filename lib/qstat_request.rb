@@ -1,6 +1,6 @@
 class QstatRequest
-  def initialize(hostname)
-    @result = JSON.parse(%x[qstat -json -P -qws #{hostname}]).first
+  def initialize(endpoint)
+    @result = JSON.parse(%x[qstat -json -P -qws #{endpoint}]).first
   end
 
   def output
