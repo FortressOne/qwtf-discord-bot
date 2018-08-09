@@ -23,7 +23,7 @@ Create a bot on discord.
 Edit the `.env.example` file, update with your bot's `client_id` and `token` and save as `.env`. Then:
 
     $ source .env
-    $ bundle exec exe\qwtf-discord-bot server
+    $ bundle exec exe/qwtf-discord-bot server
 
 
 ## License
