@@ -2,8 +2,6 @@
 
 A Discord bot for checking the status of QuakeWorld Team Fortress servers
 
-![screenshot of bot](screenshot.png)
-
 
 ## Dependencies
 
@@ -35,9 +33,9 @@ There are two features:
 ### Server
 
 This responds to `!server` messages by providing information about your game
-server. E.G.
+server.
 
-    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.ga --port 27501
+![screenshot of bot responding to !server command](server_screenshot.png)
 
 ```
 Usage:
@@ -50,6 +48,10 @@ Options:
                          # Default: 27500
 ```
 
+E.G.
+
+    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.ga --port 27501
+
 
 ### Watcher
 
@@ -57,7 +59,7 @@ This watches the game server and announces if anyone has joined the server. It
 polls the server once every 30 seconds and will only report a player joining if
 they haven't been connected for more than ten minutes. E.G.
 
-    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.ga --port 27501
+![screenshot of bot reporting player joining server](watcher_screenshot.png)
 
 ```
 Usage:
@@ -69,6 +71,11 @@ Options:
   [--port=N]
                          # Default: 27500
 ```
+
+E.G.
+
+    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.ga --port 27501
+
 
 ## License
 
