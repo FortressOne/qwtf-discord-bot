@@ -24,17 +24,7 @@ class Emoji
     }
   }.freeze
 
-  def initialize(player)
-    @player = player
-  end
-
-  def to_s
-    id || ''
-  end
-
-  private
-
-  def id
-    @id ||= LOOKUP[@player.team.to_s] && LOOKUP[@player.team.to_s][@player.player_class]
+  def self.for(team:, player_class:)
+    LOOKUP[team] && LOOKUP[team][player_class]
   end
 end
