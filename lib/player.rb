@@ -34,7 +34,7 @@ class Player
   private
 
   def emoji
-    Emoji.new(self).to_s
+    Emoji.for(team: team.to_s, player_class: player_class)
   end
 
   def short_class
