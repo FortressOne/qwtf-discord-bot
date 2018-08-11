@@ -57,7 +57,7 @@ E.G.
 
 This watches the game server and announces if anyone has joined the server. It
 polls the server once every 30 seconds and will only report a player joining if
-they haven't been connected for more than ten minutes. E.G.
+they haven't been connected for more than ten minutes.
 
 ![screenshot of bot reporting player joining server](watcher_screenshot.png)
 
