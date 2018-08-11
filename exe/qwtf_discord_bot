@@ -14,7 +14,7 @@ class QwtfDiscordBotExe < Thor
   def server
     hostname = options['hostname']
     port = options['port']
-    server_bot = QwtfDiscordBot::Server.new(hostname: hostname, port: port)
+    server_bot = QwtfDiscordBotServer.new(hostname: hostname, port: port)
     server_bot.run
   end
 
@@ -24,7 +24,7 @@ class QwtfDiscordBotExe < Thor
   def watcher
     hostname = options['hostname']
     port = options['port']
-    watcher_bot = QwtfDiscordBot::Watcher.new(hostname: hostname, port: port)
+    watcher_bot = QwtfDiscordBotWatcher.new(hostname: hostname, port: port)
     watcher_bot.run
   end
 end
