@@ -8,6 +8,10 @@ class QstatRequest
     [server_summary, player_table].join("\n")
   end
 
+  def to_embed
+    Discordrb::Webhooks::Embed.new(description: "hello")
+  end
+
   def server_summary
     "#{address} | #{game_map} | #{numplayers}/#{maxplayers}"
   end
