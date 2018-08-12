@@ -11,7 +11,7 @@ class QstatRequest
   end
 
   def server_summary
-    "#{address} | #{map} | #{numplayers}/#{maxplayers}"
+    "#{address} | #{game_map} | #{numplayers}/#{maxplayers}"
   end
 
   def address
