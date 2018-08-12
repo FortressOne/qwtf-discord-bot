@@ -9,7 +9,7 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
       if request.player_names
         request.player_names.each do |name|
           unless seen_recently?(name)
-            report_joined(name: name, server_summary: request.server_summary)
+            report_joined(name: name, server_summary: request.server_summary, embed: request.to_embed)
           end
 
           history[name] = Time.now
@@ -32,12 +32,15 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
     last_seen && (Time.now - last_seen < TEN_MINUTES)
   end
 
-  def report_joined(name:, server_summary:)
-    Discordrb::API::Channel.create_message(
-      "Bot #{TOKEN}",
-      CHANNEL_ID,
-      "#{name} has joined #{server_summary}"
-    )
+  def report_joined(name:, server_summary:, embed:)
+      Discordrb::API::Channel.create_message(
+        "Bot #{TOKEN}",
+        CHANNEL_ID,
+        nil,
+        [], # This argument will be removed in next version of discordrb gem
+        false,
+        embed.to_hash
+      )
   end
 
   def history
