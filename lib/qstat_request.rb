@@ -5,9 +5,13 @@ class QstatRequest
 
   def output
     <<~HEREDOC
-      **#{address} | #{map} | #{numplayers}/#{maxplayers}**
+      #{server_summary}
       #{player_table}
     HEREDOC
+  end
+
+  def server_summary
+    "#{address} | #{map} | #{numplayers}/#{maxplayers}"
   end
 
   def address
