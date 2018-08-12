@@ -5,3 +5,4 @@ gemspec
 gem 'bundler'
 gem 'discordrb'
 gem 'thor'
+gem 'rspec'
