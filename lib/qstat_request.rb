@@ -1,42 +1,54 @@
 class QstatRequest
   def initialize(endpoint)
-    @result = JSON.parse(%x[qstat -json -P -qws #{endpoint}]).first
+    @data = fetch_data(endpoint)
   end
 
   def output
-    <<~HEREDOC
-      #{server_summary}
-      #{player_table}
-    HEREDOC
+    return server_summary unless has_players?
+    [server_summary, player_table].join("\n")
   end
 
   def server_summary
     "#{address} | #{game_map} | #{numplayers}/#{maxplayers}"
   end
 
-  def address
-    @result["address"]
+  def has_players?
+    @data["players"] || false
   end
 
-  def game_map
-    @result["map"]
+  def player_names
+    players.map(&:name)
   end
 
-  def numplayers
-    @result["numplayers"]
-  end
+  private
 
-  def maxplayers
-    @result["maxplayers"]
-  end
-
-  def player_table
-    players && players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
-  end
-
-  def players
-    @result["players"] && @result["players"].map do |player_data|
-      Player.new(player_data)
+    def fetch_data(endpoint)
+      JSON.parse(%x[qstat -json -P -qws #{endpoint}]).first
     end
-  end
+
+    def player_table
+      players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
+    end
+
+    def address
+      @data["address"]
+    end
+
+    def game_map
+      @data["map"]
+    end
+
+    def numplayers
+      @data["numplayers"]
+    end
+
+    def maxplayers
+      @data["maxplayers"]
+    end
+
+    def players
+      @data["players"].map do |player_data|
+        Player.new(player_data)
+      end
+    end
 end
