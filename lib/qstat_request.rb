@@ -14,7 +14,7 @@ class QstatRequest
     @result["address"]
   end
 
-  def map
+  def game_map
     @result["map"]
   end
 
