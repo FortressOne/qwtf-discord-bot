@@ -19,12 +19,16 @@ class Player
     @data['name']
   end
 
+  def score
+    @data['score']
+  end
+
   def to_row
     "#{emoji}#{name}"
   end
 
   def team
-    @team ||= Team.new(@data['team'].to_sym)
+    @data['team']
   end
 
   def player_class
