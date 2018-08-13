@@ -1,6 +1,20 @@
 class QstatRequest
   def initialize(endpoint)
-    @data = fetch_data(endpoint)
+    @endpoint = endpoint
+    @data = fetch_data
+  end
+
+  def teams
+    @teams ||= begin
+                 roster = {}
+                 teams = players.map(&:team).uniq
+                 teams.each { |team| roster[team] = [] }
+
+                 players.each do |player|
+                   roster[player.team] << player
+                 end
+                 roster
+               end
   end
 
   def output
@@ -9,11 +23,19 @@ class QstatRequest
   end
 
   def to_embed
-    Discordrb::Webhooks::Embed.new(description: "hello")
+    embed = Discordrb::Webhooks::Embed.new
+    teams.each do |team, players|
+      player_list = players.map(&:to_row).join('\n')
+      score = players.first.score
+      field_name = "#{team} #{score}"
+      embed.add_field(Discordrb::Webhooks::EmbedField.new(inline: true, name: field_name, value: player_list))
+    end
+
+    embed
   end
 
   def server_summary
-    "#{address} | #{game_map} | #{numplayers}/#{maxplayers}"
+    "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}"
   end
 
   def has_players?
@@ -26,8 +48,8 @@ class QstatRequest
 
   private
 
-    def fetch_data(endpoint)
-      JSON.parse(%x[qstat -json -P -qws #{endpoint}]).first
+    def fetch_data
+      JSON.parse(%x[qstat -json -P -qws #{@endpoint}]).first
     end
 
     def player_table
@@ -54,5 +76,9 @@ class QstatRequest
       @data["players"].map do |player_data|
         Player.new(player_data)
       end
+    end
+
+    def players_from_team(team)
+      players.select { |player| player.team_name == team }.map(&:player_name)
     end
 end

@@ -7,18 +7,11 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     )
 
     bot.command :server do |event|
-      embed = QstatRequest.new(endpoint).to_embed
+      qstat_request = QstatRequest.new(endpoint)
+      message = qstat_request.server_summary
+      embed = qstat_request.to_embed
 
-      Discordrb::API::Channel.create_message(
-        "Bot #{TOKEN}",
-        CHANNEL_ID,
-        nil,
-        [], # This argument will be removed in next version of discordrb gem
-        false,
-        embed.to_hash
-      )
-
-      nil
+      event.channel.send_embed(message, embed)
     end
 
     bot.run

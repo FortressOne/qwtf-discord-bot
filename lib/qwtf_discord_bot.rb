@@ -1,3 +1,5 @@
+require 'pry'
+
 require 'qwtf_discord_bot/version'
 require 'qwtf_discord_bot/qwtf_discord_bot_server'
 require 'qwtf_discord_bot/qwtf_discord_bot_watcher'
