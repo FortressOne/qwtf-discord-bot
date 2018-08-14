@@ -48,11 +48,12 @@ class QstatRequest
   end
 
   def server_summary
+    return "#{@endpoint} isn't responding" unless game_map
     "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}"
   end
 
   def has_players?
-    @data["players"].any?
+    @data["player"] && @data["players"].any?
   end
 
   def player_names
