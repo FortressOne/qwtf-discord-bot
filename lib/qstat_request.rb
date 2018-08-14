@@ -6,28 +6,41 @@ class QstatRequest
 
   def teams
     @teams ||= begin
+                 return nil unless has_players?
+
                  roster = {}
+
                  teams = players.map(&:team).uniq
                  teams.each { |team| roster[team] = [] }
 
                  players.each do |player|
                    roster[player.team] << player
                  end
+
                  roster
                end
   end
 
-  def output
+  def to_message
     return server_summary unless has_players?
     [server_summary, player_table].join("\n")
   end
 
   def to_embed
+    return nil unless has_players?
+
     embed = Discordrb::Webhooks::Embed.new
+
     teams.each do |team, players|
       player_list = players.map(&:to_row).join('\n')
       score = players.first.score
-      field_name = "#{team} #{score}"
+
+      case
+      when team.empty? then field_name = "No Team"
+      when score < 0 then field_name = "#{team.capitalize}"
+      when score >= 0 then field_name = "#{team.capitalize} | #{score}"
+      end
+
       embed.add_field(Discordrb::Webhooks::EmbedField.new(inline: true, name: field_name, value: player_list))
     end
 
@@ -39,7 +52,7 @@ class QstatRequest
   end
 
   def has_players?
-    @data["players"] || false
+    @data["players"].any?
   end
 
   def player_names
