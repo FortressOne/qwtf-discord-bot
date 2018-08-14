@@ -5,4 +5,11 @@ gemspec
 gem 'bundler'
 gem 'discordrb'
 gem 'thor'
-gem 'rspec'
+
+group :development do
+  gem 'pry'
+end
+
+group :test do
+  gem 'rspec'
+end
