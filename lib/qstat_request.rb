@@ -35,11 +35,11 @@ class QstatRequest
       player_list = players.map(&:to_row).join('\n')
       score = players.first.score
 
-      case
-      when team.empty? then field_name = "No Team"
-      when score < 0 then field_name = "#{team.capitalize}"
-      when score >= 0 then field_name = "#{team.capitalize} | #{score}"
-      end
+      field_name = case
+                   when team.empty? then "No Team"
+                   when score < 0 then "#{team.capitalize}"
+                   when score >= 0 then "#{team.capitalize} | #{score}"
+                   end
 
       embed.add_field(Discordrb::Webhooks::EmbedField.new(inline: true, name: field_name, value: player_list))
     end
@@ -53,7 +53,7 @@ class QstatRequest
   end
 
   def has_players?
-    @data["player"] && @data["players"].any?
+    @data["players"] && @data["players"].any?
   end
 
   def player_names
