@@ -32,7 +32,7 @@ class QstatRequest
     embed = Discordrb::Webhooks::Embed.new
 
     teams.each do |team, players|
-      player_list = players.map(&:to_row).join('\n')
+      player_list = players.map(&:to_row).join("\n")
       score = players.first.score
 
       field_name = case
