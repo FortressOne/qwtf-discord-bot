@@ -7,17 +7,7 @@ class QstatRequest
   def teams
     @teams ||= begin
                  return nil unless has_players?
-
-                 roster = {}
-
-                 teams = players.map(&:team).uniq
-                 teams.each { |team| roster[team] = [] }
-
-                 players.each do |player|
-                   roster[player.team] << player
-                 end
-
-                 roster
+                 build_roster
                end
   end
 
@@ -31,17 +21,8 @@ class QstatRequest
 
     embed = Discordrb::Webhooks::Embed.new
 
-    teams.each do |team, players|
-      player_list = players.map(&:to_row).join("\n")
-      score = players.first.score
-
-      field_name = case
-                   when team.empty? then "No Team"
-                   when score < 0 then "#{team.capitalize}"
-                   when score >= 0 then "#{team.capitalize} | #{score}"
-                   end
-
-      embed.add_field(Discordrb::Webhooks::EmbedField.new(inline: true, name: field_name, value: player_list))
+    teams.each do |_name, team|
+      embed.add_field(team.to_embed_field)
     end
 
     embed
@@ -84,6 +65,19 @@ class QstatRequest
 
     def maxplayers
       @data["maxplayers"]
+    end
+
+    def build_roster
+      roster = {}
+
+      @data["players"].map do |player_data|
+        player = Player.new(player_data)
+        team_name = player.team
+        roster[team_name] ||= Team.new(team_name)
+        roster[team_name].enlist(player)
+      end
+
+      roster
     end
 
     def players
