@@ -5,19 +5,16 @@ class QstatRequest
   end
 
   def teams
-    @teams ||= begin
-                 return nil unless has_players?
-                 build_roster
-               end
+    @teams ||= build_roster
   end
 
   def to_message
-    return server_summary unless has_players?
+    return server_summary if is_empty?
     [server_summary, player_table].join("\n")
   end
 
   def to_embed
-    return nil unless has_players?
+    return nil if is_empty?
 
     embed = Discordrb::Webhooks::Embed.new
 
@@ -30,11 +27,20 @@ class QstatRequest
 
   def server_summary
     return "#{@endpoint} isn't responding" unless game_map
-    "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}"
+    return "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}" unless has_spectators?
+    "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers} players | #{numspectators}/#{maxspectators} spectators" 
+  end
+
+  def is_empty?
+    !has_players? && !has_spectators?
+  end
+
+  def has_spectators?
+    numspectators > 0
   end
 
   def has_players?
-    @data["players"] && @data["players"].any?
+    numplayers > 0
   end
 
   def player_names
@@ -67,7 +73,17 @@ class QstatRequest
       @data["maxplayers"]
     end
 
+    def numspectators
+      @data["numspectators"]
+    end
+
+    def maxspectators
+      @data["maxspectators"]
+    end
+
     def build_roster
+      return nil if is_empty?
+
       roster = {}
 
       @data["players"].map do |player_data|
