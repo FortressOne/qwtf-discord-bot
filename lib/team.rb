@@ -1,7 +1,7 @@
 class Team
   attr_accessor :name, :number, :players
 
-  TEAMS = { "blue": 1, "red": 2, "yell": 3, "gren": 4, "spec": 5 }.freeze
+  TEAMS = { "blue" => 1, "red" => 2, "yell" => 3, "gren" => 4, "spec" => 5 }.freeze
 
   def initialize(name)
     @name = build_name(name)
@@ -33,12 +33,12 @@ class Team
     end
 
     def score
-      nil if @name == "Spec"
+      return nil if @name == "Spec"
       @players.first.score
     end
 
     def build_name(name)
-      name = TEAMS[name] || "spec"
-      name.capitalize
+      return name.capitalize if TEAMS[name]
+      "Spec"
     end
 end
