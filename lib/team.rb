@@ -25,7 +25,7 @@ class Team
     end
 
     def playing?
-      [1..4].include?(@number)
+      (1..4).include?(@number)
     end
 
     def player_list
