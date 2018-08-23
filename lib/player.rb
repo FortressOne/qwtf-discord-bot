@@ -28,6 +28,7 @@ class Player
   end
 
   def team
+    return 'spec' unless valid_score?
     @data['team']
   end
 
@@ -47,5 +48,9 @@ class Player
 
   def skin
     @data['skin']
+  end
+
+  def valid_score?
+    score >= 0
   end
 end
