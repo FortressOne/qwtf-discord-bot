@@ -1,3 +1,3 @@
 class QwtfDiscordBot
-  VERSION = '0.5.9'.freeze
+  VERSION = '1.0.0'.freeze
 end
