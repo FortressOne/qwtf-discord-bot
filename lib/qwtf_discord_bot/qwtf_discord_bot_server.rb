@@ -1,3 +1,5 @@
+require 'pry'
+
 class QwtfDiscordBotServer < QwtfDiscordBot
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -6,8 +8,9 @@ class QwtfDiscordBotServer < QwtfDiscordBot
       prefix: '!'
     )
 
-    bot.command :server do |event|
-      qstat_request = QstatRequest.new(endpoint)
+    bot.command :server do |event, *args|
+      hostname = args.first || endpoint
+      qstat_request = QstatRequest.new(hostname)
       message = qstat_request.server_summary
       embed = qstat_request.to_embed
 

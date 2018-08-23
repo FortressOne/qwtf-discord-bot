@@ -33,7 +33,8 @@ There are two features:
 ### Server
 
 This responds to `!server` messages by providing information about your game
-server.
+server. Defaults to the hostname command line argument, but will accept a
+hostname from the user. I.E. `!server fortressone.ga`
 
 ![screenshot of bot responding to !server command](server_screenshot.png)
 
