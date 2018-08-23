@@ -36,11 +36,11 @@ class QstatRequest
   end
 
   def has_spectators?
-    numspectators > 0
+    numspectators && numspectators > 0
   end
 
   def has_players?
-    numplayers > 0
+    numplayers && numplayers > 0
   end
 
   def player_names
