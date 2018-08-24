@@ -43,7 +43,7 @@ class Player
   end
 
   def short_class
-    skin.split('_').last
+    skin.split('_').last[0, 3]
   end
 
   def skin
