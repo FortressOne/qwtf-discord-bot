@@ -33,7 +33,7 @@ class Player
   end
 
   def player_class
-    PLAYER_CLASSES[short_class]
+    short_class && PLAYER_CLASSES[short_class]
   end
 
   private
@@ -43,7 +43,7 @@ class Player
   end
 
   def short_class
-    skin.split('_').last[0, 3]
+    skin.split('_').last && skin.split('_').last[0, 3]
   end
 
   def skin
