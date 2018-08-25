@@ -13,3 +13,4 @@ assets/
 .env*
 qstat
 *.gem
+*.swp
