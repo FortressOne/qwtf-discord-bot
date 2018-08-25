@@ -7,6 +7,7 @@ require 'qstat_request'
 require 'player'
 require 'team'
 require 'emoji'
+require 'roster'
 
 class QwtfDiscordBot
   TOKEN = ENV['QWTF_DISCORD_BOT_TOKEN'].strip

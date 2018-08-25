@@ -1,0 +1,28 @@
+[
+        {
+                "protocol": "qws",
+                "address": "fortressone.ga",
+                "status": "online",
+                "hostname": "fortressone.ga",
+                "name": "Classic Fortress (Sydney, Australia)",
+                "gametype": "fortress",
+                "map": "well1on1",
+                "numplayers": 1,
+                "maxplayers": 20,
+                "numspectators": 0,
+                "maxspectators": 4,
+                "ping": 14,
+                "retries": 0,
+                "players": [
+                        {
+                                "number": 63,
+                                "name": "zel",
+                                "score": 0,
+                                "time": "0s",
+                                "ping": 50,
+                                "skin": "base",
+                                "team": ""
+                        }
+                ]
+        }
+]
