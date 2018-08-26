@@ -42,7 +42,7 @@ RSpec.describe QstatRequest do
           let(:result) { File.read('spec/qstat_responses/one_spectator.txt') }
 
           it 'has a field named "Spec"' do
-            expect(embed.fields.any? { |field| field.to_hash[:name] == "Spec" })
+            expect(embed.fields.any? { |field| field.to_hash[:name] == "Spec" }).to be true
           end
         end
 
@@ -50,7 +50,7 @@ RSpec.describe QstatRequest do
           let(:result) { File.read('spec/qstat_responses/one_player_without_team.txt') }
 
           it 'has a field named "Spec"' do
-            expect(embed.fields.any? { |field| field.to_hash[:name] == "Spec" })
+            expect(embed.fields.any? { |field| field.to_hash[:name] == "Spec" }).to be true
           end
         end
 
@@ -58,7 +58,7 @@ RSpec.describe QstatRequest do
           let(:result) { File.read('spec/qstat_responses/one_blue_player.txt') }
 
           it 'has a field named "Blue"' do
-            expect(embed.fields.any? { |field| field.to_hash[:name] == "Blue" })
+            expect(embed.fields.any? { |field| field.to_hash[:name].include? "Blue" }).to be true
           end
         end
 
@@ -66,7 +66,19 @@ RSpec.describe QstatRequest do
           let(:result) { File.read('spec/qstat_responses/one_red_player.txt') }
 
           it 'has a field named "Red"' do
-            expect(embed.fields.any? { |field| field.to_hash[:name] == "Red" })
+            expect(embed.fields.any? { |field| field.to_hash[:name].include? "Red" }).to be true
+          end
+        end
+
+        context "when contains three players on the blue team" do
+          let(:result) { File.read('spec/qstat_responses/three_blue_players.txt') }
+
+          it 'has one field' do
+            expect(embed.fields.size).to be 1
+          end
+
+          it 'named "Blue"' do
+            expect(embed.fields.first.to_hash[:name]).to include "Blue"
           end
         end
 
@@ -74,19 +86,19 @@ RSpec.describe QstatRequest do
           let(:result) { File.read('spec/qstat_responses/full.txt') }
 
           it 'has three fields' do
-            expect(embed.fields.size == 3)
+            expect(embed.fields.size).to be 3
           end
 
           it 'the first field is named "Blue"' do
-            expect(embed.fields.first { |field| field.to_hash[:name] == "Blue" })
+            expect(embed.fields.first.to_hash[:name].include?("Blue")).to be true
           end
 
           it 'the second field is named "Red"' do
-            expect(embed.fields[1] { |field| field.to_hash[:name] == "Red" })
+            expect(embed.fields[1].to_hash[:name].include?("Red")).to be true
           end
 
           it 'the last field is named "Spec"' do
-            expect(embed.fields.last { |field| field.to_hash[:name] == "Spec" })
+            expect(embed.fields.last.to_hash[:name].include?("Spec")).to be true
           end
         end
       end
