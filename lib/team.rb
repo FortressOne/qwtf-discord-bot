@@ -20,8 +20,9 @@ class Team
   private
 
     def field_name
-      return "#{@name}" unless playing?
-      "#{@name} | #{score}"
+      name = @name.capitalize
+      return "#{name}" unless playing?
+      "#{name} | #{score}"
     end
 
     def playing?
@@ -38,7 +39,7 @@ class Team
     end
 
     def build_name(name)
-      return name.capitalize if TEAMS[name]
-      "Spec"
+      return name if TEAMS[name]
+      "spec"
     end
 end
