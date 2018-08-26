@@ -32,11 +32,15 @@ class QstatRequest
     "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers} players | #{numspectators}/#{maxspectators} spectators" 
   end
 
-  private
+  def is_empty?
+    !has_players? && !has_spectators?
+  end
 
-    def is_empty?
-      !has_players? && !has_spectators?
-    end
+  def player_names
+    players.map(&:name)
+  end
+
+  private
 
     def has_spectators?
       numspectators && numspectators > 0
@@ -44,10 +48,6 @@ class QstatRequest
 
     def has_players?
       numplayers && numplayers > 0
-    end
-
-    def player_names
-      players.map(&:name)
     end
 
     def teams
