@@ -6,7 +6,7 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
     every(THIRTY_SECONDS) do
       request = QstatRequest.new(endpoint)
 
-      if request.has_players?
+      unless request.is_empty?
         request.player_names.each do |name|
           unless seen_recently?(name)
             report_joined(name: name, server_summary: request.server_summary)
