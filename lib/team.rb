@@ -34,7 +34,7 @@ class Team
     end
 
     def score
-      return nil if @name == "Spec"
+      return nil if @name == "spec"
       @players.first.score
     end
 
