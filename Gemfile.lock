@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    qwtf_discord_bot (1.0.3)
+    qwtf_discord_bot (1.0.4)
 
 GEM
   remote: https://rubygems.org/
