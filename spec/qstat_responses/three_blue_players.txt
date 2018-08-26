@@ -1,0 +1,46 @@
+[
+        {
+                "protocol": "qws",
+                "address": "fortressone.ga",
+                "status": "online",
+                "hostname": "fortressone.ga",
+                "name": "Classic Fortress (Sydney, Australia)",
+                "gametype": "fortress",
+                "map": "try9",
+                "numplayers": 3,
+                "maxplayers": 20,
+                "numspectators": 0,
+                "maxspectators": 4,
+                "ping": 43,
+                "retries": 0,
+                "players": [
+                        {
+                                "number": 22,
+                                "name": "zel",
+                                "score": 0,
+                                "time": "11m0s",
+                                "ping": 50,
+                                "skin": "blue_sol",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 18,
+                                "name": "lordy",
+                                "score": 0,
+                                "time": "11m0s",
+                                "ping": 24,
+                                "skin": "blue_sol",
+                                "team": "blue"
+                        },
+                        {
+                                "number": 23,
+                                "name": "Jonan",
+                                "score": 0,
+                                "time": "0s",
+                                "ping": 58,
+                                "skin": "blue_sol",
+                                "team": "blue"
+                        }
+                ]
+        }
+]
