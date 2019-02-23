@@ -2,6 +2,8 @@ PATH
   remote: .
   specs:
     qwtf_discord_bot (1.0.6)
+      discordrb
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -87,4 +89,4 @@ DEPENDENCIES
   thor
 
 BUNDLED WITH
-   1.16.2
+   1.17.1
