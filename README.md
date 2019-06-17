@@ -32,7 +32,7 @@ There are two features:
 
 ### Server
 
-This responds to `!server` messages by providing information about your game
+This responds to `!servers` messages by providing information about your game
 server. Defaults to the hostname command line argument, but will accept a
 hostname from the user. I.E. `!server fortressone.org`
 
@@ -43,15 +43,17 @@ Usage:
   qwtf_discord_bot server
 
 Options:
-  [--hostname=HOSTNAME]
-                         # Default: localhost
-  [--port=N]
-                         # Default: 27500
+  [--endpoints=one two three]
+                               # Default: ["localhost:27500"]
 ```
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.org --port 27501
+```sh
+qwtf-discord-bot server --endpoints \
+  sydney.fortressone.org:27500 \
+  sydney.fortressone.org:27501
+```
 
 
 ### Watcher

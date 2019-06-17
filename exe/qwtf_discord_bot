@@ -9,12 +9,9 @@ class QwtfDiscordBotExe < Thor
   end
 
   desc 'server', 'Responds to `!server` with server information'
-  method_option :hostname, alias: '-h', default: 'localhost'
-  method_option :port, type: :numeric, alias: '-p', default: 27500
+  method_option :endpoints, type: :array, alias: '-e', default: ['localhost:27500']
   def server
-    hostname = options['hostname']
-    port = options['port']
-    server_bot = QwtfDiscordBotServer.new(hostname: hostname, port: port)
+    server_bot = QwtfDiscordBotServer.new(options[:endpoints])
     server_bot.run
   end
 
