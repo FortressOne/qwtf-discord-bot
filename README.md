@@ -34,7 +34,7 @@ There are two features:
 
 This responds to `!server` messages by providing information about your game
 server. Defaults to the hostname command line argument, but will accept a
-hostname from the user. I.E. `!server fortressone.ga`
+hostname from the user. I.E. `!server fortressone.org`
 
 ![screenshot of bot responding to !server command](server_screenshot.png)
 
@@ -51,7 +51,7 @@ Options:
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.ga --port 27501
+    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.org --port 27501
 
 
 ### Watcher
@@ -75,7 +75,7 @@ Options:
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.ga --port 27501
+    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.org --port 27501
 
 
 ## License
