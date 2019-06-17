@@ -24,15 +24,7 @@ class QwtfDiscordBot
   CLIENT_ID = ENV['QWTF_DISCORD_BOT_CLIENT_ID'].strip
   CHANNEL_ID = ENV['QWTF_DISCORD_BOT_CHANNEL_ID'].strip
 
-  def initialize(hostname:, port:)
-    @hostname = hostname
-    @port = port
-  end
-
-  def endpoint
-    @endpoint ||= begin
-                    return @hostname if @port == 27500
-                    [@hostname, @port].join(':')
-                  end
+  def initialize(endpoints)
+    @endpoints = endpoints
   end
 end
