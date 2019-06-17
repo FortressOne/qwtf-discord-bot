@@ -28,7 +28,7 @@ class Player
   end
 
   def team
-    return 'spec' unless valid_score?
+    return 'spec' if !valid_score? || @data['team'].empty?
     @data['team']
   end
 
