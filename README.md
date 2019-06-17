@@ -25,7 +25,7 @@ Edit the `.env.example` file, update with your bot's `client_id` and `token` and
 
 ### List commands
 
-    $ bundle exec exe/qwtf-discord-bot server help
+    $ bundle exec exe/qwtf-discord-bot help
 
 There are two features:
 
