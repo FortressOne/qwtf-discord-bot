@@ -25,16 +25,16 @@ Edit the `.env.example` file, update with your bot's `client_id` and `token` and
 
 ### List commands
 
-    $ bundle exec exe/qwtf-discord-bot server help
+    $ bundle exec exe/qwtf-discord-bot help
 
 There are two features:
 
 
 ### Server
 
-This responds to `!server` messages by providing information about your game
+This responds to `!servers` messages by providing information about your game
 server. Defaults to the hostname command line argument, but will accept a
-hostname from the user. I.E. `!server fortressone.ga`
+hostname from the user. I.E. `!server fortressone.org`
 
 ![screenshot of bot responding to !server command](server_screenshot.png)
 
@@ -43,15 +43,15 @@ Usage:
   qwtf_discord_bot server
 
 Options:
-  [--hostname=HOSTNAME]
-                         # Default: localhost
-  [--port=N]
-                         # Default: 27500
+  [--endpoints=one two three]
+                               # Default: ["localhost:27500"]
 ```
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot server --hostname fortressone.ga --port 27501
+    $ qwtf-discord-bot server --endpoints \
+          sydney.fortressone.org:27500 \
+          sydney.fortressone.org:27501
 
 
 ### Watcher
@@ -67,15 +67,13 @@ Usage:
   qwtf_discord_bot watcher
 
 Options:
-  [--hostname=HOSTNAME]
-                         # Default: localhost
-  [--port=N]
-                         # Default: 27500
+  [--endpoints=one two three]
+                               # Default: ["localhost:27500"]
 ```
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.ga --port 27501
+    $ bundle exec exe/qwtf-discord-bot watcher --endpoints sydney.fortressone.org:27501
 
 
 ## License

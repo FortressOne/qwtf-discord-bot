@@ -1,5 +1,3 @@
-require 'pry'
-
 RSpec.describe QstatRequest do
   let(:qstat_request) { build(:qstat_request, result: result) }
 
@@ -84,6 +82,26 @@ RSpec.describe QstatRequest do
 
         context "when contains blue and red players and a spectator" do
           let(:result) { File.read('spec/qstat_responses/full.txt') }
+
+          it 'has three fields' do
+            expect(embed.fields.size).to be 3
+          end
+
+          it 'the first field is named "Blue"' do
+            expect(embed.fields.first.to_hash[:name].include?("Blue")).to be true
+          end
+
+          it 'the second field is named "Red"' do
+            expect(embed.fields[1].to_hash[:name].include?("Red")).to be true
+          end
+
+          it 'the last field is named "Spec"' do
+            expect(embed.fields.last.to_hash[:name].include?("Spec")).to be true
+          end
+        end
+
+        context "multiple spectator field bug" do
+          let(:result) { File.read('spec/qstat_responses/multiple_spectator_field_bug.txt') }
 
           it 'has three fields' do
             expect(embed.fields.size).to be 3

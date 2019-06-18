@@ -28,8 +28,8 @@ class QstatRequest
 
   def server_summary
     return "#{@endpoint} isn't responding" unless game_map
-    return "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}" unless has_spectators?
-    "#{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers} players | #{numspectators}/#{maxspectators} spectators" 
+    return "#{name} | #{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}" unless has_spectators?
+    "#{name} | #{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers} players | #{numspectators}/#{maxspectators} spectators"
   end
 
   def is_empty?
@@ -40,14 +40,14 @@ class QstatRequest
     players.map(&:name)
   end
 
+  def has_players?
+    numplayers && numplayers > 0
+  end
+
   private
 
     def has_spectators?
       numspectators && numspectators > 0
-    end
-
-    def has_players?
-      numplayers && numplayers > 0
     end
 
     def teams
@@ -64,6 +64,10 @@ class QstatRequest
 
     def player_table
       players.sort_by { |player| player.team.number }.map(&:to_row).join("\n")
+    end
+
+    def name
+      data["name"]
     end
 
     def address
