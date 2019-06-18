@@ -31,6 +31,15 @@ class QwtfDiscordBotServer < QwtfDiscordBot
         QstatRequest.new(endpoint)
       end
 
+      message = qstat_requests.map(&:server_summary).join("\n")
+      event.channel.send_message(message)
+    end
+
+    bot.command :active do |event|
+      qstat_requests = @endpoints.map do |endpoint|
+        QstatRequest.new(endpoint)
+      end
+
       servers_with_players = qstat_requests.select(&:has_players?)
 
       message = begin
