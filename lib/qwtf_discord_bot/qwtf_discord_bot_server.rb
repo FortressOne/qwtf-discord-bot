@@ -1,4 +1,3 @@
-require 'pry'
 class QwtfDiscordBotServer < QwtfDiscordBot
   def run
     bot = Discordrb::Commands::CommandBot.new(

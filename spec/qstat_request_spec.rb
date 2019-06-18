@@ -1,5 +1,3 @@
-require 'pry'
-
 RSpec.describe QstatRequest do
   let(:qstat_request) { build(:qstat_request, result: result) }
 
