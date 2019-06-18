@@ -16,12 +16,9 @@ class QwtfDiscordBotExe < Thor
   end
 
   desc 'watcher', 'Watches server and accounces when a player joins'
-  method_option :hostname, alias: '-h', default: 'localhost'
-  method_option :port, type: :numeric, alias: '-p', default: 27500
+  method_option :endpoints, type: :array, alias: '-e', default: ['localhost:27500']
   def watcher
-    hostname = options['hostname']
-    port = options['port']
-    watcher_bot = QwtfDiscordBotWatcher.new(hostname: hostname, port: port)
+    watcher_bot = QwtfDiscordBotWatcher.new(options[:endpoints])
     watcher_bot.run
   end
 end
