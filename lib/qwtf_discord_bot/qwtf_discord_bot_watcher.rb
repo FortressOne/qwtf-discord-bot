@@ -4,15 +4,18 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
 
   def run
     every(THIRTY_SECONDS) do
-      request = QstatRequest.new(endpoint)
+      @endpoints.each do |endpoint|
+        request = QstatRequest.new(endpoint)
 
-      unless request.is_empty?
-        request.player_names.each do |name|
-          unless seen_recently?(name)
-            report_joined(name: name, server_summary: request.server_summary)
+        unless request.is_empty?
+          request.player_names.each do |name|
+            unless seen_recently?(endpoint: endpoint, name: name)
+              report_joined(name: name, server_summary: request.server_summary)
+            end
+
+            history[endpoint] ||= {}
+            history[endpoint][name] = Time.now
           end
-
-          history[name] = Time.now
         end
       end
     end
@@ -27,8 +30,8 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
     end
   end
 
-  def seen_recently?(name)
-    last_seen = history[name]
+  def seen_recently?(endpoint:, name:)
+    last_seen = history[endpoint] && history[endpoint][name]
     last_seen && (Time.now - last_seen < TEN_MINUTES)
   end
 

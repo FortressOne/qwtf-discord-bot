@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.description   = 'A Discord bot for reporting on QuakeWorld Team ' \
                        'Fortress game servers'
 
-  spec.summary       = 'Works by wrapping the excellent CLI server query tool' \
-                       'qstat. Accepts the !server command from users and ' \
+  spec.summary       = 'Works by wrapping the excellent CLI server query tool ' \
+                       'qstat. Accepts !server, !servers and !active commands ' \
                        'also periodically checks for new players on the ' \
                        'server and reports about them.'
 

@@ -1,6 +1,6 @@
 FactoryBot.define do 
   factory :qstat_request do
-    endpoint { "fortressone.ga" }
+    endpoint { "fortressone.org" }
 
     initialize_with { new(endpoint) }
   end

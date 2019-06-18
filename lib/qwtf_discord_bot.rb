@@ -10,19 +10,21 @@ require 'emoji'
 require 'roster'
 
 class QwtfDiscordBot
+  ENV_VARS = [
+    'QWTF_DISCORD_BOT_TOKEN',
+    'QWTF_DISCORD_BOT_CLIENT_ID',
+    'QWTF_DISCORD_BOT_CHANNEL_ID'
+  ]
+
+  if ENV_VARS.any? { |var| !ENV.key?(var) }
+    raise "Environment variables not configured"
+  end
+
   TOKEN = ENV['QWTF_DISCORD_BOT_TOKEN'].strip
   CLIENT_ID = ENV['QWTF_DISCORD_BOT_CLIENT_ID'].strip
   CHANNEL_ID = ENV['QWTF_DISCORD_BOT_CHANNEL_ID'].strip
 
-  def initialize(hostname:, port:)
-    @hostname = hostname
-    @port = port
-  end
-
-  def endpoint
-    @endpoint ||= begin
-                    return @hostname if @port == 27500
-                    [@hostname, @port].join(':')
-                  end
+  def initialize(endpoints)
+    @endpoints = endpoints
   end
 end
