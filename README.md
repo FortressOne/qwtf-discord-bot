@@ -49,11 +49,9 @@ Options:
 
 E.G.
 
-```sh
-qwtf-discord-bot server --endpoints \
-  sydney.fortressone.org:27500 \
-  sydney.fortressone.org:27501
-```
+    $ qwtf-discord-bot server --endpoints \
+          sydney.fortressone.org:27500 \
+          sydney.fortressone.org:27501
 
 
 ### Watcher
@@ -69,15 +67,13 @@ Usage:
   qwtf_discord_bot watcher
 
 Options:
-  [--hostname=HOSTNAME]
-                         # Default: localhost
-  [--port=N]
-                         # Default: 27500
+  [--endpoints=one two three]
+                               # Default: ["localhost:27500"]
 ```
 
 E.G.
 
-    $ bundle exec exe/qwtf-discord-bot watcher --hostname fortressone.org --port 27501
+    $ bundle exec exe/qwtf-discord-bot watcher --endpoints sydney.fortressone.org:27501
 
 
 ## License
