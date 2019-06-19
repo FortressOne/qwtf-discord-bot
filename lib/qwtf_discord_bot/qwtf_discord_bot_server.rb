@@ -37,6 +37,8 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     end
 
     bot.command :active do |event|
+      return unless event.channel.id.to_s == CHANNEL_ID
+
       qstat_requests = @endpoints.map do |endpoint|
         QstatRequest.new(endpoint)
       end
