@@ -44,6 +44,8 @@ class QwtfDiscordBotServer < QwtfDiscordBot
           event.channel.send_message(message)
         end
       end
+
+      return nil
     end
 
     bot.command :active do |event|
