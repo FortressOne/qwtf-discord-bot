@@ -7,6 +7,8 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     )
 
     bot.command :server do |event, *args|
+      return unless event.channel.id.to_s == CHANNEL_ID
+
       if args.empty?
         event.channel.send_message(
           "Provide a server address e.g. `!server location.fortressone.org` or use `!servers`"
