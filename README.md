@@ -36,11 +36,13 @@ endpoints:
       - 480928490328409328
 ```
 
-- Set the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable:
+- Set the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable or default to
+  `config.yaml` in the present working directory
 
 ```sh
 $ export QWTF_DISCORD_BOT_CONFIG_FILE="config.yaml"
 ```
+
 
 
 ### Commands
