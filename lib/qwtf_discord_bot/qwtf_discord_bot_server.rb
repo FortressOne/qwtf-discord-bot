@@ -1,4 +1,4 @@
-class QwtfDiscordBotServer < QwtfDiscordBot
+class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
   def run
     bot = Discordrb::Commands::CommandBot.new(
       token: TOKEN,
@@ -7,11 +7,10 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     )
 
     bot.command :server do |event, *args|
-      return unless event.channel.id.to_s == CHANNEL_ID
-
       if args.empty?
         event.channel.send_message(
-          "Provide a server address e.g. `!server sydney.fortressone.org` or use `!active` or `!all`"
+          'Provide a server address e.g. `!server sydney.fortressone.org` ' \
+          'or use `!active` or `!all`'
         )
       else
         endpoint = args.first
@@ -28,20 +27,20 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     end
 
     bot.command :all do |event|
-      return unless event.channel.id.to_s == CHANNEL_ID
+      @endpoints.each do |endpoint, channel_ids|
+        channel_ids.each do |channel_id|
+          next if event.channel.id != channel_id
 
-      qstat_responses = @endpoints.map do |endpoint|
-        QstatRequest.new(endpoint)
-      end
+          qstat_request = QstatRequest.new(endpoint)
+          message = qstat_request.server_summary
+          embed = qstat_request.to_embed
 
-      qstat_responses.each do |server|
-        message = server.server_summary
-        embed = server.to_embed
 
-        if embed
-          event.channel.send_embed(message, embed)
-        else
-          event.channel.send_message(message)
+          if embed
+            event.channel.send_embed(message, embed)
+          else
+            event.channel.send_message(message)
+          end
         end
       end
 
@@ -49,22 +48,16 @@ class QwtfDiscordBotServer < QwtfDiscordBot
     end
 
     bot.command :active do |event|
-      return unless event.channel.id.to_s == CHANNEL_ID
+      @endpoints.each do |endpoint, channel_ids|
+        channel_ids.each do |channel_id|
+          next if event.channel.id != channel_id
 
-      qstat_responses = @endpoints.map do |endpoint|
-        QstatRequest.new(endpoint)
-      end
+          qstat_request = QstatRequest.new(endpoint)
+          next if qstat_request.is_empty?
 
-      servers_with_players = qstat_responses.select(&:has_players?)
+          message = qstat_request.server_summary
+          embed = qstat_request.to_embed
 
-      if servers_with_players.empty?
-        event.channel.send_message(
-          "All ##{event.channel.name} servers are empty"
-        )
-      else
-        servers_with_players.each do |server|
-          message = server.server_summary
-          embed = server.to_embed
 
           if embed
             event.channel.send_embed(message, embed)

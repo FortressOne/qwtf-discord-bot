@@ -4,18 +4,23 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
 
   def run
     every(THIRTY_SECONDS) do
-      @endpoints.each do |endpoint|
+      @endpoints.each do |endpoint, channel_ids|
         request = QstatRequest.new(endpoint)
+        next if request.is_empty?
 
-        unless request.is_empty?
-          request.player_names.each do |name|
-            unless seen_recently?(endpoint: endpoint, name: name)
-              report_joined(name: name, server_summary: request.server_summary)
+        request.player_names.each do |name|
+          unless seen_recently?(endpoint: endpoint, name: name)
+            channel_ids.each do |channel_id|
+              report_joined(
+                name: name,
+                channel_id: channel_id,
+                server_summary: request.server_summary
+              )
             end
-
-            history[endpoint] ||= {}
-            history[endpoint][name] = Time.now
           end
+
+          history[endpoint] ||= {}
+          history[endpoint][name] = Time.now
         end
       end
     end
@@ -35,10 +40,10 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
     last_seen && (Time.now - last_seen < TEN_MINUTES)
   end
 
-  def report_joined(name:, server_summary:)
+  def report_joined(name:, channel_id:, server_summary:)
     Discordrb::API::Channel.create_message(
       "Bot #{TOKEN}",
-      CHANNEL_ID,
+      channel_id,
       "#{name} has joined #{server_summary}"
     )
   end
