@@ -1,5 +1,0 @@
----
-# Add each endpoint below the in format
-# "<hostname>:<port>":
-#   - CHANNEL_ID_1
-#   - CHANNEL_ID_2
