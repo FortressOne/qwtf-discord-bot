@@ -1,8 +1,8 @@
 class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
   def run
     bot = Discordrb::Commands::CommandBot.new(
-      token: TOKEN,
-      client_id: CLIENT_ID,
+      token: @token,
+      client_id: @client_id,
       prefix: '!'
     )
 
@@ -27,11 +27,11 @@ class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
     end
 
     bot.command :all do |event|
-      @endpoints.each do |endpoint, channel_ids|
-        channel_ids.each do |channel_id|
-          next if event.channel.id != channel_id
+      @endpoints.each do |endpoint|
+        endpoint.channel_ids.each do |channel_id|
+          next unless event.channel.id == channel_id
 
-          qstat_request = QstatRequest.new(endpoint)
+          qstat_request = QstatRequest.new(endpoint.address)
           message = qstat_request.server_summary
           embed = qstat_request.to_embed
 
@@ -48,11 +48,11 @@ class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
     end
 
     bot.command :active do |event|
-      @endpoints.each do |endpoint, channel_ids|
-        channel_ids.each do |channel_id|
-          next if event.channel.id != channel_id
+      @endpoints.each do |endpoint|
+        endpoint.channel_ids.each do |channel_id|
+          next unless event.channel.id == channel_id
 
-          qstat_request = QstatRequest.new(endpoint)
+          qstat_request = QstatRequest.new(endpoint.address)
           next if qstat_request.is_empty?
 
           message = qstat_request.server_summary
