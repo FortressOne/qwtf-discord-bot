@@ -9,12 +9,12 @@ require 'player'
 require 'team'
 require 'emoji'
 require 'roster'
-require 'endpoint'
 
 class QwtfDiscordBot # :nodoc:
   ENV_VARS = %w[
     QWTF_DISCORD_BOT_TOKEN
     QWTF_DISCORD_BOT_CLIENT_ID
+    QWTF_DISCORD_BOT_CONFIG_FILE
   ].freeze
 
 
@@ -24,8 +24,9 @@ class QwtfDiscordBot # :nodoc:
 
   TOKEN = ENV['QWTF_DISCORD_BOT_TOKEN'].strip
   CLIENT_ID = ENV['QWTF_DISCORD_BOT_CLIENT_ID'].strip
+  CONFIG_FILE = ENV['QWTF_DISCORD_BOT_CONFIG_FILE'].strip
 
   def initialize
-    @endpoints = YAML.load_file('config/endpoints.yaml')
+    @endpoints = YAML.load_file(CONFIG_FILE)
   end
 end
