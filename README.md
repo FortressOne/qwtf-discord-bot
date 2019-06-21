@@ -17,38 +17,45 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
 ## Usage
 
 - Create a bot on discord.
-
-- Create a `config.yaml` file containing the endpoints and associated discord channel ID's. E.G.
+- Create a `config.yaml` file containing your bots credentials and server endpoints. E.G.
 
 ```yaml
 ---
-"sydney.fortressone.org:27500":
-  - 542237808895451234
-  - 382719378179837192
-"dallas.fortressone.org:27500":
-  - 382719378179837192
-  - 908124893104809328
+token: "dhjksahdkjhhur43hu4hu5b4b5k34j12b4kj3b4kjb4j32kb4kjb4kb3k2b"
+client_id: "873298379487294398"
+endpoints:
+  - "sydney.fortressone.org":
+    - channel_ids:
+      - 832749832749873298
+      - 798437748937298448
+  - "sydney.fortressone.org:27501":
+    - channel_ids:
+      - 590204247224745986
+  - "dallas.fortressone.org":
+    - channel_ids:
+      - 480928490328409328
 ```
 
-- Edit the `.env.example` file, update with your bot's `client_id` and `token` and config file location and save as `.env`.
+- Set the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable:
 
-    $ source .env
+```sh
+$ export QWTF_DISCORD_BOT_CONFIG_FILE="config.yaml"
+```
 
 
 ### Commands
 
-    $ qwtf-discord-bot help
-
-There are two features:
+There are two modules:
 
 
 #### Server
 
     $ qwtf-discord-bot server
 
-This responds to `!servers` messages by providing information about your game
-server. Defaults to the hostname command line argument, but will accept a
-hostname from the user. I.E. `!server fortressone.org`
+This responds to discord messages:
+  - `!server`
+  - `!active`
+  - `!all`
 
 ![screenshot of bot responding to !server command](server_screenshot.png)
 
