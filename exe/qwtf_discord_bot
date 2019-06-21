@@ -8,17 +8,15 @@ class QwtfDiscordBotExe < Thor
     true
   end
 
-  desc 'server', 'Responds to `!server` with server information'
-  method_option :endpoints, type: :array, alias: '-e', default: ['localhost:27500']
+  desc 'server', 'Responds to user commands with server information'
   def server
-    server_bot = QwtfDiscordBotServer.new(options[:endpoints])
+    server_bot = QwtfDiscordBotServer.new
     server_bot.run
   end
 
-  desc 'watcher', 'Watches server and accounces when a player joins'
-  method_option :endpoints, type: :array, alias: '-e', default: ['localhost:27500']
+  desc 'watcher', 'Watches servers and accounces when a player joins'
   def watcher
-    watcher_bot = QwtfDiscordBotWatcher.new(options[:endpoints])
+    watcher_bot = QwtfDiscordBotWatcher.new
     watcher_bot.run
   end
 end
