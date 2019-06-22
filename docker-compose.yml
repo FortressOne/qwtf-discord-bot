@@ -1,0 +1,19 @@
+---
+version: "3.7"
+services:
+  discord-command-bot:
+    image: fortressone/discord-bot:latest
+    command: "server"
+    restart: always
+    volumes:
+      - type: bind
+        source: ./config.yaml
+        target: /discord-bot/config.yaml
+  discord-watcher-bot:
+    image: fortressone/discord-bot:latest
+    command: "watcher"
+    restart: always
+    volumes:
+      - type: bind
+        source: ./config.yaml
+        target: /discord-bot/config.yaml
