@@ -73,6 +73,29 @@ they haven't been connected for more than ten minutes.
 ![screenshot of bot reporting player joining server](watcher_screenshot.png)
 
 
+## Docker
+
+Assuming a `./config.yaml` file exists:
+
+Server:
+
+```sh
+docker run -it --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml discord-bot server
+```
+
+Watcher:
+
+```sh
+docker run -it --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml discord-bot watcher
+```
+
+Both:
+
+```sh
+docker-compose up
+```
+
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
