@@ -61,25 +61,31 @@ class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
         end
       end
 
-      qstat_requests = endpoints_for_this_channel.map do |endpoint|
-        QstatRequest.new(endpoint.address)
-      end
-
-      servers_with_players = qstat_requests.reject do |server|
-        server.is_empty?
-      end
-
-      if servers_with_players.empty?
-        event.channel.send_message("All ##{event.channel.name} servers are empty")
+      if endpoints_for_this_channel.empty?
+        event.channel.send_message(
+          'There are no servers associated with this channel'
+        )
       else
-        servers_with_players.each do |server|
-          message = server.server_summary
-          embed = server.to_embed
+        qstat_requests = endpoints_for_this_channel.map do |endpoint|
+          QstatRequest.new(endpoint.address)
+        end
 
-          if embed
-            event.channel.send_embed(message, embed)
-          else
-            event.channel.send_message(message)
+        servers_with_players = qstat_requests.reject do |server|
+          server.is_empty?
+        end
+
+        if servers_with_players.empty?
+          event.channel.send_message("All ##{event.channel.name} servers are empty")
+        else
+          servers_with_players.each do |server|
+            message = server.server_summary
+            embed = server.to_embed
+
+            if embed
+              event.channel.send_embed(message, embed)
+            else
+              event.channel.send_message(message)
+            end
           end
         end
       end
