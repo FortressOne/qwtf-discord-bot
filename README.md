@@ -75,6 +75,21 @@ they haven't been connected for more than ten minutes.
 
 ## Docker
 
+Build:
+
+```sh
+docker build --tag=discord-bot .
+```
+
+Push:
+
+```sh
+docker tag discord-bot fortressone/discord-bot:latest
+docker push fortressone/discord-bot:latest
+```
+
+Run:
+
 Assuming a `./config.yaml` file exists:
 
 Server:
