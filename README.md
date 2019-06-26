@@ -16,8 +16,9 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
 
 ## Usage
 
-- Create a bot on discord.
-- Create a `config.yaml` file containing your bots credentials and server endpoints. E.G.
+- Create a bot on discord
+- Create a `~/.config/qwtf_discord_bot/config.yaml` file containing your bots
+  credentials and server endpoints
 
 ```yaml
 ---
@@ -36,13 +37,12 @@ endpoints:
       - 480928490328409328
 ```
 
-- Set the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable or default to
-  `config.yaml` in the present working directory
+- Use  the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable or default to
+  specify an alternative file
 
 ```sh
 $ export QWTF_DISCORD_BOT_CONFIG_FILE="config.yaml"
 ```
-
 
 
 ### Commands
@@ -95,13 +95,19 @@ Assuming a `./config.yaml` file exists:
 Server:
 
 ```sh
-docker run -it --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml discord-bot server
+docker run -it \
+  --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+  --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+  discord-bot server
 ```
 
 Watcher:
 
 ```sh
-docker run -it --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml discord-bot watcher
+docker run -it \
+  --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+  --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+  discord-bot watcher
 ```
 
 Both:
