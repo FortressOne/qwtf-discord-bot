@@ -1,8 +1,8 @@
-class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
+class QwtfDiscordBotServer
   def run
     bot = Discordrb::Commands::CommandBot.new(
-      token: @token,
-      client_id: @client_id,
+      token: QwtfDiscordBot.config.token,
+      client_id: QwtfDiscordBot.config.client_id,
       prefix: '!'
     )
 
@@ -27,7 +27,7 @@ class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
     end
 
     bot.command :all do |event|
-      endpoints_for_this_channel = @endpoints.select do |endpoint|
+      endpoints_for_this_channel = QwtfDiscordBot.config.endpoints.select do |endpoint|
         endpoint.channel_ids.any? do |channel_id|
           event.channel.id == channel_id
         end
@@ -55,7 +55,7 @@ class QwtfDiscordBotServer < QwtfDiscordBot # :nodoc:
     end
 
     bot.command :active do |event|
-      endpoints_for_this_channel = @endpoints.select do |endpoint|
+      endpoints_for_this_channel = QwtfDiscordBot.config.endpoints.select do |endpoint|
         endpoint.channel_ids.any? do |channel_id|
           event.channel.id == channel_id
         end
