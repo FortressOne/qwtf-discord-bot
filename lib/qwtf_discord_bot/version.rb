@@ -1,3 +1,3 @@
-class QwtfDiscordBot
-  VERSION = '4.0.3'.freeze
+module QwtfDiscordBot
+  VERSION = '4.1.0'.freeze
 end

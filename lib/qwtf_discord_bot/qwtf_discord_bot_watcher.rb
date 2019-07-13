@@ -1,10 +1,12 @@
-class QwtfDiscordBotWatcher < QwtfDiscordBot
+class QwtfDiscordBotWatcher
+  include QwtfDiscordBot
+
   THIRTY_SECONDS = 30
   TEN_MINUTES = 10 * 60
 
   def run
     every(THIRTY_SECONDS) do
-      @endpoints.each do |endpoint|
+      QwtfDiscordBot.config.endpoints.each do |endpoint|
         address = endpoint.address
         request = QstatRequest.new(address)
         next if request.is_empty?
@@ -43,7 +45,7 @@ class QwtfDiscordBotWatcher < QwtfDiscordBot
 
   def report_joined(name:, channel_id:, server_summary:)
     Discordrb::API::Channel.create_message(
-      "Bot #{@token}",
+      "Bot #{QwtfDiscordBot.config.token}",
       channel_id,
       "#{name} has joined #{server_summary}"
     )
