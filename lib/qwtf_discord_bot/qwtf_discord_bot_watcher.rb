@@ -1,3 +1,5 @@
+require "redis"
+
 class QwtfDiscordBotWatcher
   include QwtfDiscordBot
 
@@ -22,8 +24,7 @@ class QwtfDiscordBotWatcher
             end
           end
 
-          history[address] ||= {}
-          history[address][name] = Time.now
+          redis.set("#{address}:#{name}", Time.now)
         end
       end
     end
@@ -39,8 +40,8 @@ class QwtfDiscordBotWatcher
   end
 
   def seen_recently?(endpoint:, name:)
-    last_seen = history[endpoint] && history[endpoint][name]
-    last_seen && (Time.now - last_seen < TEN_MINUTES)
+    last_seen = redis.get("#{endpoint}:#{name}")
+    last_seen && (Time.now - Time.parse(last_seen) < TEN_MINUTES)
   end
 
   def report_joined(name:, channel_id:, server_summary:)
@@ -51,7 +52,9 @@ class QwtfDiscordBotWatcher
     )
   end
 
-  def history
-    @history ||= {}
+  private
+
+  def redis
+    @redis ||= Redis.new
   end
 end

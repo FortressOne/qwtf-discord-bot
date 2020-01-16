@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'discordrb', '~> 3.3'
   spec.add_runtime_dependency 'thor', '~> 0.20'
+  spec.add_runtime_dependency 'redis'
 end
