@@ -14,7 +14,9 @@ class QwtfDiscordBotWatcher
         next if request.is_empty?
 
         request.player_names.each do |name|
-          unless seen_recently?(endpoint: address, name: name)
+          redis_key = "#{address}:#{name}"
+
+          unless seen_recently?(redis_key)
             endpoint.channel_ids.each do |channel_id|
               report_joined(
                 name: name,
@@ -24,7 +26,7 @@ class QwtfDiscordBotWatcher
             end
           end
 
-          redis.set("#{address}:#{name}", Time.now)
+          update_last_seen_at(redis_key)
         end
       end
     end
@@ -39,9 +41,13 @@ class QwtfDiscordBotWatcher
     end
   end
 
-  def seen_recently?(endpoint:, name:)
-    last_seen = redis.get("#{endpoint}:#{name}")
-    last_seen && (Time.now - Time.parse(last_seen) < TEN_MINUTES)
+  def seen_recently?(redis_key)
+    redis.get(redis_key)
+  end
+
+  def update_last_seen_at(redis_key)
+    redis.set(key, Time.now)
+    redis.expire(key, TEN_MINUTES)
   end
 
   def report_joined(name:, channel_id:, server_summary:)
