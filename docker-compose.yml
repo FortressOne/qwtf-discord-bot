@@ -21,7 +21,7 @@ services:
     depends_on:
       - redis
     environment:
-      - REDIS_URL=redis
+      - REDIS_URL=redis://redis
     volumes:
       - type: bind
         source: /home/ubuntu/.config/qwtf_discord_bot/config.yaml
