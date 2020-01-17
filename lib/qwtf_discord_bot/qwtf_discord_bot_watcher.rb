@@ -46,8 +46,8 @@ class QwtfDiscordBotWatcher
   end
 
   def update_last_seen_at(redis_key)
-    redis.set(key, Time.now)
-    redis.expire(key, TEN_MINUTES)
+    redis.set(redis_key, Time.now)
+    redis.expire(redis_key, TEN_MINUTES)
   end
 
   def report_joined(name:, channel_id:, server_summary:)
