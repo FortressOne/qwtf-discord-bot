@@ -14,4 +14,4 @@ assets/
 qstat
 *.gem
 *.swp
-config.yaml
+*.yaml
