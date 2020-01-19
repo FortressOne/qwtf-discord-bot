@@ -5,7 +5,7 @@ services:
     image: redis:alpine
     restart: always
   discord-command-bot:
-    image: discord-bot:latest
+    image: fortressone/discord-bot:latest
     command: server
     restart: always
     depends_on:
@@ -15,7 +15,7 @@ services:
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
         target: /discord-bot/config.yaml
   discord-watcher-bot:
-    image: discord-bot:latest
+    image: fortressone/discord-bot:latest
     command: watcher
     restart: always
     depends_on:
