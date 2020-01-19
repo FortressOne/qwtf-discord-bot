@@ -4,6 +4,7 @@ gemspec
 
 gem 'bundler'
 gem 'discordrb'
+gem 'redis'
 gem 'thor'
 
 group :development do

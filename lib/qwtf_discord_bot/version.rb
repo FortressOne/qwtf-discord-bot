@@ -1,3 +1,3 @@
 module QwtfDiscordBot
-  VERSION = '4.2.2'.freeze
+  VERSION = File.read("VERSION").chomp.freeze
 end
