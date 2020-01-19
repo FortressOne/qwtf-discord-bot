@@ -12,7 +12,7 @@ services:
       - redis
     volumes:
       - type: bind
-        source: ./config.yaml
+        source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
         target: /discord-bot/config.yaml
   discord-watcher-bot:
     image: fortressone/discord-bot:latest
@@ -24,5 +24,5 @@ services:
       - REDIS_URL=redis://redis
     volumes:
       - type: bind
-        source: ./config.yaml
+        source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
         target: /discord-bot/config.yaml
