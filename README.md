@@ -92,18 +92,19 @@ they haven't been connected for more than ten minutes.
 ![screenshot of bot reporting player joining server](watcher_screenshot.png)
 
 
-## Docker
+## Gem
 
 Build:
 
-    docker build --tag=discord-bot .
+    gem build qwtf_discrd_bot.gemspec
 
 
 Push:
 
-    docker tag discord-bot fortressone/discord-bot:latest
-    docker push fortressone/discord-bot:latest
+    gem push qwtf_discord_bot-$(cat VERSION).gem
 
+
+## Docker
 
 Run:
 
@@ -126,6 +127,17 @@ Only discord-bot watcher:
       --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
       --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
       discord-bot watcher
+
+
+Build:
+
+    docker build --tag=discord-bot .
+
+
+Push:
+
+    docker tag discord-bot fortressone/discord-bot:latest
+    docker push fortressone/discord-bot:latest
 
 
 ## License
