@@ -1,5 +1,5 @@
 FROM ruby:2.6
-WORKDIR /discord-bot
+WORKDIR /discord-bot/
 RUN git clone https://github.com/multiplay/qstat.git \
  && cd /discord-bot/qstat \
  && ./autogen.sh \
