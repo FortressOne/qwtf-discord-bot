@@ -11,7 +11,7 @@ class QwtfDiscordBotServer
         message = 'Provide a server address e.g. `!server ' \
           'sydney.fortressone.org` or use `!active` or `!all`'
         event.channel.send_message(message)
-        puts message
+        Discordrb::LOGGER.info(message)
       else
         endpoint = args.first
         qstat_response = QstatRequest.new(endpoint)
@@ -20,10 +20,10 @@ class QwtfDiscordBotServer
 
         if embed
           event.channel.send_embed(message, embed)
-          puts message
+          Discordrb::LOGGER.info(message)
         else
           event.channel.send_message(message)
-          puts message
+          Discordrb::LOGGER.info(message)
         end
       end
 
@@ -39,7 +39,7 @@ class QwtfDiscordBotServer
       if endpoints_for_this_channel.empty?
         message = 'There are no servers associated with this channel'
         event.channel.send_message(message)
-        puts message
+        Discordrb::LOGGER.info(message)
       else
         endpoints_for_this_channel.each do |endpoint|
           qstat_request = QstatRequest.new(endpoint.address)
@@ -48,10 +48,10 @@ class QwtfDiscordBotServer
 
           if embed
             event.channel.send_embed(message, embed)
-            puts message
+            Discordrb::LOGGER.info(message)
           else
             event.channel.send_message(message)
-            puts message
+            Discordrb::LOGGER.info(message)
           end
         end
       end
@@ -69,7 +69,7 @@ class QwtfDiscordBotServer
       if endpoints_for_this_channel.empty?
         message = 'There are no servers associated with this channel'
         event.channel.send_message(message)
-        puts message
+        Discordrb::LOGGER.info(message)
       else
         qstat_requests = endpoints_for_this_channel.map do |endpoint|
           QstatRequest.new(endpoint.address)
@@ -82,7 +82,7 @@ class QwtfDiscordBotServer
         if servers_with_players.empty?
           message = "All ##{event.channel.name} servers are empty"
           event.channel.send_message(message)
-          puts message
+          Discordrb::LOGGER.info(message)
         else
           servers_with_players.each do |server|
             message = server.server_summary
@@ -90,10 +90,10 @@ class QwtfDiscordBotServer
 
             if embed
               event.channel.send_embed(message, embed)
-              puts message
+              Discordrb::LOGGER.info(message)
             else
               event.channel.send_message(message)
-              puts message
+              Discordrb::LOGGER.info(message)
             end
           end
         end

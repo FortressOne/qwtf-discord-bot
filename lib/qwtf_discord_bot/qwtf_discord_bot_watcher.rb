@@ -59,7 +59,7 @@ class QwtfDiscordBotWatcher
       message
     )
 
-    puts message
+    Discordrb::LOGGER.info(message)
   end
 
   private
