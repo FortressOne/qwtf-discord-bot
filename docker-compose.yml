@@ -6,17 +6,17 @@ services:
     restart: always
   discord-command-bot:
     image: fortressone/discord-bot:latest
-    command: "server"
+    command: server
     restart: always
     depends_on:
       - redis
     volumes:
       - type: bind
-        source: /home/ubuntu/.config/qwtf_discord_bot/config.yaml
+        source: ./config.yaml
         target: /discord-bot/config.yaml
   discord-watcher-bot:
     image: fortressone/discord-bot:latest
-    command: "watcher"
+    command: watcher
     restart: always
     depends_on:
       - redis
@@ -24,5 +24,5 @@ services:
       - REDIS_URL=redis://redis
     volumes:
       - type: bind
-        source: /home/ubuntu/.config/qwtf_discord_bot/config.yaml
+        source: ./config.yaml
         target: /discord-bot/config.yaml
