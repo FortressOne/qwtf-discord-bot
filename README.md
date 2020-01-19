@@ -17,7 +17,7 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
 ## Usage
 
 - Create a bot on discord
-- Create a `~/.config/qwtf_discord_bot/config.yaml` file containing your bots
+- Create a `config.yaml` file containing your bots
   credentials and server endpoints
 
 ```yaml
@@ -73,7 +73,7 @@ There are two modules:
 
 #### Server
 
-    $ qwtf-discord-bot server
+    qwtf-discord-bot server
 
 This responds to discord messages:
   - `!server`
@@ -85,7 +85,7 @@ This responds to discord messages:
 
 #### Watcher
 
-    $ qwtf-discord-bot watcher
+    qwtf-discord-bot watcher
 
 This watches the game server and announces if anyone has joined the server. It
 polls the server once every 30 seconds and will only report a player joining if
@@ -98,44 +98,36 @@ they haven't been connected for more than ten minutes.
 
 Build:
 
-```sh
-docker build --tag=discord-bot .
-```
+    docker build --tag=discord-bot .
+
 
 Push:
 
-```sh
-docker tag discord-bot fortressone/discord-bot:latest
-docker push fortressone/discord-bot:latest
-```
+    docker tag discord-bot fortressone/discord-bot:latest
+    docker push fortressone/discord-bot:latest
+
 
 Run:
 
 Assuming a `./config.yaml` file exists:
 
-Server:
+    docker-compose up
 
-```sh
-docker run -it \
-  --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
-  --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
-  discord-bot server
-```
 
-Watcher:
+Only discord-bot server:
 
-```sh
-docker run -it \
-  --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
-  --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
-  discord-bot watcher
-```
+    docker run -it \
+      --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+      --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+      discord-bot server
 
-Both:
 
-```sh
-docker-compose up
-```
+Only discord-bot watcher:
+
+    docker run -it \
+      --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+      --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+      discord-bot watcher
 
 
 ## License
