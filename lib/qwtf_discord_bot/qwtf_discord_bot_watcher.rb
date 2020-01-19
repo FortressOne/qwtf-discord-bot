@@ -51,11 +51,15 @@ class QwtfDiscordBotWatcher
   end
 
   def report_joined(name:, channel_id:, server_summary:)
+    message = "#{name} has joined #{server_summary}"
+
     Discordrb::API::Channel.create_message(
       "Bot #{QwtfDiscordBot.config.token}",
       channel_id,
-      "#{name} has joined #{server_summary}"
+      message
     )
+
+    puts message
   end
 
   private
