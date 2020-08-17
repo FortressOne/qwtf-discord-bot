@@ -14,6 +14,12 @@ class QwtfDiscordBotExe < Thor
     server_bot.run
   end
 
+  desc 'pug', 'Start, join, leave, record pick-up games.'
+  def pug
+    pub_bot = QwtfDiscordBotPug.new
+    pug_bot.run
+  end
+
   desc 'watcher', 'Watches servers and accounces when a player joins'
   def watcher
     watcher_bot = QwtfDiscordBotWatcher.new

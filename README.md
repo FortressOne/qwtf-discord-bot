@@ -81,6 +81,15 @@ This responds to discord messages:
 ![screenshot of bot responding to !server command](server_screenshot.png)
 
 
+#### Pug
+
+    qwtf-discord-bot pug
+
+This responds to discord messages:
+  - `!join`
+  - `!leave`
+
+
 #### Watcher
 
     qwtf-discord-bot watcher
@@ -97,6 +106,12 @@ they haven't been connected for more than ten minutes.
 Build:
 
     gem build qwtf_discrd_bot.gemspec
+
+
+Install:
+
+ 
+    gem install --local qwtf_discord_bot-$(cat VERSION).gem
 
 
 Push:

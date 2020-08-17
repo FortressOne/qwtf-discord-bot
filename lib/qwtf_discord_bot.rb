@@ -1,5 +1,6 @@
 require 'qwtf_discord_bot/version'
 require 'qwtf_discord_bot/qwtf_discord_bot_server'
+require 'qwtf_discord_bot/qwtf_discord_bot_pug'
 require 'qwtf_discord_bot/qwtf_discord_bot_watcher'
 require 'qwtf_discord_bot/config'
 require 'discordrb'
