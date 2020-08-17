@@ -15,8 +15,8 @@ class QwtfDiscordBotPug
 
       # start_pug if pug_full?
 
-      message = "#{event.user} has joined."
-      event.channel.send_message("#{event.user} has joined.")
+      message = "#{event.user.username} has joined"
+      event.channel.send_message(message)
       puts message
     end
 
