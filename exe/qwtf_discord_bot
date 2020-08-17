@@ -16,7 +16,7 @@ class QwtfDiscordBotExe < Thor
 
   desc 'pug', 'Start, join, leave, record pick-up games.'
   def pug
-    pub_bot = QwtfDiscordBotPug.new
+    pug_bot = QwtfDiscordBotPug.new
     pug_bot.run
   end
 
