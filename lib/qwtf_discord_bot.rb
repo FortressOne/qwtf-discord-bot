@@ -13,7 +13,6 @@ require 'emoji'
 require 'roster'
 
 module QwtfDiscordBot # :nodoc:
-
   def self.config
     @config ||= Config.new(config_file)
   end

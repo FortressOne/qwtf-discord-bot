@@ -11,20 +11,31 @@ class QwtfDiscordBotPug
     )
 
     bot.command :join do |event, *args|
-      pug = ["pug", event.channel].join(":")
+      channel_id = event.channel.id
+      user = event.user
+      pug = ["pug", channel_id].join(":")
+      player = [pug, "player", user.id].join(":")
 
-      message = if redis.get(pug)
-        "#{event.user.username} joins the PUG."
-      else
-        redis.set(pug, Time.now)
-        redis.expire(pug, FOUR_HOURS)
-        "#{event.user.username} starts a PUG. `!join` to join."
-      end
-
-      player = [pug, event.user.id].join(":")
+      redis.set(pug, Time.now)
+      redis.expire(pug, FOUR_HOURS)
       redis.set(player, Time.now)
 
-      # start_pug if pug_full?
+      number_in_lobby = redis.keys("pug:#{channel_id}:player:*").count
+      username = user.username
+
+      message = case number_in_lobby
+                when 1 then "#{username} starts a PUG. `!join` to join."
+                when 8 then "Start the pug!"
+                else "#{username} joins the PUG. (#{number_in_lobby}/8)"
+                end
+      end
+
+      event.channel.send_message(message)
+      puts message
+    end
+
+    bot.command :end do |event, *args|
+      pug = ["pug", event.channel.id].join(":")
 
       event.channel.send_message(message)
       puts message
