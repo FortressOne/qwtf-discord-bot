@@ -2,6 +2,7 @@
 
 require 'qwtf_discord_bot'
 require 'thor'
+require 'pry'
 
 class QwtfDiscordBotExe < Thor
   def self.exit_on_failure?
