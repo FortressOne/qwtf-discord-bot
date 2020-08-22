@@ -17,18 +17,24 @@ class QwtfDiscordBotPug
       redis.expire(e.pug_key, FOUR_HOURS)
       redis.sadd(e.players_key, e.user_id)
 
-      message = case e.number_in_lobby
-                when e.maxplayers
+      message = if e.number_in_lobby == e.maxplayers
                   mentions = joined_users(e).map do |user|
                     user.mention
                   end
-
                   "Time to play! #{mentions.join(" ")}"
-                when 1
+                elsif (e.number_in_lobby == 1)
                   [
                     "#{e.username} creates a PUG",
                     e.player_slots,
-                    "`!join` to join"
+                    "@here"
+                  ].join(" | ")
+                elsif (e.maxplayers - e.number_in_lobby) <= 3
+                  slots_left = e.maxplayers - e.number_in_lobby
+                  [
+                    "#{e.username} joins the PUG",
+                    e.player_slots,
+                    "#{slots_left} more",
+                    "@here"
                   ].join(" | ")
                 else
                   [
@@ -49,14 +55,24 @@ class QwtfDiscordBotPug
 
     bot.command :maxplayers do |event, *args|
       e = EventWrapper.new(event)
-
       new_maxplayers = args[0]
 
-      if new_maxplayers
+      message = if new_maxplayers
         redis.set(e.maxplayers_key, new_maxplayers)
-        message = "Max number of players set to #{e.maxplayers} | #{e.player_slots}"
+        "Max number of players set to #{e.maxplayers} | #{e.player_slots}"
       else
-        message = "Current max number of players is #{e.maxplayers} | #{e.player_slots}"
+        "Current max number of players is #{e.maxplayers} | #{e.player_slots}"
+      end
+
+      if e.number_in_lobby >= e.maxplayers
+        mentions = joined_users(e).map do |user|
+          user.mention
+        end
+
+        message = [
+          message,
+          "Time to play! #{mentions.join(" ")}"
+        ].join("\n")
       end
 
       send_and_log_message(message, event)
