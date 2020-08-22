@@ -62,7 +62,7 @@ class QwtfDiscordBotPug
 
       number_in_lobby = redis.scard(players_key)
 
-      message = "Players: #{usernames.join(",")} | #{number_in_lobby}/#{maxplayers}"
+      message = "Players: #{usernames.join(", ")} | #{number_in_lobby}/#{maxplayers}"
 
       channel.send_message(message)
       puts message
