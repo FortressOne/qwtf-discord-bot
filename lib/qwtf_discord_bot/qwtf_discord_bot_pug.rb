@@ -2,7 +2,7 @@ require "redis"
 
 class QwtfDiscordBotPug
   FOUR_HOURS = 4 * 60 * 60
-  DEFAULT_NUMBER_OF_PLAYERS = 8
+  DEFAULT_MAXPLAYERS = 8
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -25,16 +25,16 @@ class QwtfDiscordBotPug
 
       number_in_lobby = redis.scard(players_key)
 
-      nop_key = [pug_key, "number_of_players"].join(":")
-      redis.setnx(nop_key, DEFAULT_NUMBER_OF_PLAYERS)
-      number_of_players = redis.get(nop_key)
+      maxplayers_key = [pug_key, "maxplayers"].join(":")
+      redis.setnx(maxplayers_key, DEFAULT_MAXPLAYERS)
+      maxplayers = redis.get(maxplayers_key)
 
       username = user.username
 
       message = case number_in_lobby
-                when 1 then "#{username} starts a PUG for #{number_of_players} players, `!join` to join"
-                when number_of_players then "Time to play!"
-                else "#{username} joins the PUG. #{number_in_lobby}/#{number_of_players} joined"
+                when 1 then "#{username} starts a PUG for #{maxplayers} players, `!join` to join"
+                when maxplayers then "Time to play!"
+                else "#{username} joins the PUG. #{number_in_lobby}/#{maxplayers} joined"
                 end
 
       channel.send_message(message)
@@ -45,17 +45,20 @@ class QwtfDiscordBotPug
       channel = event.channel
       channel_id = channel.id
       pug_key = ["pug", channel_id].join(":")
-      nop_key = [pug_key, "number_of_players"].join(":")
+      maxplayers_key = [pug_key, "maxplayers"].join(":")
+      redis.setnx(maxplayers_key, DEFAULT_MAXPLAYERS)
 
-      number_of_players = args[0]
+      players_key = [pug_key, "players"].join(":")
+      number_in_lobby = redis.scard(players_key)
 
-      if number_of_players
-        redis.set(nop_key, number_of_players)
-        message = "Max number of players set to #{number_of_players}"
+      maxplayers = args[0]
+
+      if maxplayers
+        redis.set(maxplayers_key, maxplayers)
+        message = "Max number of players set to #{maxplayers}, #{number_in_lobby}/#{maxplayers} joined"
       else
-        number_of_players = redis.get(nop_key)
-        message = "Current max number of players is #{number_of_players}"
-      end
+        maxplayers = redis.get(maxplayers_key)
+        message = "Current max number of players is #{maxplayers}, #{number_in_lobby}/#{maxplayers} joined"      end
 
       channel.send_message(message)
       puts message
@@ -75,10 +78,10 @@ class QwtfDiscordBotPug
       redis.srem(players_key, user_id)
 
       number_in_lobby = redis.scard(players_key)
-      nop_key = [pug_key, "number_of_players"].join(":")
-      number_of_players = redis.get(nop_key)
+      maxplayers_key = [pug_key, "maxplayers"].join(":")
+      maxplayers = redis.get(maxplayers_key)
 
-      message = "#{user.username} leaves the PUG, #{number_in_lobby}/#{number_of_players} remain"
+      message = "#{user.username} leaves the PUG, #{number_in_lobby}/#{maxplayers} remain"
       channel.send_message(message)
       puts message
     end
@@ -95,19 +98,6 @@ class QwtfDiscordBotPug
       channel.send_message(message)
       puts message
     end
-
-    # bot.command :status do |event, *args|
-    #   channel = event.channel
-    #   pug = ["pug", channel.id].join(":")
-
-    #   number_in_lobby = redis.keys("pug:#{channel_id}:player:*").count
-    #   nop_key = [pug, "number_of_players"].join(":")
-    #   number_of_players = redis.get(nop_key) || 8
-
-    #   message = "."
-    #   channel.send_message(message)
-    #   puts message
-    # end
 
     bot.run
   end
