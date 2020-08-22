@@ -34,8 +34,35 @@ class QwtfDiscordBotPug
       message = case number_in_lobby
                 when 1 then "#{username} starts a PUG for #{maxplayers} players, `!join` to join"
                 when maxplayers then "Time to play!"
-                else "#{username} joins the PUG. #{number_in_lobby}/#{maxplayers} joined"
+                else "#{username} joins the PUG | #{number_in_lobby}/#{maxplayers}"
                 end
+
+      channel.send_message(message)
+      puts message
+    end
+
+    bot.command :status do |event, *args|
+      channel = event.channel
+      channel_id = channel.id
+      pug_key = ["pug", channel_id].join(":")
+      players_key = [pug_key, "players"].join(":")
+
+      number_in_lobby = redis.scard(players_key)
+      maxplayers_key = [pug_key, "maxplayers"].join(":")
+      redis.setnx(maxplayers_key, DEFAULT_MAXPLAYERS)
+      maxplayers = redis.get(maxplayers_key)
+
+      users = redis.smembers(players_key).map do |user_id|
+        channel.users.find { |user| user.id.to_s == user_id }
+      end
+
+      usernames = users.map do |user|
+        user.username
+      end
+
+      number_in_lobby = redis.scard(players_key)
+
+      message = "Players: #{usernames.join(",")} | #{number_in_lobby}/#{maxplayers}"
 
       channel.send_message(message)
       puts message
@@ -55,10 +82,11 @@ class QwtfDiscordBotPug
 
       if maxplayers
         redis.set(maxplayers_key, maxplayers)
-        message = "Max number of players set to #{maxplayers}, #{number_in_lobby}/#{maxplayers} joined"
+        message = "Max number of players set to #{maxplayers} | #{number_in_lobby}/#{maxplayers}"
       else
         maxplayers = redis.get(maxplayers_key)
-        message = "Current max number of players is #{maxplayers}, #{number_in_lobby}/#{maxplayers} joined"      end
+        message = "Current max number of players is #{maxplayers} | #{number_in_lobby}/#{maxplayers}"
+      end
 
       channel.send_message(message)
       puts message
@@ -81,7 +109,7 @@ class QwtfDiscordBotPug
       maxplayers_key = [pug_key, "maxplayers"].join(":")
       maxplayers = redis.get(maxplayers_key)
 
-      message = "#{user.username} leaves the PUG, #{number_in_lobby}/#{maxplayers} remain"
+      message = "#{user.username} leaves the PUG | #{number_in_lobby}/#{maxplayers}"
       channel.send_message(message)
       puts message
     end
