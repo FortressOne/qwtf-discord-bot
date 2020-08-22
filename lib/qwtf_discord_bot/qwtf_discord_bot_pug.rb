@@ -32,9 +32,9 @@ class QwtfDiscordBotPug
       username = user.username
 
       message = case number_in_lobby
-                when 1 then "#{username} starts a PUG for #{number_of_players} players. `!join` to join."
+                when 1 then "#{username} starts a PUG for #{number_of_players} players, `!join` to join"
                 when number_of_players then "Time to play!"
-                else "#{username} joins the PUG. #{number_in_lobby}/#{number_of_players} joined."
+                else "#{username} joins the PUG. #{number_in_lobby}/#{number_of_players} joined"
                 end
 
       channel.send_message(message)
@@ -78,18 +78,20 @@ class QwtfDiscordBotPug
       nop_key = [pug_key, "number_of_players"].join(":")
       number_of_players = redis.get(nop_key)
 
-      message = "#{user.username} leaves the PUG. #{number_in_lobby}/#{number_of_players} remain."
+      message = "#{user.username} leaves the PUG, #{number_in_lobby}/#{number_of_players} remain"
       channel.send_message(message)
       puts message
     end
 
     bot.command :end do |event, *args|
       channel = event.channel
-      pug = ["pug", channel.id].join(":")
+      pug_key = ["pug", channel.id].join(":")
+      players_key = [pug_key, "players"].join(":")
 
-      redis.del(pug)
+      redis.del(pug_key)
+      redis.del(players_key)
 
-      message = "PUG ended."
+      message = "PUG ended"
       channel.send_message(message)
       puts message
     end
