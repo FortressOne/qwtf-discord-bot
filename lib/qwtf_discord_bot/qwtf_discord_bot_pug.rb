@@ -12,31 +12,27 @@ class QwtfDiscordBotPug
     )
 
     bot.command :join do |event, *args|
-      pug = pug_key(event)
+      e = EventWrapper.new(event)
 
-      redis.setnx(pug, Time.now)
-      redis.expire(pug, FOUR_HOURS)
+      redis.setnx(e.pug_key, Time.now)
+      redis.expire(e.pug_key, FOUR_HOURS)
 
-      user = event.user
-      redis.sadd(players_key(event), user.id)
+      redis.sadd(e.players_key, e.user_id)
+      redis.setnx(e.maxplayers_key, DEFAULT_MAXPLAYERS)
 
-      redis.setnx(maxplayers_key(event), DEFAULT_MAXPLAYERS)
-
-      username = user.username
-
-      message = case number_in_lobby(event)
+      message = case e.number_in_lobby
                 when 1
                   [
-                    "#{username} creates a PUG",
-                    "#{number_in_lobby(event)}/#{maxplayers(event)}",
+                    "#{e.username} creates a PUG",
+                    e.player_slots,
                     "`!join` to join"
                   ].join(" | ")
-                when maxplayers(event)
+                when e.maxplayers
                   "Time to play!"
                 else
                   [
-                    "#{username} joins the PUG",
-                    "#{number_in_lobby(event)}/#{maxplayers(event)}"
+                    "#{e.username} joins the PUG",
+                    e.player_slots,
                   ].join(" | ")
                 end
 
@@ -44,56 +40,56 @@ class QwtfDiscordBotPug
     end
 
     bot.command :status do |event, *args|
-      pug = pug_key(event)
+      e = EventWrapper.new(event)
 
-      redis.setnx(maxplayers_key(event), DEFAULT_MAXPLAYERS)
+      redis.setnx(e.maxplayers_key, DEFAULT_MAXPLAYERS)
 
-      users = redis.smembers(players_key(event)).map do |user_id|
-        event.channel.users.find { |user| user.id.to_s == user_id }
+      users = redis.smembers(e.players_key).map do |user_id|
+        e.users.find do |user|
+          user.id.to_s == user_id
+        end
       end
 
       usernames = users.map do |user|
         user.username
       end
 
-      message = "Players: #{usernames.join(", ")} | #{number_in_lobby(event)}/#{maxplayers(event)}"
+      message = "Players: #{usernames.join(", ")} | #{e.player_slots}"
 
       send_and_log_message(message, event)
     end
 
     bot.command :maxplayers do |event, *args|
-      pug = pug_key(event)
-      redis.setnx(maxplayers_key(event), DEFAULT_MAXPLAYERS)
+      e = EventWrapper.new(event)
+
+      redis.setnx(e.maxplayers_key, DEFAULT_MAXPLAYERS)
 
       new_maxplayers = args[0]
 
       if new_maxplayers
-        redis.set(maxplayers_key(event), new_maxplayers)
-        message = "Max number of players set to #{maxplayers(event)} | #{number_in_lobby(event)}/#{maxplayers(event)}"
+        redis.set(e.maxplayers_key, new_maxplayers)
+        message = "Max number of players set to #{e.maxplayers} | #{e.player_slots}"
       else
-        message = "Current max number of players is #{maxplayers(event)} | #{number_in_lobby(event)}/#{maxplayers(event)}"
+        message = "Current max number of players is #{e.maxplayers} | #{e.player_slots}"
       end
 
       send_and_log_message(message, event)
     end
 
     bot.command :leave do |event, *args|
-      pug = pug_key(event)
+      e = EventWrapper.new(event)
 
-      user = event.user
-      user_id = user.id
+      redis.srem(e.players_key, e.user_id)
 
-      redis.srem(players_key(event), user_id)
-
-      message = "#{user.username} leaves the PUG | #{number_in_lobby(event)}/#{maxplayers(event)}"
+      message = "#{e.username} leaves the PUG | #{e.player_slots}"
       send_and_log_message(message, event)
     end
 
     bot.command :end do |event, *args|
-      pug = pug_key(event)
+      e = EventWrapper.new(event)
 
-      redis.del(pug)
-      redis.del(players_key(event))
+      redis.del(e.pug_key)
+      redis.del(e.players_key)
 
       message = "PUG ended"
       send_and_log_message(message, event)
@@ -104,32 +100,67 @@ class QwtfDiscordBotPug
 
   private
 
-  def maxplayers_key(event)
-    [pug_key(event), "maxplayers"].join(":")
-  end
-
-  def maxplayers(event)
-    redis.get(maxplayers_key(event))
-  end
-
-  def number_in_lobby(event)
-    redis.scard(players_key(event))
-  end
-
-  def pug_key(event)
-    ["pug", event.channel.id].join(":")
-  end
-
-  def players_key(event)
-    [pug_key(event), "players"].join(":")
-  end
-
   def send_and_log_message(message, event)
     event.channel.send_message(message)
     puts message
   end
 
   def redis
-    @redis ||= Redis.new
+    RedisClient.redis
+  end
+end
+
+class EventWrapper
+  def initialize(event)
+    @event = event
+    @redis = redis
+  end
+
+  def user_id
+    @event.user.id
+  end
+  
+  def username
+    @event.user.username
+  end
+
+  def maxplayers_key
+    [pug_key, "maxplayers"].join(":")
+  end
+
+  def maxplayers
+    redis.get(maxplayers_key)
+  end
+
+  def number_in_lobby
+    redis.scard(players_key)
+  end
+
+  def pug_key
+    ["pug", @event.channel.id].join(":")
+  end
+
+  def players_key
+    [pug_key, "players"].join(":")
+  end
+
+  def player_slots
+    "#{number_in_lobby}/#{maxplayers}"
+  end
+
+  def users
+    @event.channel.users
+  end
+
+  private
+
+  def redis
+    RedisClient.redis
+  end
+end
+
+class RedisClient
+  def self.redis
+    @@redis ||= Redis.new
   end
 end
