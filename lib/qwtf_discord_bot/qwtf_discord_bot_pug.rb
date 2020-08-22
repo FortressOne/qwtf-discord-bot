@@ -2,6 +2,7 @@ require "redis"
 
 class QwtfDiscordBotPug
   FOUR_HOURS = 4 * 60 * 60
+  DEFAULT_NUMBER_OF_PLAYERS = 8
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -13,38 +14,61 @@ class QwtfDiscordBotPug
     bot.command :join do |event, *args|
       channel = event.channel
       channel_id = channel.id
+      pug_key = ["pug", channel_id].join(":")
+
+      redis.setnx(pug_key, Time.now)
+      redis.expire(pug_key, FOUR_HOURS)
+
+      players_key = [pug_key, "players"].join(":")
       user = event.user
-      pug = ["pug", channel_id].join(":")
-      player = [pug, "player", user.id].join(":")
+      redis.sadd(players_key, user.id)
 
-      redis.set(pug, Time.now)
-      redis.expire(pug, FOUR_HOURS)
-      redis.set(player, Time.now)
+      number_in_lobby = redis.scard(players_key)
 
-      number_in_lobby = redis.keys("pug:#{channel_id}:player:*").count
+      nop_key = [pug_key, "number_of_players"].join(":")
+      redis.setnx(nop_key, DEFAULT_NUMBER_OF_PLAYERS)
+      number_of_players = redis.get(nop_key)
+
       username = user.username
 
       message = case number_in_lobby
-                when 1 then "#{username} starts a PUG. (#{number_in_lobby}/8) `!join` to join."
-                when 8 then "Time to play!"
-                else "#{username} joins the PUG. (#{number_in_lobby}/8)"
+                when 1 then "#{username} starts a PUG for #{number_of_players} players. `!join` to join."
+                when number_of_players then "Time to play!"
+                else "#{username} joins the PUG. #{number_in_lobby}/#{number_of_players} joined."
                 end
 
       channel.send_message(message)
       puts message
     end
 
+    bot.command :players do |event, *args|
+      channel = event.channel
+      channel_id = channel.id
+      number_of_players = args[0]
+      nop_key = ["pug", channel_id, "number_of_players"].join(":")
+      redis.set(nop_key, number_of_players)
+      message = "Number of players set to #{number_of_players}"
+      puts message
+    end
+
     bot.command :leave do |event, *args|
       channel = event.channel
       channel_id = channel.id
+
+      pug_key = ["pug", channel_id].join(":")
+
       user = event.user
-      pug = ["pug", channel_id].join(":")
-      player = [pug, "player", user.id].join(":")
+      user_id = user.id
 
-      redis.del(player)
+      players_key = [pug_key, "players"].join(":")
 
-      number_in_lobby = redis.keys("pug:#{channel_id}:player:*").count
-      message = "#{user.username} leaves the PUG."
+      redis.srem(players_key, user_id)
+
+      number_in_lobby = redis.scard(players_key)
+      nop_key = [pug_key, "number_of_players"].join(":")
+      number_of_players = redis.get(nop_key)
+
+      message = "#{user.username} leaves the PUG. #{number_in_lobby}/#{number_of_players} remain."
       channel.send_message(message)
       puts message
     end
@@ -59,6 +83,19 @@ class QwtfDiscordBotPug
       channel.send_message(message)
       puts message
     end
+
+    # bot.command :status do |event, *args|
+    #   channel = event.channel
+    #   pug = ["pug", channel.id].join(":")
+
+    #   number_in_lobby = redis.keys("pug:#{channel_id}:player:*").count
+    #   nop_key = [pug, "number_of_players"].join(":")
+    #   number_of_players = redis.get(nop_key) || 8
+
+    #   message = "."
+    #   channel.send_message(message)
+    #   puts message
+    # end
 
     bot.run
   end
