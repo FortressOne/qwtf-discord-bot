@@ -41,13 +41,23 @@ class QwtfDiscordBotPug
       puts message
     end
 
-    bot.command :players do |event, *args|
+    bot.command :maxplayers do |event, *args|
       channel = event.channel
       channel_id = channel.id
+      pug_key = ["pug", channel_id].join(":")
+      nop_key = [pug_key, "number_of_players"].join(":")
+
       number_of_players = args[0]
-      nop_key = ["pug", channel_id, "number_of_players"].join(":")
-      redis.set(nop_key, number_of_players)
-      message = "Number of players set to #{number_of_players}"
+
+      if number_of_players
+        redis.set(nop_key, number_of_players)
+        message = "Max number of players set to #{number_of_players}"
+      else
+        number_of_players = redis.get(nop_key)
+        message = "Current max number of players is #{number_of_players}"
+      end
+
+      channel.send_message(message)
       puts message
     end
 
