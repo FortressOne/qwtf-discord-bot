@@ -10,6 +10,16 @@ class QwtfDiscordBotPug
       prefix: '!'
     )
 
+    bot.command :role do |event, *args|
+      e = EventWrapper.new(event)
+      role = args[0]
+
+      redis.set(e.role_key, role)
+
+      message = "Notification role set to #{role}"
+      send_and_log_message(message, event)
+    end
+
     bot.command :join do |event, *args|
       e = EventWrapper.new(event)
 
@@ -26,13 +36,14 @@ class QwtfDiscordBotPug
                   [
                     "#{e.username} creates a PUG",
                     e.player_slots,
-                    "@here"
+                    e.role,
                   ].join(" | ")
                 elsif e.slots_left <= 3
                   [
                     "#{e.username} joins the PUG",
                     e.player_slots,
-                    "#{e.slots_left} more @here"
+                    "#{e.slots_left} more",
+                    e.role,
                   ].join(" | ")
                 else
                   [
@@ -152,7 +163,7 @@ class EventWrapper
   end
 
   def pug_key
-    ["pug", @event.channel.id].join(":")
+    ["channel", @event.channel.id, "pug"].join(":")
   end
 
   def players_key
@@ -165,6 +176,14 @@ class EventWrapper
 
   def users
     @event.server.users
+  end
+
+  def role_key
+    [pug_key, "role"].join(":")
+  end
+
+  def role
+    redis.get(role_key) || "@here"
   end
 
   private
