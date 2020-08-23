@@ -10,16 +10,6 @@ class QwtfDiscordBotPug
       prefix: '!'
     )
 
-    bot.command :role do |event, *args|
-      e = EventWrapper.new(event)
-      role = args[0]
-
-      redis.set(e.role_key, role)
-
-      message = "Notification role set to #{role}"
-      send_and_log_message(message, event)
-    end
-
     bot.command :join do |event, *args|
       e = EventWrapper.new(event)
 
@@ -109,6 +99,16 @@ class QwtfDiscordBotPug
       redis.del(e.players_key)
 
       message = "PUG ended"
+      send_and_log_message(message, event)
+    end
+
+    bot.command :role do |event, *args|
+      e = EventWrapper.new(event)
+      role = args[0]
+
+      redis.set(e.role_key, role)
+
+      message = "Notification role set to #{role}"
       send_and_log_message(message, event)
     end
 
