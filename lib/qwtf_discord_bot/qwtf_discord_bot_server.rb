@@ -3,6 +3,7 @@ class QwtfDiscordBotServer
     bot = Discordrb::Commands::CommandBot.new(
       token: QwtfDiscordBot.config.token,
       client_id: QwtfDiscordBot.config.client_id,
+      help_command: false,
       prefix: '!'
     )
 
