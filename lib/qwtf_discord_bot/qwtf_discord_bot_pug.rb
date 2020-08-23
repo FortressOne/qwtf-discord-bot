@@ -14,7 +14,6 @@ class QwtfDiscordBotPug
       e = EventWrapper.new(event)
 
       redis.setnx(e.pug_key, Time.now)
-      redis.expire(e.pug_key, FOUR_HOURS)
       redis.sadd(e.players_key, e.user_id)
 
       message = if e.joined_player_count == e.maxplayers
