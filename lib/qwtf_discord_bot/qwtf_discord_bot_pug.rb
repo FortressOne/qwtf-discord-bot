@@ -28,12 +28,11 @@ class QwtfDiscordBotPug
                     e.player_slots,
                     "@here"
                   ].join(" | ")
-                elsif (e.maxplayers - e.number_in_lobby) <= 3
-                  slots_left = e.maxplayers - e.number_in_lobby
+                elsif e.slots_left <= 3
                   [
                     "#{e.username} joins the PUG",
                     e.player_slots,
-                    "#{slots_left} more",
+                    "#{e.slots_left} more",
                     "@here"
                   ].join(" | ")
                 else
@@ -149,6 +148,10 @@ class EventWrapper
     redis.scard(players_key).to_i
   end
 
+  def slots_left
+    maxplayers - number_in_lobby
+  end
+
   def pug_key
     ["pug", @event.channel.id].join(":")
   end
@@ -162,7 +165,7 @@ class EventWrapper
   end
 
   def users
-    @event.channel.users
+    @event.server.users
   end
 
   private
