@@ -1,5 +1,3 @@
-require "redis"
-
 class QwtfDiscordBotWatcher
   include QwtfDiscordBot
 
@@ -65,6 +63,6 @@ class QwtfDiscordBotWatcher
   private
 
   def redis
-    @redis ||= Redis.new
+    Redis.current
   end
 end
