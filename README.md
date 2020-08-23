@@ -91,6 +91,7 @@ This responds to discord messages:
   - `!status`
   - `!maxplayers <no_of_players>`
   - `!leave`
+  - `!role`
 
 
 #### Watcher

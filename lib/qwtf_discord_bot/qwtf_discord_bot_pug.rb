@@ -51,10 +51,14 @@ class QwtfDiscordBotPug
       e = EventWrapper.new(event)
       usernames = joined_users(e).map(&:username)
 
-      message = [
-        "#{usernames.join(", ")} joined",
-        e.player_slots
-      ].join(" | ")
+      message = if e.pug_active?
+                  [
+                    "#{usernames.join(", ")} joined",
+                    e.player_slots
+                  ].join(" | ")
+                else
+                  "No PUG has been started. `!join` to create"
+                end
 
       send_and_log_message(message, event)
     end

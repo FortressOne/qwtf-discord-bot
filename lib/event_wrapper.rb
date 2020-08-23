@@ -55,4 +55,8 @@ class EventWrapper
   def role
     redis.get(role_key) || "@here"
   end
+
+  def pug_active?
+    redis.get(pug_key)
+  end
 end
