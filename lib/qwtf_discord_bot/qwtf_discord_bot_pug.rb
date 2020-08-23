@@ -27,12 +27,12 @@ class QwtfDiscordBotPug
       redis.expire(e.pug_key, FOUR_HOURS)
       redis.sadd(e.players_key, e.user_id)
 
-      message = if e.number_in_lobby == e.maxplayers
+      message = if e.joined_player_count == e.maxplayers
                   mentions = joined_users(e).map do |user|
                     user.mention
                   end
                   "Time to play! #{mentions.join(" ")}"
-                elsif (e.number_in_lobby == 1)
+                elsif (e.joined_player_count == 1)
                   [
                     "#{e.username} creates a PUG",
                     e.player_slots,
@@ -73,18 +73,16 @@ class QwtfDiscordBotPug
         "Current max number of players is #{e.maxplayers} | #{e.player_slots}"
       end
 
-      if e.number_in_lobby >= e.maxplayers
+      send_and_log_message(message, event)
+
+      if e.joined_player_count >= e.maxplayers
         mentions = joined_users(e).map do |user|
           user.mention
         end
 
-        message = [
-          message,
-          "Time to play! #{mentions.join(" ")}"
-        ].join("\n")
+        message = "Time to play! #{mentions.join(" ")}"
+        send_and_log_message(message, event)
       end
-
-      send_and_log_message(message, event)
     end
 
     bot.command :leave do |event, *args|
@@ -93,7 +91,15 @@ class QwtfDiscordBotPug
       redis.srem(e.players_key, e.user_id)
 
       message = "#{e.username} leaves the PUG | #{e.player_slots}"
+
       send_and_log_message(message, event)
+
+      if e.joined_player_count == 0
+        redis.del(e.pug_key)
+
+        message = "PUG ended"
+        send_and_log_message(message, event)
+      end
     end
 
     bot.command :end do |event, *args|
@@ -154,12 +160,12 @@ class EventWrapper
     redis.get(maxplayers_key).to_i
   end
 
-  def number_in_lobby
+  def joined_player_count
     redis.scard(players_key).to_i
   end
 
   def slots_left
-    maxplayers - number_in_lobby
+    maxplayers - joined_player_count
   end
 
   def pug_key
@@ -171,7 +177,7 @@ class EventWrapper
   end
 
   def player_slots
-    "#{number_in_lobby}/#{maxplayers}"
+    "#{joined_player_count}/#{maxplayers}"
   end
 
   def users

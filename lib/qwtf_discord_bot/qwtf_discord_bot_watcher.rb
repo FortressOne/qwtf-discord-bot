@@ -14,7 +14,7 @@ class QwtfDiscordBotWatcher
         next if request.is_empty?
 
         request.player_names.each do |name|
-          redis_key = "#{address}:#{name}"
+          redis_key = [watcher, address, name].join(":")
 
           unless seen_recently?(redis_key)
             endpoint.channel_ids.each do |channel_id|
@@ -51,7 +51,7 @@ class QwtfDiscordBotWatcher
   end
 
   def report_joined(name:, channel_id:, server_summary:)
-    message = "#{name} has joined #{server_summary}"
+    message = "#{name} joins #{server_summary}"
 
     Discordrb::API::Channel.create_message(
       "Bot #{QwtfDiscordBot.config.token}",
