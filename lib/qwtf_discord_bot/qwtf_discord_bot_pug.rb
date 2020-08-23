@@ -125,7 +125,7 @@ class QwtfDiscordBotPug
   end
 
   def redis
-    RedisClient.redis
+    Redis.current
   end
 end
 
@@ -189,12 +189,6 @@ class EventWrapper
   private
 
   def redis
-    RedisClient.redis
-  end
-end
-
-class RedisClient
-  def self.redis
-    @@redis ||= Redis.new
+    Redis.current
   end
 end
