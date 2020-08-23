@@ -66,7 +66,7 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
 
 ### Commands
 
-There are two modules:
+There are three modules:
 
 
 #### Server
@@ -87,6 +87,9 @@ This responds to discord messages:
 
 This responds to discord messages:
   - `!join`
+  - `!leave`
+  - `!status`
+  - `!maxplayers <no_of_players>`
   - `!leave`
 
 
@@ -144,6 +147,14 @@ Only discord-bot watcher:
       discord-bot watcher
 
 
+Only discord-bot pug:
+
+    docker run -it \
+      --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+      --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+      discord-bot pug
+
+
 Build:
 
     docker build --tag=discord-bot .
@@ -153,6 +164,19 @@ Push:
 
     docker tag discord-bot fortressone/discord-bot:latest
     docker push fortressone/discord-bot:latest
+
+
+Create AWS instance:
+
+```
+docker-machine create \
+  --driver amazonec2 \
+  --amazonec2-access-key <AWS_ACCESS_KEY> \
+  --amazonec2-secret-key <AWS_SECRET_KEY> \
+  --amazonec2-root-size 30 \
+  --amazonec2-region ap-southeast-2 \
+  discord-bot
+```
 
 
 ## License

@@ -33,7 +33,7 @@ class EventWrapper
   end
 
   def pug_key
-    ["channel", @event.channel.id, "pug"].join(":")
+    ["pug", "channel", @event.channel.id].join(":")
   end
 
   def players_key

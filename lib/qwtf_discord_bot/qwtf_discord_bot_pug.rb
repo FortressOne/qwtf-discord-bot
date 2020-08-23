@@ -49,7 +49,12 @@ class QwtfDiscordBotPug
     bot.command :status do |event, *args|
       e = EventWrapper.new(event)
       usernames = joined_users(e).map(&:username)
-      message = "Players: #{usernames.join(", ")} | #{e.player_slots}"
+
+      message = [
+        "#{usernames.join(", ")} joined",
+        e.player_slots
+      ].join(" | ")
+
       send_and_log_message(message, event)
     end
 
