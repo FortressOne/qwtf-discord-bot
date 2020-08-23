@@ -90,8 +90,8 @@ This responds to discord messages:
   - `!leave`
   - `!status`
   - `!maxplayers <no_of_players>`
-  - `!leave`
   - `!role`
+  - `!end`
 
 
 #### Watcher
