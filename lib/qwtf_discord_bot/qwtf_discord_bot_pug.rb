@@ -32,8 +32,7 @@ class QwtfDiscordBotPug
                   [
                     "#{e.username} joins the PUG",
                     e.player_slots,
-                    "#{e.slots_left} more",
-                    "@here"
+                    "#{e.slots_left} more @here"
                   ].join(" | ")
                 else
                   [
