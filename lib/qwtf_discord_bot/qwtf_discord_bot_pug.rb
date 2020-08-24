@@ -17,44 +17,49 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     bot.command :join do |event, *args|
-      set_pug(event, args) do |e, pug|
-        pug.join(e.user_id)
+      set_pug(event) do |e, pug|
+        if pug.joined_players.include?(e.user_id)
+          message = "You've already joined"
+          send_and_log_message(message, e.channel)
+        else
+          pug.join(e.user_id)
 
-        message = if pug.joined_player_count == 1
-                    [
-                      "#{e.username} creates a PUG",
-                      pug.player_slots,
-                      pug.notify_roles
-                    ].join(' | ')
-                  elsif pug.slots_left.between?(1,3)
-                    [
-                      "#{e.username} joins the PUG",
-                      pug.player_slots,
-                      "#{pug.slots_left} more",
-                      pug.notify_roles
-                    ].join(' | ')
-                  else
-                    [
-                      "#{e.username} joins the PUG",
-                      pug.player_slots
-                    ].join(' | ')
-                  end
-
-        send_and_log_message(message, e.channel)
-
-        if pug.full?
-          message = start_pug(
-            pug.player_slots,
-            e.mentions_for(pug.joined_players)
-          )
+          message = if pug.joined_player_count == 1
+                      [
+                        "#{e.username} creates a PUG",
+                        pug.player_slots,
+                        pug.notify_roles
+                      ].join(' | ')
+                    elsif pug.slots_left.between?(1,3)
+                      [
+                        "#{e.username} joins the PUG",
+                        pug.player_slots,
+                        "#{pug.slots_left} more",
+                        pug.notify_roles
+                      ].join(' | ')
+                    else
+                      [
+                        "#{e.username} joins the PUG",
+                        pug.player_slots
+                      ].join(' | ')
+                    end
 
           send_and_log_message(message, e.channel)
+
+          if pug.full?
+            message = start_pug(
+              pug.player_slots,
+              e.mentions_for(pug.joined_players)
+            )
+
+            send_and_log_message(message, e.channel)
+          end
         end
       end
     end
 
     bot.command :status do |event, *args|
-      set_pug(event, args) do |e, pug|
+      set_pug(event) do |e, pug|
         message = if pug.active?
                     [
                       "#{e.usernames_for(pug.joined_players).join(', ')} joined",
@@ -69,7 +74,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     bot.command :maxplayers do |event, *args|
-      set_pug(event, args) do |e, pug|
+      set_pug(event) do |e, pug|
         new_maxplayers = args[0]
 
         message = if new_maxplayers
@@ -93,7 +98,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     bot.command :leave do |event, *args|
-      set_pug(event, args) do |e, pug|
+      set_pug(event) do |e, pug|
         if !pug.active?
           message = "There's no active PUG to leave"
           send_and_log_message(message, e.channel)
@@ -114,7 +119,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     bot.command :end do |event, *args|
-      set_pug(event, args) do |e, pug|
+      set_pug(event) do |e, pug|
         message = if !pug.active?
                     "There's no active PUG to end"
                   else
@@ -126,7 +131,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     bot.command :notify do |event, *args|
-      set_pug(event, args) do |e, pug|
+      set_pug(event) do |e, pug|
         roles = args.join(' ')
         pug.notify_roles = roles
 
@@ -145,7 +150,7 @@ class QwtfDiscordBotPug # :nodoc:
 
   private
 
-  def set_pug(event, *args)
+  def set_pug(event)
     e = EventDecorator.new(event)
     pug = Pug.for(e.channel_id)
     yield(e, pug)
