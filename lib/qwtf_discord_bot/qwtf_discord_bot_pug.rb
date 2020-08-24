@@ -1,4 +1,5 @@
 require 'pug'
+require 'event_decorator'
 
 class QwtfDiscordBotPug
   include QwtfDiscordBot
@@ -14,55 +15,59 @@ class QwtfDiscordBotPug
     )
 
     bot.command :join do |event, *_args|
-      pug = Pug.for(event.channel.id)
-      user = event.user
-      username = user.username
-      user_id = user.id
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
 
-      pug.join(user_id)
+      pug.join(e.user_id)
 
-      return start_pug(event, pug) if pug.full?
-
-      message = if (pug.joined_player_count == 1)
+      message = if pug.full?
                   [
-                    "#{username} creates a PUG",
+                    "Time to play!",
+                    pug.player_slots,
+                    e.mentions_for(pug.joined_players).join(" "),
+                  ].join(" | ")
+                elsif pug.joined_player_count == 1
+                  [
+                    "#{e.username} creates a PUG",
                     pug.player_slots,
                     pug.role,
                   ].join(" | ")
                 elsif pug.slots_left <= 3
                   [
-                    "#{username} joins the PUG",
+                    "#{e.username} joins the PUG",
                     pug.player_slots,
                     "#{pug.slots_left} more",
                     pug.role,
                   ].join(" | ")
                 else
                   [
-                    "#{username} joins the PUG",
+                    "#{e.username} joins the PUG",
                     pug.player_slots,
                   ].join(" | ")
                 end
 
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
     end
 
     bot.command :status do |event, *args|
-      pug = Pug.for(event.channel.id)
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
 
       message = if pug.active?
                   [
-                    "#{usernames(event, pug.joined_players).join(" ")} joined",
+                    "#{e.usernames_for(pug.joined_players).join(" ")} joined",
                     pug.player_slots
                   ].join(" | ")
                 else
                   "No PUG has been started. `!join` to create"
                 end
 
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
     end
 
     bot.command :maxplayers do |event, *args|
-      pug = Pug.for(event.channel.id)
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
       new_maxplayers = args[0]
 
       message = if new_maxplayers
@@ -72,46 +77,56 @@ class QwtfDiscordBotPug
         "Current max number of players is #{pug.maxplayers} | #{pug.player_slots}"
       end
 
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
 
-      start_pug(event, pug) if pug.full?
+      if pug.full?
+        message = [
+          "Time to play!",
+          pug.player_slots,
+          e.mentions_for(pug.joined_players).join(" "),
+        ].join(" | ")
+
+        send_and_log_message(message, e.channel)
+      end
     end
 
     bot.command :leave do |event, *_args|
-      pug = Pug.for(event.channel.id)
-      user = event.user
-      username = user.username
-      user_id = user.id
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
 
-      pug.leave(user_id)
+      pug.leave(e.user_id)
 
-      message = "#{username} leaves the PUG | #{pug.player_slots} remain"
+      message = "#{e.username} leaves the PUG | #{pug.player_slots} remain"
 
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
 
       if pug.empty?
         pug.end_pug
 
         message = "PUG ended"
-        send_and_log_message(message, event)
+        send_and_log_message(message, e.channel)
       end
     end
 
     bot.command :end do |event, *_args|
-      pug = Pug.for(event.channel.id)
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
+
       pug.end_pug
 
       message = "PUG ended"
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
     end
 
     bot.command :role do |event, *args|
-      pug = Pug.for(event.channel.id)
+      e = EventDecorator.new(event)
+      pug = Pug.for(e.channel_id)
       role = args.join(" ")
+
       pug.role = role
 
       message = "Notification role set to #{role}"
-      send_and_log_message(message, event)
+      send_and_log_message(message, e.channel)
     end
 
     bot.run
@@ -119,34 +134,8 @@ class QwtfDiscordBotPug
 
   private
 
-  def start_pug(event, pug)
-    message = [
-      "Time to play!",
-      pug.player_slots,
-      mentions(event, pug.joined_players).join(" "),
-    ].join(" | ")
-
-    send_and_log_message(message, event)
-  end
-
-  def usernames(event, player_ids)
-    player_ids.map do |player_id|
-      find_user(event, player_id).username
-    end
-  end
-
-  def mentions(event, player_ids)
-    player_ids.map do |player_id|
-      find_user(event, player_id).mention
-    end
-  end
-
-  def find_user(event, user_id)
-    event.server.users.find { |user| user.id == user_id }
-  end
-
-  def send_and_log_message(message, event)
-    event.channel.send_message(message)
+  def send_and_log_message(message, channel)
+    channel.send_message(message)
     puts message
   end
 end

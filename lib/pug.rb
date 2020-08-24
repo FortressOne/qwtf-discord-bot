@@ -35,7 +35,7 @@ class Pug
   end
 
   def role=(role)
-    redis.set(role_key, str)
+    redis.set(role_key, role)
   end
 
   def role
