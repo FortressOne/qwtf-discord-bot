@@ -54,7 +54,7 @@ class QwtfDiscordBotPug
 
       message = if pug.active?
                   [
-                    "#{e.usernames_for(pug.joined_players).join(' ')} joined",
+                    "#{e.usernames_for(pug.joined_players).join(', ')} joined",
                     pug.player_slots
                   ].join(' | ')
                 else
