@@ -1,4 +1,4 @@
-require 'event_wrapper'
+require 'pug'
 
 class QwtfDiscordBotPug
   include QwtfDiscordBot
@@ -13,34 +13,33 @@ class QwtfDiscordBotPug
       prefix: '!'
     )
 
-    bot.command :join do |event, *args|
-      e = EventWrapper.new(event)
+    bot.command :join do |event, *_args|
+      pug = Pug.for(event.channel.id)
+      user = event.user
+      username = user.username
+      user_id = user.id
 
-      redis.setnx(e.pug_key, Time.now)
-      redis.sadd(e.players_key, e.user_id)
+      pug.join(user_id)
 
-      message = if e.joined_player_count == e.maxplayers
-                  mentions = joined_users(e).map do |user|
-                    user.mention
-                  end
-                  "Time to play! #{mentions.join(" ")}"
-                elsif (e.joined_player_count == 1)
+      return start_pug(event, pug) if pug.full?
+
+      message = if (pug.joined_player_count == 1)
                   [
-                    "#{e.username} creates a PUG",
-                    e.player_slots,
-                    e.role,
+                    "#{username} creates a PUG",
+                    pug.player_slots,
+                    pug.role,
                   ].join(" | ")
-                elsif e.slots_left <= 3
+                elsif pug.slots_left <= 3
                   [
-                    "#{e.username} joins the PUG",
-                    e.player_slots,
-                    "#{e.slots_left} more",
-                    e.role,
+                    "#{username} joins the PUG",
+                    pug.player_slots,
+                    "#{pug.slots_left} more",
+                    pug.role,
                   ].join(" | ")
                 else
                   [
-                    "#{e.username} joins the PUG",
-                    e.player_slots,
+                    "#{username} joins the PUG",
+                    pug.player_slots,
                   ].join(" | ")
                 end
 
@@ -48,13 +47,12 @@ class QwtfDiscordBotPug
     end
 
     bot.command :status do |event, *args|
-      e = EventWrapper.new(event)
-      usernames = joined_users(e).map(&:username)
+      pug = Pug.for(event.channel.id)
 
-      message = if e.pug_active?
+      message = if pug.active?
                   [
-                    "#{usernames.join(", ")} joined",
-                    e.player_slots
+                    "#{usernames(event, pug.joined_players).join(" ")} joined",
+                    pug.player_slots
                   ].join(" | ")
                 else
                   "No PUG has been started. `!join` to create"
@@ -64,60 +62,53 @@ class QwtfDiscordBotPug
     end
 
     bot.command :maxplayers do |event, *args|
-      e = EventWrapper.new(event)
+      pug = Pug.for(event.channel.id)
       new_maxplayers = args[0]
 
       message = if new_maxplayers
-        redis.set(e.maxplayers_key, new_maxplayers)
-        "Max number of players set to #{e.maxplayers} | #{e.player_slots}"
+        pug.maxplayers = new_maxplayers
+        "Max number of players set to #{pug.maxplayers} | #{pug.player_slots}"
       else
-        "Current max number of players is #{e.maxplayers} | #{e.player_slots}"
+        "Current max number of players is #{pug.maxplayers} | #{pug.player_slots}"
       end
 
       send_and_log_message(message, event)
 
-      if e.joined_player_count >= e.maxplayers
-        mentions = joined_users(e).map do |user|
-          user.mention
-        end
-
-        message = "Time to play! #{mentions.join(" ")}"
-        send_and_log_message(message, event)
-      end
+      start_pug(event, pug) if pug.full?
     end
 
-    bot.command :leave do |event, *args|
-      e = EventWrapper.new(event)
+    bot.command :leave do |event, *_args|
+      pug = Pug.for(event.channel.id)
+      user = event.user
+      username = user.username
+      user_id = user.id
 
-      redis.srem(e.players_key, e.user_id)
+      pug.leave(user_id)
 
-      message = "#{e.username} leaves the PUG | #{e.player_slots}"
+      message = "#{username} leaves the PUG | #{pug.player_slots} remain"
 
       send_and_log_message(message, event)
 
-      if e.joined_player_count == 0
-        redis.del(e.pug_key)
+      if pug.empty?
+        pug.end_pug
 
         message = "PUG ended"
         send_and_log_message(message, event)
       end
     end
 
-    bot.command :end do |event, *args|
-      e = EventWrapper.new(event)
-
-      redis.del(e.pug_key)
-      redis.del(e.players_key)
+    bot.command :end do |event, *_args|
+      pug = Pug.for(event.channel.id)
+      pug.end_pug
 
       message = "PUG ended"
       send_and_log_message(message, event)
     end
 
     bot.command :role do |event, *args|
-      e = EventWrapper.new(event)
-      role = args[0]
-
-      redis.set(e.role_key, role)
+      pug = Pug.for(event.channel.id)
+      role = args.join(" ")
+      pug.role = role
 
       message = "Notification role set to #{role}"
       send_and_log_message(message, event)
@@ -128,16 +119,34 @@ class QwtfDiscordBotPug
 
   private
 
+  def start_pug(event, pug)
+    message = [
+      "Time to play!",
+      pug.player_slots,
+      mentions(event, pug.joined_players).join(" "),
+    ].join(" | ")
+
+    send_and_log_message(message, event)
+  end
+
+  def usernames(event, player_ids)
+    player_ids.map do |player_id|
+      find_user(event, player_id).username
+    end
+  end
+
+  def mentions(event, player_ids)
+    player_ids.map do |player_id|
+      find_user(event, player_id).mention
+    end
+  end
+
+  def find_user(event, user_id)
+    event.server.users.find { |user| user.id == user_id }
+  end
+
   def send_and_log_message(message, event)
     event.channel.send_message(message)
     puts message
-  end
-
-  def joined_users(event)
-    redis.smembers(event.players_key).map do |user_id|
-      event.users.find do |user|
-        user.id.to_s == user_id
-      end
-    end
   end
 end
