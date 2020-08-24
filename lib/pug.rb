@@ -34,12 +34,12 @@ class Pug
     maxplayers - joined_player_count
   end
 
-  def role=(role)
-    redis.set(role_key, role)
+  def notify_roles=(roles)
+    redis.set(notify_roles_key, roles)
   end
 
-  def role
-    redis.get(role_key) || "@here"
+  def notify_roles
+    redis.get(notify_roles_key) || "@here"
   end
 
   def maxplayers=(maxplayers)
@@ -81,7 +81,7 @@ class Pug
     ["pug", "channel", @channel_id].join(":")
   end
 
-  def role_key
+  def notify_roles_key
     [pug_key, "role"].join(":")
   end
 

@@ -30,14 +30,14 @@ class QwtfDiscordBotPug
                   [
                     "#{e.username} creates a PUG",
                     pug.player_slots,
-                    pug.role,
+                    pug.notify_roles,
                   ].join(" | ")
                 elsif pug.slots_left <= 3
                   [
                     "#{e.username} joins the PUG",
                     pug.player_slots,
                     "#{pug.slots_left} more",
-                    pug.role,
+                    pug.notify_roles,
                   ].join(" | ")
                 else
                   [
@@ -118,14 +118,18 @@ class QwtfDiscordBotPug
       send_and_log_message(message, e.channel)
     end
 
-    bot.command :role do |event, *args|
+    bot.command :notify do |event, *args|
       e = EventDecorator.new(event)
       pug = Pug.for(e.channel_id)
-      role = args.join(" ")
+      roles = args.join(" ")
+      pug.notify_roles = roles
 
-      pug.role = role
+      message = if roles.empty?
+                  "Notification removed"
+                else
+                  "Notification role set to #{roles}"
+                end
 
-      message = "Notification role set to #{role}"
       send_and_log_message(message, e.channel)
     end
 
