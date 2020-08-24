@@ -21,11 +21,10 @@ class QwtfDiscordBotPug
       pug.join(e.user_id)
 
       message = if pug.full?
-                  [
-                    "Time to play!",
+                  time_to_play_message(
                     pug.player_slots,
-                    e.mentions_for(pug.joined_players).join(" "),
-                  ].join(" | ")
+                    e.mentions_for(pug.joined_players)
+                  )
                 elsif pug.joined_player_count == 1
                   [
                     "#{e.username} creates a PUG",
@@ -80,11 +79,10 @@ class QwtfDiscordBotPug
       send_and_log_message(message, e.channel)
 
       if pug.full?
-        message = [
-          "Time to play!",
+        message = time_to_play_message(
           pug.player_slots,
-          e.mentions_for(pug.joined_players).join(" "),
-        ].join(" | ")
+          e.mentions_for(pug.joined_players)
+        )
 
         send_and_log_message(message, e.channel)
       end
@@ -137,6 +135,10 @@ class QwtfDiscordBotPug
   end
 
   private
+
+  def time_to_play_message(player_slots, mentions)
+    ["Time to play!", player_slots, mentions.join(" ")].join(" | ")
+  end
 
   def send_and_log_message(message, channel)
     channel.send_message(message)
