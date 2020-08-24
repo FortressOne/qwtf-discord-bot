@@ -29,36 +29,36 @@ class QwtfDiscordBotPug
                   [
                     "#{e.username} creates a PUG",
                     pug.player_slots,
-                    pug.notify_roles,
-                  ].join(" | ")
+                    pug.notify_roles
+                  ].join(' | ')
                 elsif pug.slots_left <= 3
                   [
                     "#{e.username} joins the PUG",
                     pug.player_slots,
                     "#{pug.slots_left} more",
-                    pug.notify_roles,
-                  ].join(" | ")
+                    pug.notify_roles
+                  ].join(' | ')
                 else
                   [
                     "#{e.username} joins the PUG",
-                    pug.player_slots,
-                  ].join(" | ")
+                    pug.player_slots
+                  ].join(' | ')
                 end
 
       send_and_log_message(message, e.channel)
     end
 
-    bot.command :status do |event, *args|
+    bot.command :status do |event, *_args|
       e = EventDecorator.new(event)
       pug = Pug.for(e.channel_id)
 
       message = if pug.active?
                   [
-                    "#{e.usernames_for(pug.joined_players).join(" ")} joined",
+                    "#{e.usernames_for(pug.joined_players).join(' ')} joined",
                     pug.player_slots
-                  ].join(" | ")
+                  ].join(' | ')
                 else
-                  "No PUG has been started. `!join` to create"
+                  'No PUG has been started. `!join` to create'
                 end
 
       send_and_log_message(message, e.channel)
@@ -70,11 +70,11 @@ class QwtfDiscordBotPug
       new_maxplayers = args[0]
 
       message = if new_maxplayers
-        pug.maxplayers = new_maxplayers
-        "Max number of players set to #{pug.maxplayers} | #{pug.player_slots}"
-      else
-        "Current max number of players is #{pug.maxplayers} | #{pug.player_slots}"
-      end
+                  pug.maxplayers = new_maxplayers
+                  "Max number of players set to #{pug.maxplayers} | #{pug.player_slots} joined"
+                else
+                  "Current max number of players is #{pug.maxplayers} | #{pug.player_slots} joined"
+                end
 
       send_and_log_message(message, e.channel)
 
@@ -101,7 +101,7 @@ class QwtfDiscordBotPug
       if pug.empty?
         pug.end_pug
 
-        message = "PUG ended"
+        message = 'PUG ended'
         send_and_log_message(message, e.channel)
       end
     end
@@ -112,18 +112,18 @@ class QwtfDiscordBotPug
 
       pug.end_pug
 
-      message = "PUG ended"
+      message = 'PUG ended'
       send_and_log_message(message, e.channel)
     end
 
     bot.command :notify do |event, *args|
       e = EventDecorator.new(event)
       pug = Pug.for(e.channel_id)
-      roles = args.join(" ")
+      roles = args.join(' ')
       pug.notify_roles = roles
 
       message = if roles.empty?
-                  "Notification removed"
+                  'Notification removed'
                 else
                   "Notification role set to #{roles}"
                 end
@@ -137,7 +137,7 @@ class QwtfDiscordBotPug
   private
 
   def time_to_play_message(player_slots, mentions)
-    ["Time to play!", player_slots, mentions.join(" ")].join(" | ")
+    ['Time to play!', player_slots, mentions.join(' ')].join(' | ')
   end
 
   def send_and_log_message(message, channel)
