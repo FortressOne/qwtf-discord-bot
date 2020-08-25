@@ -26,20 +26,20 @@ class QwtfDiscordBotPug # :nodoc:
 
           message = if pug.joined_player_count == 1
                       [
-                        "#{e.username} creates a PUG",
+                        "#{e.display_name} creates a PUG",
                         pug.player_slots,
                         pug.notify_roles
                       ].join(' | ')
                     elsif pug.slots_left.between?(1,3)
                       [
-                        "#{e.username} joins the PUG",
+                        "#{e.display_name} joins the PUG",
                         pug.player_slots,
                         "#{pug.slots_left} more",
                         pug.notify_roles
                       ].join(' | ')
                     else
                       [
-                        "#{e.username} joins the PUG",
+                        "#{e.display_name} joins the PUG",
                         pug.player_slots
                       ].join(' | ')
                     end
@@ -62,7 +62,7 @@ class QwtfDiscordBotPug # :nodoc:
       set_pug(event) do |e, pug|
         message = if pug.active?
                     [
-                      "#{e.usernames_for(pug.joined_players).join(', ')} joined",
+                      "#{e.display_names_for(pug.joined_players).join(', ')} joined",
                       pug.player_slots
                     ].join(' | ')
                   else
@@ -107,7 +107,7 @@ class QwtfDiscordBotPug # :nodoc:
           send_and_log_message(message, e.channel)
         else
           pug.leave(e.user_id)
-          message = "#{e.username} leaves the PUG | #{pug.player_slots} remain"
+          message = "#{e.display_name} leaves the PUG | #{pug.player_slots} remain"
           send_and_log_message(message, e.channel)
 
           if pug.empty?

@@ -11,8 +11,8 @@ class EventDecorator
     @event.channel.id
   end
 
-  def username
-    user.username
+  def display_name
+    user.display_name
   end
 
   def user_id
@@ -27,8 +27,8 @@ class EventDecorator
     find_users(user_ids).map(&:mention)
   end
 
-  def usernames_for(user_ids)
-    find_users(user_ids).map(&:username)
+  def display_names_for(user_ids)
+    find_users(user_ids).map(&:display_name)
   end
 
   private
