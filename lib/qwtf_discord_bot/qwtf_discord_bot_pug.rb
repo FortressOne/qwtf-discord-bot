@@ -118,6 +118,32 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    bot.command :kick do |event, *args|
+      set_pug(event) do |e, pug|
+        if !pug.active?
+          message = "There's no active PUG"
+          return send_and_log_message(message, e.channel)
+        end
+
+        mention = args[0]
+        user_id = mention[3..-2].to_i
+
+        if !pug.joined_players.include?(user_id)
+          message = "#{mention} isn't in the PUG"
+          send_and_log_message(message, e.channel)
+        else
+          pug.leave(user_id)
+          message = "#{e.display_name} is kicked from the PUG | #{pug.player_slots} remain"
+          send_and_log_message(message, e.channel)
+
+          if pug.empty?
+            message = end_pug(pug)
+            send_and_log_message(message, e.channel)
+          end
+        end
+      end
+    end
+
     bot.command :end do |event, *args|
       set_pug(event) do |e, pug|
         message = if !pug.active?

@@ -89,8 +89,9 @@ This responds to discord messages:
   - `!join`
   - `!leave`
   - `!status`
+  - `!kick <@player>`
   - `!maxplayers <no_of_players>`
-  - `!notify <roles>`
+  - `!notify <@role @role2>`
   - `!end`
 
 
