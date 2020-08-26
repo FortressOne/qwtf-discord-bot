@@ -31,6 +31,10 @@ class EventDecorator
     find_users(user_ids).map(&:display_name)
   end
 
+  def display_name_for(user_id)
+    find_user(user_id).display_name
+  end
+
   private
 
   def find_users(user_ids)

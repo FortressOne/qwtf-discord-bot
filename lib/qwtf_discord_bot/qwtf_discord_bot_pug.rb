@@ -127,13 +127,14 @@ class QwtfDiscordBotPug # :nodoc:
 
         mention = args[0]
         user_id = mention[3..-2].to_i
+        display_name = e.display_name_for(user_id)
 
         if !pug.joined_players.include?(user_id)
-          message = "#{mention} isn't in the PUG"
+          message = "#{display_name} isn't in the PUG"
           send_and_log_message(message, e.channel)
         else
           pug.leave(user_id)
-          message = "#{e.display_name} is kicked from the PUG | #{pug.player_slots} remain"
+          message = "#{display_name} is kicked from the PUG | #{pug.player_slots} remain"
           send_and_log_message(message, e.channel)
 
           if pug.empty?
