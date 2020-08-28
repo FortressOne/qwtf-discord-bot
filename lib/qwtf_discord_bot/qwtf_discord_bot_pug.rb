@@ -42,14 +42,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         message(message, e.channel)
 
-        if pug.full?
-          message = start_pug_message(
-            player_slots: pug.player_slots,
-            mentions: e.mentions_for(pug.joined_players)
-          )
-
-          message(message, e.channel)
-        end
+        start_pug(pug, e) if pug.full?
       end
     end
 
@@ -81,14 +74,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         message(message, e.channel)
 
-        if pug.full?
-          message = start_pug_message(
-            player_slots: pug.player_slots,
-            mentions: e.mentions_for(pug.joined_players)
-          )
-
-          message(message, e.channel)
-        end
+        start_pug(pug, e) if pug.full?
       end
     end
 
@@ -172,6 +158,17 @@ class QwtfDiscordBotPug # :nodoc:
     pug = Pug.for(e.channel_id)
     yield(e, pug)
     nil # stop discordrb printing return value
+  end
+
+  def start_pug(pug, event)
+    message(
+      [
+        'Time to play!',
+        ['Team 1:', event.mentions_for(pug.team(1)).join(' ')].join(' '),
+        ['Team 2:', event.mentions_for(pug.team(2)).join(' ')].join(' ')
+      ].join("\n"),
+      event.channel
+    )
   end
 
   def start_pug_message(player_slots:, mentions:)

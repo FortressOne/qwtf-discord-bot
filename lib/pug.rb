@@ -18,6 +18,10 @@ class Pug
     redis.smembers(players_key).map(&:to_i)
   end
 
+  def team(no)
+    { 1 => joined_players[0, 4], 2 => ["foo"] }[no]
+  end
+
   def full?
     joined_player_count >= maxplayers
   end

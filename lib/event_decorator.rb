@@ -24,7 +24,9 @@ class EventDecorator
   end
 
   def mentions_for(user_ids)
-    find_users(user_ids).map(&:mention)
+    find_users(user_ids).map do |user|
+      user&.mention
+    end
   end
 
   def display_names_for(user_ids)
