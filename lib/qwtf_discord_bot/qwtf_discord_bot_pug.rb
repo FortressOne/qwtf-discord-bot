@@ -19,41 +19,39 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :join do |event, *args|
       set_pug(event) do |e, pug|
         if pug.joined_players.include?(e.user_id)
-          message = "You've already joined"
-          send_and_log_message(message, e.channel)
-        else
-          pug.join(e.user_id)
+          return send_and_log_message("You've already joined", e.channel)
+        end
 
-          message = if pug.joined_player_count == 1
-                      [
-                        "#{e.display_name} creates a PUG",
-                        pug.player_slots,
-                        pug.notify_roles
-                      ].join(' | ')
-                    elsif pug.slots_left.between?(1,3)
-                      [
-                        "#{e.display_name} joins the PUG",
-                        pug.player_slots,
-                        "#{pug.slots_left} more",
-                        pug.notify_roles
-                      ].join(' | ')
-                    else
-                      [
-                        "#{e.display_name} joins the PUG",
-                        pug.player_slots
-                      ].join(' | ')
-                    end
+        pug.join(e.user_id)
 
-          send_and_log_message(message, e.channel)
+        message = if pug.joined_player_count == 1
+                    [
+                      "#{e.display_name} creates a PUG",
+                      pug.player_slots,
+                      pug.notify_roles
+                    ].join(' | ')
+                  elsif pug.slots_left.between?(1,3)
+                    [
+                      "#{e.display_name} joins the PUG",
+                      pug.player_slots,
+                      "#{pug.slots_left} more",
+                      pug.notify_roles
+                    ].join(' | ')
+                  else
+                    [
+                      "#{e.display_name} joins the PUG",
+                      pug.player_slots
+                    ].join(' | ')
+                  end
 
-          if pug.full?
-            message = start_pug(
-              pug.player_slots,
-              e.mentions_for(pug.joined_players)
-            )
+        send_and_log_message(message, e.channel)
 
-            send_and_log_message(message, e.channel)
-          end
+        if pug.full?
+          start_pug(
+            player_slots: pug.player_slots,
+            mentions: e.mentions_for(pug.joined_players),
+            channel: e.channel
+          )
         end
       end
     end
@@ -87,71 +85,66 @@ class QwtfDiscordBotPug # :nodoc:
         send_and_log_message(message, e.channel)
 
         if pug.full?
-          message = start_pug(
-            pug.player_slots,
-            e.mentions_for(pug.joined_players)
+          start_pug(
+            player_slots: pug.player_slots,
+            mentions: e.mentions_for(pug.joined_players),
+            channel: e.channel
           )
-
-          send_and_log_message(message, e.channel)
         end
       end
     end
 
     bot.command :leave do |event, *args|
       set_pug(event) do |e, pug|
-        if !pug.active?
-          message = "There's no active PUG to leave"
-          send_and_log_message(message, e.channel)
-        elsif !pug.joined_players.include?(e.user_id)
-          message = "You're not in the PUG"
-          send_and_log_message(message, e.channel)
-        else
-          pug.leave(e.user_id)
-          message = "#{e.display_name} leaves the PUG | #{pug.player_slots} remain"
-          send_and_log_message(message, e.channel)
+        return no_active_pug(e.channel) if !pug.active?
 
-          if pug.empty?
-            message = end_pug(pug)
-            send_and_log_message(message, e.channel)
-          end
+        if !pug.joined_players.include?(e.user_id)
+          return send_and_log_message("You're not in the PUG", e.channel)
         end
+
+        pug.leave(e.user_id)
+
+        send_and_log_message(
+          "#{e.display_name} leaves the PUG | #{pug.player_slots} remain",
+          e.channel
+        )
+
+        end_pug(pug: pug, channel: e.channel) if pug.empty?
       end
     end
 
     bot.command :kick do |event, *args|
       set_pug(event) do |e, pug|
-        if !pug.active?
-          message = "There's no active PUG"
-          return send_and_log_message(message, e.channel)
-        end
+        return no_active_pug(e.channel) unless pug.active?
 
-        mention = args[0]
-        user_id = mention[3..-2].to_i
-        display_name = e.display_name_for(user_id)
+        args.each do |mention|
+          user_id = mention[3..-2].to_i
+          display_name = e.display_name_for(user_id)
 
-        if !pug.joined_players.include?(user_id)
-          message = "#{display_name} isn't in the PUG"
-          send_and_log_message(message, e.channel)
-        else
-          pug.leave(user_id)
-          message = "#{display_name} is kicked from the PUG | #{pug.player_slots} remain"
-          send_and_log_message(message, e.channel)
-
-          if pug.empty?
-            message = end_pug(pug)
-            send_and_log_message(message, e.channel)
+          if !pug.joined_players.include?(user_id)
+            next send_and_log_message(
+              "#{display_name} isn't in the PUG",
+              e.channel
+            )
           end
+
+          pug.leave(user_id)
+
+          send_and_log_message(
+            "#{display_name} is kicked from the PUG | #{pug.player_slots} remain",
+            e.channel
+          )
+
+          break end_pug(pug: pug, channel: e.channel) if pug.empty?
         end
       end
     end
 
     bot.command :end do |event, *args|
       set_pug(event) do |e, pug|
-        message = if !pug.active?
-                    "There's no active PUG to end"
-                  else
-                    end_pug(pug)
-                  end
+        return no_active_pug(e.channel) if !pug.active?
+
+        message = end_pug(pug)
 
         send_and_log_message(message, e.channel)
       end
@@ -183,17 +176,24 @@ class QwtfDiscordBotPug # :nodoc:
     yield(e, pug)
   end
 
-  def start_pug(player_slots, mentions)
-    [
+  def start_pug(player_slots:, mentions:, channel:)
+    message = [
       'Time to play!',
       player_slots,
       mentions.join(' ')
     ].join(' | ')
+
+    send_and_log_message(message, channel)
   end
 
-  def end_pug(pug)
+  def end_pug(pug:, channel:)
     pug.end_pug
-    'PUG ended'
+    send_and_log_message('PUG ended', channel)
+  end
+
+  def no_active_pug(channel)
+    message = "There's no active PUG"
+    send_and_log_message(message, channel)
   end
 
   def send_and_log_message(message, channel)
