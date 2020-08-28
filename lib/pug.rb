@@ -56,10 +56,7 @@ class Pug
 
   def leave(player_id)
     redis.srem(players_key, player_id)
-  end
-
-  def empty?
-    joined_player_count == 0
+    end_pug if empty?
   end
 
   def end_pug
@@ -67,7 +64,15 @@ class Pug
     redis.del(players_key)
   end
 
+  def joined?(player_id)
+    joined_players.include?(player_id)
+  end
+
   private
+
+  def empty?
+    joined_player_count.zero?
+  end
 
   def maxplayers_key
     [pug_key, "maxplayers"].join(":")
