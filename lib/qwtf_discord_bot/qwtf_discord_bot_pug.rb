@@ -61,20 +61,23 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :maxplayers do |event, *args|
+    bot.command :teamsize do |event, *args|
       setup_pug(event) do |e, pug|
-        new_maxplayers = args[0]
+        new_teamsize = args[0]
 
-        message = if new_maxplayers
-                    pug.maxplayers = new_maxplayers
-                    "Max number of players set to #{pug.maxplayers} | #{pug.player_slots} joined"
-                  else
-                    "Current max number of players is #{pug.maxplayers} | #{pug.player_slots} joined"
-                  end
-
-        message(message, e.channel)
-
-        start_pug(pug, e) if pug.full?
+        if new_teamsize
+          pug.teamsize = new_teamsize
+          message(
+            "Team size set to #{pug.teamsize} | #{pug.player_slots} joined",
+            e.channel
+          )
+          start_pug(pug, e) if pug.full?
+        else
+          message(
+            "Current team size is #{pug.teamsize} | #{pug.player_slots} joined",
+            e.channel
+          )
+        end
       end
     end
 

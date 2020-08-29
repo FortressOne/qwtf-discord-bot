@@ -1,5 +1,6 @@
 class Pug
-  DEFAULT_MAXPLAYERS = 8
+  DEFAULT_teamsize = 4
+  NO_OF_TEAMS = 2
 
   def self.for(channel_id)
     new(channel_id)
@@ -19,7 +20,12 @@ class Pug
   end
 
   def team(no)
-    { 1 => joined_players[0, 4], 2 => ["foo"] }[no]
+    index = no - 1
+    joined_players.each_slice(teamsize).to_a[index]
+  end
+
+  def teamsize=(teamsize)
+    redis.set(teamsize_key, teamsize)
   end
 
   def full?
@@ -46,12 +52,12 @@ class Pug
     redis.get(notify_roles_key) || "@here"
   end
 
-  def maxplayers=(maxplayers)
-    redis.set(maxplayers_key, maxplayers)
+  def teamsize=(teamsize)
+    redis.set(teamsize_key, teamsize)
   end
 
-  def maxplayers
-    (redis.get(maxplayers_key) || DEFAULT_MAXPLAYERS).to_i
+  def teamsize
+    (redis.get(teamsize_key) || DEFAULT_teamsize).to_i
   end
 
   def active?
@@ -72,14 +78,18 @@ class Pug
     joined_players.include?(player_id)
   end
 
+  def maxplayers
+    teamsize * NO_OF_TEAMS
+  end
+
   private
 
   def empty?
     joined_player_count.zero?
   end
 
-  def maxplayers_key
-    [pug_key, "maxplayers"].join(":")
+  def teamsize_key
+    [pug_key, "teamsize"].join(":")
   end
 
   def players_key
@@ -92,6 +102,10 @@ class Pug
 
   def notify_roles_key
     [pug_key, "role"].join(":")
+  end
+
+  def teamsize_key
+    [pug_key, "teamsize"].join(":")
   end
 
   def redis

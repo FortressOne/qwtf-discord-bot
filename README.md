@@ -90,7 +90,7 @@ This responds to discord messages:
   - `!leave`
   - `!status`
   - `!kick <@player>`
-  - `!maxplayers <no_of_players>`
+  - `!teamsize <no_of_players>`
   - `!notify <@role @role2>`
   - `!end`
 
