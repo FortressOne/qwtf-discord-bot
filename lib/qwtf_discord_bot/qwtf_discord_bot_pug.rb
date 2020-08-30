@@ -6,6 +6,8 @@ require 'event_decorator'
 class QwtfDiscordBotPug # :nodoc:
   include QwtfDiscordBot
 
+  MSG_SNIPPET_DELIMITER = ' · '
+
   def run
     bot = Discordrb::Commands::CommandBot.new(
       token: QwtfDiscordBot.config.token,
@@ -27,7 +29,7 @@ class QwtfDiscordBotPug # :nodoc:
           snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
         end
 
-        send_msg(snippets.join(' | '), e.channel)
+        send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
 
         start_pug(pug, e) if pug.full?
       end
@@ -39,7 +41,7 @@ class QwtfDiscordBotPug # :nodoc:
                 [
                   "#{e.display_names_for(pug.joined_players).join(', ')} joined",
                   pug.player_slots
-                ].join(' | ')
+                ].join(MSG_SNIPPET_DELIMITER)
               else
                 'No PUG has been started. `!join` to create'
               end
@@ -85,7 +87,7 @@ class QwtfDiscordBotPug # :nodoc:
         snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
         send_msg(
-          snippets.join(' | '),
+          snippets.join(MSG_SNIPPET_DELIMITER),
           e.channel
         )
 
@@ -121,7 +123,7 @@ class QwtfDiscordBotPug # :nodoc:
           snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
           send_msg(
-            snippets.join(' | '),
+            snippets.join(MSG_SNIPPET_DELIMITER),
             e.channel
           )
 
@@ -178,7 +180,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug_send_msg(player_slots:, mentions:)
-    ['Time to play!', player_slots, mentions.join(' ')].join(' | ')
+    ['Time to play!', player_slots, mentions.join(' ')].join(MSG_SNIPPET_DELIMITER)
   end
 
   def end_pug_message
