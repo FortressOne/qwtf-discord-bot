@@ -82,7 +82,7 @@ class QwtfDiscordBotPug # :nodoc:
           "#{pug.player_slots} remain"
         ]
 
-        snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
+        snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
         send_msg(
           snippets.join(' | '),
@@ -118,7 +118,7 @@ class QwtfDiscordBotPug # :nodoc:
             "#{pug.player_slots} remain"
           ]
 
-          snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
+          snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
           send_msg(
             snippets.join(' | '),
