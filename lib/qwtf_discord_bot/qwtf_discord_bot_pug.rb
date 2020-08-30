@@ -27,7 +27,7 @@ class QwtfDiscordBotPug # :nodoc:
           snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
         end
 
-        send_msg(snippets.join(" | "), e.channel)
+        send_msg(snippets.join(' | '), e.channel)
 
         start_pug(pug, e) if pug.full?
       end
@@ -85,7 +85,7 @@ class QwtfDiscordBotPug # :nodoc:
         snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
 
         send_msg(
-          snippets.join(" | "),
+          snippets.join(' | '),
           e.channel
         )
 
@@ -121,7 +121,7 @@ class QwtfDiscordBotPug # :nodoc:
           snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
 
           send_msg(
-            snippets.join(" | "),
+            snippets.join(' | '),
             e.channel
           )
 
@@ -169,10 +169,10 @@ class QwtfDiscordBotPug # :nodoc:
 
   def start_pug(pug, event)
     msg = [
-        'Time to play!',
-        ['Team 1:', event.mentions_for(pug.team(1)).join(' ')].join(' '),
-        ['Team 2:', event.mentions_for(pug.team(2)).join(' ')].join(' ')
-      ].join("\n")
+      'Time to play!',
+      ['Team 1:', event.mentions_for(pug.team(1)).join(' ')].join(' '),
+      ['Team 2:', event.mentions_for(pug.team(2)).join(' ')].join(' ')
+    ].join("\n")
 
     send_msg(msg, event.channel)
   end
