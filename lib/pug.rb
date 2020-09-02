@@ -1,5 +1,5 @@
 class Pug
-  DEFAULT_teamsize = 4
+  DEFAULT_TEAMSIZE = 4
   NO_OF_TEAMS = 2
 
   def self.for(channel_id)
@@ -57,7 +57,7 @@ class Pug
   end
 
   def teamsize
-    (redis.get(teamsize_key) || DEFAULT_teamsize).to_i
+    (redis.get(teamsize_key) || DEFAULT_TEAMSIZE).to_i
   end
 
   def active?
