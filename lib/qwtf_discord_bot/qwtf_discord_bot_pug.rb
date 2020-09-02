@@ -58,14 +58,19 @@ class QwtfDiscordBotPug # :nodoc:
           pug.teamsize = new_teamsize
 
           send_msg(
-            "Team size set to #{pug.teamsize} | #{pug.player_slots} joined",
+            [
+              "Team size set to #{pug.teamsize}",
+              "#{pug.player_slots} joined"
+            ].join(MSG_SNIPPET_DELIMITER)
             e.channel
           )
 
           start_pug(pug, e) if pug.full?
         else
           send_msg(
-            "Current team size is #{pug.teamsize} | #{pug.player_slots} joined",
+            [
+              "Current team size is #{pug.teamsize}",
+              "#{pug.player_slots} joined"].join(MSG_SNIPPET_DELIMITER)
             e.channel
           )
         end
