@@ -12,7 +12,7 @@ class QwtfDiscordBotWatcher
         next if request.is_empty?
 
         request.player_names.each do |name|
-          redis_key = ["watcher", address, name].join(":")
+          redis_key = ['watcher', address, name].join(':')
 
           unless seen_recently?(redis_key)
             endpoint.channel_ids.each do |channel_id|

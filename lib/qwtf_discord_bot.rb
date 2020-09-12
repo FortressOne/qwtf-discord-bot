@@ -21,6 +21,7 @@ module QwtfDiscordBot # :nodoc:
   def self.config_file
     return ENV['QWTF_DISCORD_BOT_CONFIG_FILE'] if ENV['QWTF_DISCORD_BOT_CONFIG_FILE']
     return "#{Dir.pwd}/config.yaml" if FileTest.exist?("#{Dir.pwd}/config.yaml")
+
     "#{Dir.home}/.config/qwtf_discord_bot/config.yaml"
   end
 

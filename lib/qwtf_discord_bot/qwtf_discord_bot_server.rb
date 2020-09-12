@@ -27,7 +27,6 @@ class QwtfDiscordBotServer
           puts message
         end
       end
-
     end
 
     bot.command :all do |event|

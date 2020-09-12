@@ -34,7 +34,7 @@ class EventDecorator
   end
 
   def display_name_for(user_id)
-    find_user(user_id) && find_user(user_id).display_name
+    find_user(user_id)&.display_name
   end
 
   private
@@ -57,4 +57,3 @@ class EventDecorator
     @event.user
   end
 end
-

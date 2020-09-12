@@ -12,7 +12,7 @@ class Endpoint
 
     @config.values.each do |settings|
       settings.each do |setting|
-        setting["channel_ids"].each do |channel_id|
+        setting['channel_ids'].each do |channel_id|
           channel_ids << channel_id
         end
       end

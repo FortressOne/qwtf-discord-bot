@@ -28,7 +28,8 @@ class Player
   end
 
   def team
-    return 'spec' if !valid_score? || @data['team'].empty? || @data['team'] == "observe"
+    return 'spec' if !valid_score? || @data['team'].empty? || @data['team'] == 'observe'
+
     @data['team']
   end
 

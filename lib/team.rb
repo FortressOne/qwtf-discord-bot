@@ -1,7 +1,7 @@
 class Team
   attr_accessor :name, :number, :players
 
-  TEAMS = { "blue" => 1, "red" => 2, "yell" => 3, "gren" => 4, "spec" => 5 }.freeze
+  TEAMS = { 'blue' => 1, 'red' => 2, 'yell' => 3, 'gren' => 4, 'spec' => 5 }.freeze
 
   def initialize(name)
     @name = build_name(name)
@@ -19,27 +19,30 @@ class Team
 
   private
 
-    def field_name
-      name = @name.capitalize
-      return "#{name}" unless playing?
-      "#{name} | #{score}"
-    end
+  def field_name
+    name = @name.capitalize
+    return name.to_s unless playing?
 
-    def playing?
-      (1..4).include?(@number)
-    end
+    "#{name} | #{score}"
+  end
 
-    def player_list
-      players.map(&:to_row).join("\n")
-    end
+  def playing?
+    (1..4).include?(@number)
+  end
 
-    def score
-      return nil if @name == "spec"
-      @players.first.score
-    end
+  def player_list
+    players.map(&:to_row).join("\n")
+  end
 
-    def build_name(name)
-      return name if TEAMS[name]
-      "spec"
-    end
+  def score
+    return nil if @name == 'spec'
+
+    @players.first.score
+  end
+
+  def build_name(name)
+    return name if TEAMS[name]
+
+    'spec'
+  end
 end

@@ -49,7 +49,7 @@ class Pug
   end
 
   def notify_roles
-    redis.get(notify_roles_key) || "@here"
+    redis.get(notify_roles_key) || '@here'
   end
 
   def teamsize=(teamsize)
@@ -89,23 +89,23 @@ class Pug
   end
 
   def teamsize_key
-    [pug_key, "teamsize"].join(":")
+    [pug_key, 'teamsize'].join(':')
   end
 
   def players_key
-    [pug_key, "players"].join(":")
+    [pug_key, 'players'].join(':')
   end
 
   def pug_key
-    ["pug", "channel", @channel_id].join(":")
+    ['pug', 'channel', @channel_id].join(':')
   end
 
   def notify_roles_key
-    [pug_key, "role"].join(":")
+    [pug_key, 'role'].join(':')
   end
 
   def teamsize_key
-    [pug_key, "teamsize"].join(":")
+    [pug_key, 'teamsize'].join(':')
   end
 
   def redis
