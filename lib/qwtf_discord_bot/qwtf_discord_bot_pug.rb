@@ -141,10 +141,14 @@ class QwtfDiscordBotPug # :nodoc:
 
         pug.join_team(team_no: team_no, player_id: user_id)
 
-        snippets = [
-          "#{e.display_name} joins team #{team_no}",
-          "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
-        ]
+        snippets = if team_no.zero?
+                     ["#{e.display_name} has no team"]
+                   else
+                     [
+                       "#{e.display_name} joins team #{team_no}",
+                       "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+                     ]
+                   end
 
         send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
 
