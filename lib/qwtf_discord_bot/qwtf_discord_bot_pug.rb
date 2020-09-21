@@ -21,7 +21,6 @@ class QwtfDiscordBotPug # :nodoc:
         return send_msg("You've already joined", e.channel) if pug.joined?(e.user_id)
 
         join_pug(e, pug)
-
         start_pug(pug, e) if pug.full?
       end
     end
@@ -156,18 +155,32 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    # bot.command :win do |event, *args|
-    #   setup_pug(event) do |e, pug|
-    #     return send_msg(no_active_pug_message, e.channel) unless pug.active?
+    bot.command :win do |event, *args|
+      setup_pug(event) do |e, pug|
+        return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-    #     team_no = arg[0]
+        winning_team_no = args[0]
 
-    #     pug.won_by = team_no
+        return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
-    #     send_msg("Team #{team_no} has been declared winner", e.channel)
-    #   end
-    # end
+        pug.won_by(winning_team_no)
 
+        winning_team = pug.team(winning_team_no).map do |player_id|
+          e.display_name_for(player_id)
+        end
+
+        non_winning_teams = pug.actual_teams.tap { |team| team.delete(winning_team_no) }
+
+        losing_players = non_winning_teams.values.flatten.map do |player_id|
+          e.display_name_for(player_id)
+        end
+
+        send_msg(
+          "#{winning_team.join(', ')} defeat #{losing_players.join(', ')}",
+          e.channel
+        )
+      end
+    end
 
     bot.command :end do |event, *args|
       setup_pug(event) do |e, pug|

@@ -1,6 +1,6 @@
 class Pug
   DEFAULT_TEAMSIZE = 4
-  NO_OF_TEAMS = 2
+  MIN_NO_OF_TEAMS = 2
 
   def self.for(channel_id)
     new(channel_id)
@@ -87,17 +87,21 @@ class Pug
   end
 
   def maxplayers
-    teamsize * NO_OF_TEAMS
+    teamsize * no_of_teams
   end
 
   def won_by(team_no)
-    api.results({ teams: [team(1), team(2)], winner: team_no })
+    { teams: teams, winner: team_no }
   end
 
   def teams
     teams_keys.inject({}) do |teams, team|
       teams.merge({ team.split(':').last => redis.smembers(team).map(&:to_i) })
     end
+  end
+
+  def actual_teams
+    teams.tap { |team| team.delete("0") }
   end
 
   private
@@ -134,5 +138,9 @@ class Pug
 
   def redis
     Redis.current
+  end
+
+  def no_of_teams
+    [actual_teams.count, MIN_NO_OF_TEAMS].max
   end
 end
