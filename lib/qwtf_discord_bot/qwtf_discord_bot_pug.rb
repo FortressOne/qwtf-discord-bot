@@ -21,18 +21,20 @@ class QwtfDiscordBotPug # :nodoc:
         return send_msg("You've already joined", e.channel) if pug.joined?(e.user_id)
 
         join_pug(e, pug)
+
+        start_pug(pug, e) if pug.full?
       end
     end
 
     bot.command :status do |event, *args|
       setup_pug(event) do |e, pug|
-        msg = if pug.active?
-                [
-                  "#{e.display_names_for(pug.joined_players).join(', ')} joined",
-                  pug.player_slots
-                ].join(MSG_SNIPPET_DELIMITER)
-              else
+        msg = if !pug.active?
                 'No PUG has been started. `!join` to create'
+              else
+                [
+                  "#{pug.player_slots} joined",
+                  pug_teams_message(pug, e).join("\n")
+                ].join("\n")
               end
 
         send_msg(msg, e.channel)
@@ -133,19 +135,20 @@ class QwtfDiscordBotPug # :nodoc:
 
         user_id = e.user_id
 
-        if pug.team(team_no).include?(user_id)
-          return send_msg("You're already in team #{team_no}", e.channel)
-        end
+        return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
 
         join_pug(e, pug) unless pug.joined?(user_id)
 
         pug.join_team(team_no: team_no, player_id: user_id)
 
         snippets = [
-          "#{e.display_name} joins team #{team_no}"
+          "#{e.display_name} joins team #{team_no}",
+          "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
         ]
 
         send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
+
+        start_pug(pug, e) if pug.full?
       end
     end
 
@@ -203,8 +206,6 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
-
-    start_pug(pug, e) if pug.full?
   end
 
   def setup_pug(event)
@@ -215,17 +216,49 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
+    pug_teams = pug.teams.map do |team_no, player_ids|
+      team_mentions = player_ids.map do |player_id|
+        event.mention_for(player_id)
+      end
+
+      team_status_line(
+        team_no: team_no.to_i,
+        names: team_mentions,
+        teamsize: pug.teamsize
+      )
+    end
+
     msg = [
       'Time to play!',
-      ['Team 1:', event.mentions_for(pug.team(1)).join(' ')].join(' '),
-      ['Team 2:', event.mentions_for(pug.team(2)).join(' ')].join(' ')
+      pug_teams
     ].join("\n")
 
     send_msg(msg, event.channel)
   end
 
-  def start_pug_send_msg(player_slots:, mentions:)
-    ['Time to play!', player_slots, mentions.join(' ')].join(MSG_SNIPPET_DELIMITER)
+  def pug_teams_message(pug, event)
+    pug.teams.map do |team_no, player_ids|
+      team_display_names = player_ids.map do |player_id|
+        event.display_name_for(player_id)
+      end
+
+      team_status_line(
+        team_no: team_no.to_i,
+        names: team_display_names,
+        teamsize: pug.teamsize
+      )
+    end
+  end
+
+  def team_status_line(team_no:, names:, teamsize:)
+    if team_no.to_i.zero?
+      ["No team: #{names.join(', ')}"]
+    else
+      [
+        "Team #{team_no}: #{names.join(', ')}",
+        "#{names.count}/#{teamsize}"
+      ].join(MSG_SNIPPET_DELIMITER)
+    end
   end
 
   def end_pug_message

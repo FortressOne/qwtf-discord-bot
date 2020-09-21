@@ -13,22 +13,22 @@ class Pug
   def join(player_id)
     redis.setnx(pug_key, Time.now)
 
-    redis.sadd(teams_key(0), player_id)
+    redis.sadd(team_key(0), player_id)
   end
 
   def join_team(team_no:, player_id:)
     leave_teams(player_id)
-    redis.sadd(teams_key(team_no), player_id)
+    redis.sadd(team_key(team_no), player_id)
   end
 
   def joined_players
-    teams.inject([]) do |players, team|
+    teams_keys.inject([]) do |players, team|
       players + redis.smembers(team).map(&:to_i)
     end
   end
 
   def team(number)
-    redis.smembers(teams_key(number)).map(&:to_i)
+    redis.smembers(team_key(number)).map(&:to_i)
   end
 
   def teamsize=(teamsize)
@@ -41,6 +41,10 @@ class Pug
 
   def joined_player_count
     joined_players.count
+  end
+
+  def team_player_count(team_no)
+    redis.scard(team_key(team_no)).to_i
   end
 
   def player_slots
@@ -57,10 +61,6 @@ class Pug
 
   def notify_roles
     redis.get(notify_roles_key) || '@here'
-  end
-
-  def teamsize=(teamsize)
-    redis.set(teamsize_key, teamsize)
   end
 
   def teamsize
@@ -94,23 +94,29 @@ class Pug
     api.results({ teams: [team(1), team(2)], winner: team_no })
   end
 
+  def teams
+    teams_keys.inject({}) do |teams, team|
+      teams.merge({ team.split(':').last => redis.smembers(team).map(&:to_i) })
+    end
+  end
+
   private
 
   def leave_teams(player_id)
-    teams.each do |team|
+    teams_keys.each do |team|
       redis.srem(team, player_id)
     end
   end
 
-  def teams
-    redis.keys([pug_key, "teams*"].join(':'))
+  def teams_keys
+    redis.keys([pug_key, 'teams:*'].join(':'))
   end
 
   def empty?
     joined_player_count.zero?
   end
 
-  def teams_key(team_no)
+  def team_key(team_no)
     [pug_key, 'teams', team_no].join(':')
   end
 

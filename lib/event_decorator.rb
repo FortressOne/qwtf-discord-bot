@@ -23,18 +23,20 @@ class EventDecorator
     server.users
   end
 
-  def mentions_for(user_ids)
-    find_users(user_ids).map do |user|
-      user&.mention
-    end
+  def mention_for(user_id)
+    find_user(user_id)&.mention
   end
 
-  def display_names_for(user_ids)
-    find_users(user_ids).map(&:display_name)
+  def mentions_for(user_ids)
+    find_users(user_ids).map(&:mention)
   end
 
   def display_name_for(user_id)
     find_user(user_id)&.display_name
+  end
+
+  def display_names_for(user_ids)
+    find_users(user_ids).map(&:display_name)
   end
 
   private
