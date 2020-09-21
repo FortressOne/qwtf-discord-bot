@@ -20,18 +20,7 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_msg("You've already joined", e.channel) if pug.joined?(e.user_id)
 
-        pug.join(e.user_id)
-
-        if pug.joined_player_count == 1
-          snippets = ["#{e.display_name} creates a PUG", pug.player_slots, pug.notify_roles]
-        else
-          snippets = ["#{e.display_name} joins the PUG", pug.player_slots]
-          snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
-        end
-
-        send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
-
-        start_pug(pug, e) if pug.full?
+        join_pug(e, pug)
       end
     end
 
@@ -61,7 +50,7 @@ class QwtfDiscordBotPug # :nodoc:
             [
               "Team size set to #{pug.teamsize}",
               "#{pug.player_slots} joined"
-            ].join(MSG_SNIPPET_DELIMITER)
+            ].join(MSG_SNIPPET_DELIMITER),
             e.channel
           )
 
@@ -70,7 +59,8 @@ class QwtfDiscordBotPug # :nodoc:
           send_msg(
             [
               "Current team size is #{pug.teamsize}",
-              "#{pug.player_slots} joined"].join(MSG_SNIPPET_DELIMITER)
+              "#{pug.player_slots} joined"
+            ].join(MSG_SNIPPET_DELIMITER),
             e.channel
           )
         end
@@ -137,6 +127,41 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    bot.command :team do |event, *args|
+      setup_pug(event) do |e, pug|
+        team_no = args[0].to_i
+
+        user_id = e.user_id
+
+        if pug.team(team_no).include?(user_id)
+          return send_msg("You're already in team #{team_no}", e.channel)
+        end
+
+        join_pug(e, pug) unless pug.joined?(user_id)
+
+        pug.join_team(team_no: team_no, player_id: user_id)
+
+        snippets = [
+          "#{e.display_name} joins team #{team_no}"
+        ]
+
+        send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
+      end
+    end
+
+    # bot.command :win do |event, *args|
+    #   setup_pug(event) do |e, pug|
+    #     return send_msg(no_active_pug_message, e.channel) unless pug.active?
+
+    #     team_no = arg[0]
+
+    #     pug.won_by = team_no
+
+    #     send_msg("Team #{team_no} has been declared winner", e.channel)
+    #   end
+    # end
+
+
     bot.command :end do |event, *args|
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
@@ -166,6 +191,21 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   private
+
+  def join_pug(e, pug)
+    pug.join(e.user_id)
+
+    if pug.joined_player_count == 1
+      snippets = ["#{e.display_name} creates a PUG", pug.player_slots, pug.notify_roles]
+    else
+      snippets = ["#{e.display_name} joins the PUG", pug.player_slots]
+      snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
+    end
+
+    send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
+
+    start_pug(pug, e) if pug.full?
+  end
 
   def setup_pug(event)
     e = EventDecorator.new(event)
