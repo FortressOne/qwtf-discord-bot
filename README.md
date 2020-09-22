@@ -91,6 +91,9 @@ This responds to discord messages:
   - `!status`
   - `!kick <@player>`
   - `!teamsize <no_of_players>`
+  - `!team <team_no>`
+  - `!unteam`
+  - `!win <team_no>`
   - `!notify <@role @role2>`
   - `!end`
 
