@@ -27,16 +27,15 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :status do |event, *args|
       setup_pug(event) do |e, pug|
-        msg = if !pug.active?
-                'No PUG has been started. `!join` to create'
-              else
-                [
-                  "#{pug.player_slots} joined",
-                  pug_teams_message(pug, e).join("\n")
-                ].join("\n")
-              end
+        return send_msg('No PUG has been started. `!join` to create', e.channel) unless pug.active?
 
-        send_msg(msg, e.channel)
+        send_msg(
+          [
+            "#{pug.player_slots} joined",
+            pug_teams_message(pug, e).join("\n")
+          ].join("\n"),
+          e.channel
+        )
       end
     end
 
@@ -153,6 +152,7 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :unteam do |event, *args|
       setup_pug(event) do |e, pug|
         user_id = e.user_id
+        return send_msg('No PUG has been started. `!join` to create', e.channel) unless pug.active?
         return send_msg("You aren't in this PUG", e.channel) unless pug.joined?(user_id)
         return send_msg("You aren't in a team", e.channel) if pug.team(0).include?(user_id)
 
