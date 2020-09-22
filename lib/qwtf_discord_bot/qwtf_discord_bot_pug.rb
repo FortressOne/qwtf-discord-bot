@@ -157,7 +157,7 @@ class QwtfDiscordBotPug # :nodoc:
         return send_msg("You aren't in a team") if pug.team(0).include?(user_id)
 
         pug.join_team(team_no: 0, player_id: user_id)
-        send_msg("#{e.display_name} has no team"), e.channel)
+        send_msg("#{e.display_name} has no team", e.channel)
       end
     end
 
