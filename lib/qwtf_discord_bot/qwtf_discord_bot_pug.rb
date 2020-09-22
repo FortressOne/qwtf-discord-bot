@@ -153,8 +153,8 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :unteam do |event, *args|
       setup_pug(event) do |e, pug|
         user_id = e.user_id
-        return send_msg("You aren't in this PUG") unless pug.joined?(user_id)
-        return send_msg("You aren't in a team") if pug.team(0).include?(user_id)
+        return send_msg("You aren't in this PUG", e.channel) unless pug.joined?(user_id)
+        return send_msg("You aren't in a team", e.channel) if pug.team(0).include?(user_id)
 
         pug.join_team(team_no: 0, player_id: user_id)
         send_msg("#{e.display_name} has no team", e.channel)
