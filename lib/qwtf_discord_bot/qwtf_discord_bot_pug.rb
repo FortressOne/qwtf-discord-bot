@@ -131,27 +131,33 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
         team_no = args[0].to_i
+        return send_msg("Choose a team between 1 and 4", e.channel) unless [1..4].include?(team_no)
 
         user_id = e.user_id
-
         return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
 
         join_pug(e, pug) unless pug.joined?(user_id)
-
         pug.join_team(team_no: team_no, player_id: user_id)
 
-        snippets = if team_no.zero?
-                     ["#{e.display_name} has no team"]
-                   else
-                     [
-                       "#{e.display_name} joins team #{team_no}",
-                       "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
-                     ]
-                   end
-
-        send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
+        send_msg(
+          [
+            "#{e.display_name} joins team #{team_no}",
+            "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+          ].join(MSG_SNIPPET_DELIMITER), e.channel
+        )
 
         start_pug(pug, e) if pug.full?
+      end
+    end
+
+    bot.command :unteam do |event, *args|
+      setup_pug(event) do |e, pug|
+        user_id = e.user_id
+        return send_msg("You aren't in this PUG") unless pug.joined?(user_id)
+        return send_msg("You aren't in a team") if pug.team(0).include?(user_id)
+
+        pug.join_team(team_no: 0, player_id: user_id)
+        send_msg("#{e.display_name} has no team"), e.channel)
       end
     end
 
