@@ -131,7 +131,7 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
         team_no = args[0].to_i
-        return send_msg("Choose a team between 1 and 4", e.channel) unless [1..4].include?(team_no)
+        return send_msg("Choose a team between 1 and 4", e.channel) unless team_no.between?(1, 4)
 
         user_id = e.user_id
         return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
