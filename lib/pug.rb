@@ -125,11 +125,15 @@ class Pug
   end
 
   def pug_key
-    ['pug', 'channel', @channel_id].join(':')
+    [channel_key, 'pug'].join(':')
+  end
+
+  def channel_key
+    ['channel', @channel_id].join(':')
   end
 
   def notify_roles_key
-    [pug_key, 'role'].join(':')
+    [channel_key, 'role'].join(':')
   end
 
   def teamsize_key
