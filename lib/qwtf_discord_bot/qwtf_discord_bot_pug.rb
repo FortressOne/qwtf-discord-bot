@@ -41,6 +41,8 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :teamsize do |event, *args|
       setup_pug(event) do |e, pug|
+        return send_msg("Team size is #{pug.teamsize}", e.channel) unless args.any?
+
         new_teamsize = args[0].to_i
         return send_msg('Team size should be a number higher than 0', e.channel) unless new_teamsize > 0
 

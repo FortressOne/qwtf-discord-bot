@@ -137,7 +137,7 @@ class Pug
   end
 
   def teamsize_key
-    [pug_key, 'teamsize'].join(':')
+    [channel_key, 'teamsize'].join(':')
   end
 
   def redis
