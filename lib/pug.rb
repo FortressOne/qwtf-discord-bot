@@ -27,6 +27,10 @@ class Pug
     end
   end
 
+  def add_maps(maps)
+    redis.sadd(maps_key, maps)
+  end
+
   def team(number)
     redis.smembers(team_key(number)).map(&:to_i)
   end
@@ -127,8 +131,8 @@ class Pug
     [channel_key, 'pug'].join(':')
   end
 
-  def channel_key
-    ['channel', @channel_id].join(':')
+  def maps_key
+    [channel_key, 'maps'].join(':')
   end
 
   def notify_roles_key
@@ -137,6 +141,10 @@ class Pug
 
   def teamsize_key
     [channel_key, 'teamsize'].join(':')
+  end
+
+  def channel_key
+    ['channel', @channel_id].join(':')
   end
 
   def redis

@@ -200,6 +200,17 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    bot.command :addmap do |event, *args|
+      setup_pug(event) do |e, pug|
+        return send_msg("What map? e.g. `!addmap 2fort5r`", e.channel) unless args.any?
+
+        maps = args
+        pug.add_maps(maps)
+
+        send_msg("#{maps.join(', ')} added to maps", e.channel)
+      end
+    end
+
     bot.command :notify do |event, *args|
       setup_pug(event) do |e, pug|
         roles = args.join(' ')
