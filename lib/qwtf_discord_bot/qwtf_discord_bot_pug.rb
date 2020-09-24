@@ -238,6 +238,22 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    bot.command :vote do |event, *args|
+      setup_pug(event) do |e, pug|
+        maps = pug.maps
+        return send_msg('No maps have been added. `!addmap`', e.channel) unless maps.any?
+        return send_msg("What map? E.G. `!vote #{pug.maps.sample}`", e.channel) unless args.any?
+
+        voted_map = args[0]
+        return send_msg("#{voted_map} isn't in the map list. `!maps`", e.channel) unless pug.maps.include?(voted_map)
+
+        pug.vote(player_id: e.user_id, map: voted_map)
+        votes_required_to_win = ((pug.maxplayers / 2) + 1) - pug.vote_count(voted_map)
+
+        send_msg("#{e.display_name} votes for #{voted_map} | #{votes_required_to_win} more to win", e.channel)
+      end
+    end
+
     bot.command :notify do |event, *args|
       setup_pug(event) do |e, pug|
         roles = args.join(' ')

@@ -39,6 +39,14 @@ class Pug
     redis.smembers(maps_key)
   end
 
+  def vote(player_id:, map:)
+    redis.sadd(votes_key(map), player_id)
+  end
+
+  def vote_count(map)
+    redis.scard(votes_key(map)).to_i
+  end
+
   def team(number)
     redis.smembers(team_key(number)).map(&:to_i)
   end
@@ -149,6 +157,14 @@ class Pug
 
   def teamsize_key
     [channel_key, 'teamsize'].join(':')
+  end
+
+  def votes_keys
+    redis.keys([pug_key, 'votes:*'].join(':'))
+  end
+
+  def votes_key(map)
+    [channel_key, 'votes', map].join(':')
   end
 
   def channel_key
