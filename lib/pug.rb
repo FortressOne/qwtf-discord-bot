@@ -35,6 +35,10 @@ class Pug
     redis.srem(maps_key, maps)
   end
 
+  def maps
+    redis.smembers(maps_key)
+  end
+
   def team(number)
     redis.smembers(team_key(number)).map(&:to_i)
   end
