@@ -89,12 +89,13 @@ class QwtfDiscordBotPug # :nodoc:
           e.channel
         )
 
-        send_msg(end_pug_message, e.channel) unless pug.active?
+        end_pug(pug, e.channel) if pug.empty?
       end
     end
 
     bot.command :kick do |event, *args|
       setup_pug(event) do |e, pug|
+        return send_msg("Kick who? e.g. `!kick @#{e.display_name}`", e.channel) unless args.any?
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
         args.each do |arg|
@@ -125,7 +126,7 @@ class QwtfDiscordBotPug # :nodoc:
             e.channel
           )
 
-          break send_msg(end_pug_message, e.channel) unless pug.active?
+          break end_pug(pug, e.channel) if pug.empty?
         end
       end
     end
@@ -195,9 +196,7 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-        pug.end_pug
-
-        send_msg(end_pug_message, e.channel)
+        end_pug(pug, e.channel)
       end
     end
 
@@ -287,8 +286,9 @@ class QwtfDiscordBotPug # :nodoc:
     end
   end
 
-  def end_pug_message
-    'PUG ended'
+  def end_pug(pug, channel_id)
+    pug.end_pug
+    send_msg('PUG ended', channel_id)
   end
 
   def no_active_pug_message

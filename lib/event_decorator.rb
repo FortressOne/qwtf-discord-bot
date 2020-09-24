@@ -19,6 +19,10 @@ class EventDecorator
     user.id
   end
 
+  def mention
+    user.mention
+  end
+
   def users
     server.users
   end

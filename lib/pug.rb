@@ -39,6 +39,10 @@ class Pug
     joined_player_count >= maxplayers
   end
 
+  def empty?
+    joined_player_count.zero?
+  end
+
   def joined_player_count
     joined_players.count
   end
@@ -73,7 +77,6 @@ class Pug
 
   def leave(player_id)
     leave_teams(player_id)
-    end_pug if empty?
   end
 
   def end_pug
@@ -114,10 +117,6 @@ class Pug
 
   def teams_keys
     redis.keys([pug_key, 'teams:*'].join(':'))
-  end
-
-  def empty?
-    joined_player_count.zero?
   end
 
   def team_key(team_no)
