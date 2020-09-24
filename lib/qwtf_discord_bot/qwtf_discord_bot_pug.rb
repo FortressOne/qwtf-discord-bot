@@ -202,12 +202,21 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :addmap do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg("What map? e.g. `!addmap 2fort5r`", e.channel) unless args.any?
-
         maps = args
-        pug.add_maps(maps)
+        return send_msg("What map? e.g. `!addmap 2fort5r`", e.channel) unless maps.any?
 
+        pug.add_maps(maps)
         send_msg("#{maps.join(', ')} added to maps", e.channel)
+      end
+    end
+
+    bot.command :removemap do |event, *args|
+      setup_pug(event) do |e, pug|
+        maps = args
+        return send_msg("What map? e.g. `!removemap 2fort5r`", e.channel) unless maps.any?
+
+        pug.remove_maps(maps)
+        send_msg("#{maps.join(', ')} removed from maps", e.channel)
       end
     end
 

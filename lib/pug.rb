@@ -31,6 +31,10 @@ class Pug
     redis.sadd(maps_key, maps)
   end
 
+  def remove_maps(maps)
+    redis.srem(maps_key, maps)
+  end
+
   def team(number)
     redis.smembers(team_key(number)).map(&:to_i)
   end
