@@ -32,6 +32,7 @@ class QwtfDiscordBotPug # :nodoc:
         send_msg(
           [
             "#{pug.player_slots} joined",
+            "Map: #{pug.game_map}",
             pug_teams_message(pug, e).join("\n")
           ].join("\n"),
           e.channel
@@ -229,28 +230,22 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :votemap do |event, *args|
+    bot.command :map do |event, *args|
       setup_pug(event) do |e, pug|
         maps = pug.maps
         return send_msg('No maps have been added. `!addmap`', e.channel) unless maps.any?
+        return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-        send_msg("`!vote <map>` | #{pug.maps.join(', ')}", e.channel)
-      end
-    end
+        if args.empty?
+          return send_msg('No map has been set for the current PUG', e.channel) unless pug.game_map
+          send_msg("Current map is #{pug.game_map}", e.channel) unless args.any?
+        else
+          game_map = args.first
+          return send_msg("#{game_map} isn't in the map list. `!addmap` to add it.", e.channel) unless maps.include?(game_map)
 
-    bot.command :vote do |event, *args|
-      setup_pug(event) do |e, pug|
-        maps = pug.maps
-        return send_msg('No maps have been added. `!addmap`', e.channel) unless maps.any?
-        return send_msg("What map? E.G. `!vote #{pug.maps.sample}`", e.channel) unless args.any?
-
-        voted_map = args[0]
-        return send_msg("#{voted_map} isn't in the map list. `!maps`", e.channel) unless pug.maps.include?(voted_map)
-
-        pug.vote(player_id: e.user_id, map: voted_map)
-        votes_required_to_win = ((pug.maxplayers / 2) + 1) - pug.vote_count(voted_map)
-
-        send_msg("#{e.display_name} votes for #{voted_map} | #{votes_required_to_win} more to win", e.channel)
+          pug.game_map = game_map
+          send_msg("Map set to #{game_map}", e.channel)
+        end
       end
     end
 

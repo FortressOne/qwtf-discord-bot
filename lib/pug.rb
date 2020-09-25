@@ -79,6 +79,14 @@ class Pug
     maxplayers - joined_player_count
   end
 
+  def game_map=(map)
+    redis.set([pug_key, 'map'].join(':'), map)
+  end
+
+  def game_map
+    redis.get([pug_key, 'map'].join(':'))
+  end
+
   def notify_roles=(roles)
     redis.set(notify_roles_key, roles)
   end
