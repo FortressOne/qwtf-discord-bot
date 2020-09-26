@@ -238,7 +238,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         if args.empty?
           return send_msg('No map has been set for the current PUG', e.channel) unless pug.game_map
-          send_msg("Current map is #{pug.game_map}", e.channel) unless args.any?
+          send_msg("Current map is #{pug.game_map}", e.channel)
         else
           game_map = args.first
           return send_msg("#{game_map} isn't in the map list. `!addmap` to add it.", e.channel) unless maps.include?(game_map)
