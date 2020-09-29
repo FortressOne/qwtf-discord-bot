@@ -122,7 +122,44 @@ class Pug
   end
 
   def won_by(team_no)
-    { teams: teams, winner: team_no }
+    team_results = teams.inject({}) do |teams, (name, player_ids)|
+      result = team_no.to_i == name.to_i ? 1 : -1
+      teams.merge({ name => { players: player_ids, result: result } })
+    end
+
+    json = {
+      match: {
+        map: game_map,
+        teams: team_results
+      }
+    }.to_json
+
+    uri = URI(ENV['RATINGS_API_URL'])
+    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+    req.body = json
+    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(req)
+    end
+  end
+
+  def drawn
+    team_results = teams.inject({}) do |teams, (name, player_ids)|
+      teams.merge({ name => { players: player_ids, result: 0 } })
+    end
+
+    json = {
+      match: {
+        map: game_map,
+        teams: team_results
+      }
+    }.to_json
+
+    uri = URI(ENV['RATINGS_API_URL'])
+    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+    req.body = json
+    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(req)
+    end
   end
 
   def teams

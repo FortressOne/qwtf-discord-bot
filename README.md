@@ -86,15 +86,20 @@ This responds to discord messages:
     qwtf-discord-bot pug
 
 This responds to discord messages:
+  - `!status`
   - `!join`
   - `!leave`
-  - `!status`
-  - `!kick <@player>`
   - `!teamsize <no_of_players>`
+  - `!kick <@player>`
   - `!team <team_no>`
   - `!unteam`
+  - `!addmap <map_name>`
+  - `!removemap <map_name>`
+  - `!maps`
+  - `!map <map_name>`
   - `!win <team_no>`
-  - `!notify <@role @role2>`
+  - `!draw`
+  - `!notify <@role>`
   - `!end`
 
 

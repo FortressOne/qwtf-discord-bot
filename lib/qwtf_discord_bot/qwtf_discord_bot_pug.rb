@@ -176,20 +176,27 @@ class QwtfDiscordBotPug # :nodoc:
 
         pug.won_by(winning_team_no)
 
-        winning_team = pug.team(winning_team_no).map do |player_id|
-          e.display_name_for(player_id)
-        end
+        # winning_team = pug.team(winning_team_no).map do |player_id|
+        #   e.display_name_for(player_id)
+        # end
 
-        non_winning_teams = pug.actual_teams.tap { |team| team.delete(winning_team_no) }
+        # non_winning_teams = pug.actual_teams.tap { |team| team.delete(winning_team_no) }
 
-        losing_players = non_winning_teams.values.flatten.map do |player_id|
-          e.display_name_for(player_id)
-        end
+        # losing_players = non_winning_teams.values.flatten.map do |player_id|
+        #   e.display_name_for(player_id)
+        # end
 
-        send_msg(
-          "#{winning_team.join(', ')} defeat #{losing_players.join(', ')}",
-          e.channel
-        )
+        send_msg("Team #{winning_team_no} wins", e.channel)
+      end
+    end
+
+    bot.command :draw do |event, *args|
+      setup_pug(event) do |e, pug|
+        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+
+        pug.drawn
+
+        send_msg("Match drawn", e.channel)
       end
     end
 
