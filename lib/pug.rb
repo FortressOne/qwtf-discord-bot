@@ -127,19 +127,14 @@ class Pug
       teams.merge({ name => { players: player_ids, result: result } })
     end
 
-    json = {
-      match: {
-        map: game_map,
-        teams: team_results
-      }
-    }.to_json
-
-    uri = URI(ENV['RATINGS_API_URL'])
-    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-    req.body = json
-    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-      http.request(req)
-    end
+    post_results(
+      {
+        match: {
+          map: game_map,
+          teams: team_results
+        }
+      }.to_json
+    )
   end
 
   def drawn
@@ -147,19 +142,14 @@ class Pug
       teams.merge({ name => { players: player_ids, result: 0 } })
     end
 
-    json = {
-      match: {
-        map: game_map,
-        teams: team_results
-      }
-    }.to_json
-
-    uri = URI(ENV['RATINGS_API_URL'])
-    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-    req.body = json
-    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-      http.request(req)
-    end
+    post_results(
+      {
+        match: {
+          map: game_map,
+          teams: team_results
+        }
+      }.to_json
+    )
   end
 
   def teams
@@ -222,5 +212,14 @@ class Pug
 
   def no_of_teams
     [actual_teams.count, MIN_NO_OF_TEAMS].max
+  end
+
+  def post_results(json)
+    uri = URI(ENV['RATINGS_API_URL'])
+    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+    req.body = json
+    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(req)
+    end
   end
 end
