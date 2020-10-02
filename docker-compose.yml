@@ -34,7 +34,7 @@ services:
       - redis
     environment:
       - REDIS_URL=redis://redis
-      - RATINGS_API_URL=http://ratings.fortressone.org/api/v1/
+      - RATINGS_API_URL
     volumes:
       - type: bind
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
