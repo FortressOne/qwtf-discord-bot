@@ -121,37 +121,6 @@ class Pug
     teamsize * no_of_teams
   end
 
-  def won_by(team_no)
-    team_results = teams.inject({}) do |teams, (name, player_ids)|
-      result = team_no.to_i == name.to_i ? 1 : -1
-      teams.merge({ name => { players: player_ids, result: result } })
-    end
-
-    post_results(
-      {
-        match: {
-          map: game_map,
-          teams: team_results
-        }
-      }.to_json
-    )
-  end
-
-  def drawn
-    team_results = teams.inject({}) do |teams, (name, player_ids)|
-      teams.merge({ name => { players: player_ids, result: 0 } })
-    end
-
-    post_results(
-      {
-        match: {
-          map: game_map,
-          teams: team_results
-        }
-      }.to_json
-    )
-  end
-
   def teams
     teams_keys.inject({}) do |teams, team|
       teams.merge({ team.split(':').last => redis.smembers(team).map(&:to_i) })
@@ -212,14 +181,5 @@ class Pug
 
   def no_of_teams
     [actual_teams.count, MIN_NO_OF_TEAMS].max
-  end
-
-  def post_results(json)
-    uri = URI(ENV['RATINGS_API_URL'])
-    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-    req.body = json
-    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-      http.request(req)
-    end
   end
 end

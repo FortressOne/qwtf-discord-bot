@@ -174,7 +174,23 @@ class QwtfDiscordBotPug # :nodoc:
 
         return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
-        pug.won_by(winning_team_no)
+        players = pug.joined_players.inject({}) do |memo, id|
+          memo.merge({ id => e.display_name_for(id) })
+        end
+
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+          result = winning_team_no.to_i == name.to_i ? 1 : -1
+          teams.merge({ name => { players: players, result: result } })
+        end
+
+        post_results(
+          {
+            match: {
+              map: pug.game_map,
+              teams: team_results
+            }
+          }.to_json
+        )
 
         # winning_team = pug.team(winning_team_no).map do |player_id|
         #   e.display_name_for(player_id)
@@ -194,7 +210,22 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-        pug.drawn
+        players = pug.joined_players.inject({}) do |memo, id|
+          memo.merge({ id => e.display_name_for(id) })
+        end
+
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+          teams.merge({ name => { players: players, result: 0 } })
+        end
+
+        post_results(
+          {
+            match: {
+              map: pug.game_map,
+              teams: team_results
+            }
+          }.to_json
+        )
 
         send_msg("Match drawn", e.channel)
       end
@@ -353,5 +384,14 @@ class QwtfDiscordBotPug # :nodoc:
 
   def send_msg(message, channel)
     channel.send_message(message) && puts(message)
+  end
+
+  def post_results(json)
+    uri = URI(ENV['RATINGS_API_URL'])
+    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+    req.body = json
+    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(req)
+    end
   end
 end
