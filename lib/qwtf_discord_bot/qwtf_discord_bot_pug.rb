@@ -155,13 +155,13 @@ class QwtfDiscordBotPug # :nodoc:
             ].join(MSG_SNIPPET_DELIMITER), e.channel
           )
         else
-          args[1..-1].each do |arg|
-            unless arg.match(/<@!\d+>/)
+          args[1..-1].each do |mention|
+            unless mention.match(/<@!\d+>/)
               send_msg("#{arg} isn't a valid mention", e.channel)
               next
             end
 
-            user_id = mention_to_user_id(arg)
+            user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
 
             unless pug.joined?(user_id)
