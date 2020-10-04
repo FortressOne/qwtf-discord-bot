@@ -424,7 +424,7 @@ class QwtfDiscordBotPug # :nodoc:
     uri = URI("#{ENV['RATINGS_API_URL']}matches/")
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
     req.body = json
-    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    Net::HTTP.start(uri.hostname, uri.port) do |http|
       http.request(req)
     end
   end
