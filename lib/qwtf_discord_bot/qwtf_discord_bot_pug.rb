@@ -173,7 +173,7 @@ class QwtfDiscordBotPug # :nodoc:
 
             send_msg(
               [
-                "#{e.display_name} joins team #{team_no}",
+                "#{display_name} joins team #{team_no}",
                 "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
               ].join(MSG_SNIPPET_DELIMITER), e.channel
             )
