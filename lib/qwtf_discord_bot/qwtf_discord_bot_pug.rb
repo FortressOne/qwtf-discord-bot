@@ -105,7 +105,7 @@ class QwtfDiscordBotPug # :nodoc:
             next
           end
 
-          user_id = arg[3..-2].to_i
+          user_id = mention_to_user_id(arg)
           display_name = e.display_name_for(user_id) || arg
 
           unless pug.joined?(user_id)
@@ -134,23 +134,53 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
+        return send_msg("Which team? E.G. `!team 1`", e.channel) unless args.any?
+
         team_no = args[0].to_i
         return send_msg("Choose a team between 1 and 4", e.channel) unless team_no.between?(1, 4)
 
-        user_id = e.user_id
-        return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
+        pug_already_full = pug.full?
 
-        join_pug(e, pug) unless pug.joined?(user_id)
-        pug.join_team(team_no: team_no, player_id: user_id)
+        if args.count == 1
+          user_id = e.user_id
+          return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
 
-        send_msg(
-          [
-            "#{e.display_name} joins team #{team_no}",
-            "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
-          ].join(MSG_SNIPPET_DELIMITER), e.channel
-        )
+          join_pug(e, pug) unless pug.joined?(user_id)
+          pug.join_team(team_no: team_no, player_id: user_id)
 
-        start_pug(pug, e) if pug.full?
+          send_msg(
+            [
+              "#{e.display_name} joins team #{team_no}",
+              "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+            ].join(MSG_SNIPPET_DELIMITER), e.channel
+          )
+        else
+          args.each do |arg|
+            unless arg.match(/<@!\d+>/)
+              send_msg("#{arg} isn't a valid mention", e.channel)
+              next
+            end
+
+            user_id = mention_to_user_id(arg)
+            display_name = e.display_name_for(user_id) || arg
+
+            unless pug.joined?(user_id)
+              send_msg("#{display_name} isn't in the PUG", e.channel)
+              next
+            end
+
+            pug.join_team(team_no: team_no, player_id: user_id)
+
+            send_msg(
+              [
+                "#{e.display_name} joins team #{team_no}",
+                "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+              ].join(MSG_SNIPPET_DELIMITER), e.channel
+            )
+          end
+        end
+
+        start_pug(pug, e) if !pug_already_full && pug.full?
       end
     end
 
@@ -179,8 +209,8 @@ class QwtfDiscordBotPug # :nodoc:
             memo.merge({ id => e.display_name_for(id) })
           end
 
-          result = winning_team_no.to_i == name.to_i ? 1 : -1
-          teams.merge({ name => { players: players, result: result } })
+        result = winning_team_no.to_i == name.to_i ? 1 : -1
+        teams.merge({ name => { players: players, result: result } })
         end
 
         post_results(
@@ -215,7 +245,7 @@ class QwtfDiscordBotPug # :nodoc:
             memo.merge({ id => e.display_name_for(id) })
           end
 
-          teams.merge({ name => { players: players, result: 0 } })
+        teams.merge({ name => { players: players, result: 0 } })
         end
 
         post_results(
@@ -306,6 +336,10 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   private
+
+  def mention_to_user_id(mention)
+    mention[3..-2].to_i
+  end
 
   def join_pug(e, pug)
     pug.join(e.user_id)
