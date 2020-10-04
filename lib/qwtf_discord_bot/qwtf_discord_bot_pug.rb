@@ -155,7 +155,7 @@ class QwtfDiscordBotPug # :nodoc:
             ].join(MSG_SNIPPET_DELIMITER), e.channel
           )
         else
-          args.each do |arg|
+          args[1..-1].each do |arg|
             unless arg.match(/<@!\d+>/)
               send_msg("#{arg} isn't a valid mention", e.channel)
               next
