@@ -137,7 +137,7 @@ class QwtfDiscordBotPug # :nodoc:
         return send_msg("Which team? E.G. `!team 1`", e.channel) unless args.any?
 
         team_no = args[0].to_i
-        return send_msg("Choose a team between 1 and 4", e.channel) unless team_no.between?(1, 4)
+        return send_msg("Choose a team between 0 and 4", e.channel) unless team_no.between?(0, 4)
 
         pug_already_full = pug.full?
 
