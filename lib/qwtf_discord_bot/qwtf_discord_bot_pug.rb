@@ -204,13 +204,15 @@ class QwtfDiscordBotPug # :nodoc:
 
         return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
-        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+        actual_teams = pug.teams.reject! { |k| k == "0" }
+
+        team_results = actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
 
-        result = winning_team_no.to_i == name.to_i ? 1 : -1
-        teams.merge({ name => { players: players, result: result } })
+          result = winning_team_no.to_i == name.to_i ? 1 : -1
+          teams.merge({ name => { players: players, result: result } })
         end
 
         post_results(
@@ -240,7 +242,9 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+        actual_teams = pug.teams.reject! { |k| k == "0" }
+
+        team_results = actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
