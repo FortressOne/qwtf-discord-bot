@@ -204,7 +204,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
-        actual_teams = pug.teams.reject! { |k| k == "0" }
+        actual_teams = pug.teams.reject { |k| k == "0" }
 
         team_results = actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
