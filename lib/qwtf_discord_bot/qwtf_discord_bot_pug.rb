@@ -204,9 +204,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
-        actual_teams = pug.teams.reject { |k| k == "0" }
-
-        team_results = actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -219,7 +217,11 @@ class QwtfDiscordBotPug # :nodoc:
           {
             match: {
               map: pug.game_map,
-              teams: team_results
+              teams: team_results,
+              discord_channel: {
+                channel_id: e.channel_id,
+                name: "#{e.channel.server.name} ##{e.channel.name}"
+              }
             }
           }.to_json
         )
@@ -242,9 +244,7 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
 
-        actual_teams = pug.teams.reject! { |k| k == "0" }
-
-        team_results = actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -256,7 +256,11 @@ class QwtfDiscordBotPug # :nodoc:
           {
             match: {
               map: pug.game_map,
-              teams: team_results
+              teams: team_results,
+              discord_channel: {
+                channel_id: e.channel_id,
+                name: "#{e.channel.server.name} ##{e.channel.name}"
+              }
             }
           }.to_json
         )
