@@ -204,6 +204,12 @@ class QwtfDiscordBotPug # :nodoc:
 
         return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
+        if pug.actual_teams.count < 2
+          return send_msg(
+            "There must be at least two teams with players to submit a result", e.channel
+          )
+        end
+
         team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
@@ -243,6 +249,12 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :draw do |event, *args|
       setup_pug(event) do |e, pug|
         return send_msg(no_active_pug_message, e.channel) unless pug.active?
+
+        if pug.actual_teams.count < 2
+          return send_msg(
+            "There must be at least two teams with players to submit a result", e.channel
+          )
+        end
 
         team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
