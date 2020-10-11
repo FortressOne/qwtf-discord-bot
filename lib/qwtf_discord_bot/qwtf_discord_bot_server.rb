@@ -7,6 +7,10 @@ class QwtfDiscordBotServer
       prefix: '!'
     )
 
+    bot.command :help do |event, *args|
+      "Server commands: `!active`, `!all`, `!server <address>`"
+    end
+
     bot.command :server do |event, *args|
       if args.empty?
         message = 'Provide a server address e.g. `!server ' \

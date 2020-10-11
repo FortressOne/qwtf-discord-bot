@@ -16,6 +16,10 @@ class QwtfDiscordBotPug # :nodoc:
       prefix: '!'
     )
 
+    bot.command :help do |event, *args|
+      "Pug commands: `!status`, `!join`, `!team <team_no>`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map <map_name>`, `!notify <@role>`"
+    end
+
     bot.command :join do |event, *args|
       setup_pug(event) do |e, pug|
         return send_msg("You've already joined", e.channel) if pug.joined?(e.user_id)
