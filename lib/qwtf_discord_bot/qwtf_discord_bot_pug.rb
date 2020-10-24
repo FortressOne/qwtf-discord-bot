@@ -386,6 +386,16 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
+    if !pug.actual_teams.any?
+      teams = get_fair_teams(pug.joined_players)
+
+      teams.each do |team_no, player_ids|
+        player_ids.each do |player_id|
+          pug.join_team(team_no: team_no, player_id: player_id)
+        end
+      end
+    end
+
     pug_teams = pug.teams.map do |team_no, player_ids|
       team_mentions = player_ids.map do |player_id|
         event.mention_for(player_id)
@@ -451,5 +461,16 @@ class QwtfDiscordBotPug # :nodoc:
     Net::HTTP.start(uri.hostname, uri.port) do |http|
       http.request(req)
     end
+  end
+
+  def get_fair_teams(players)
+    uri = URI("#{ENV['RATINGS_API_URL']}fair_teams/new")
+    params = { 'players[]' => players }
+    uri.query = URI.encode_www_form(params)
+    req = Net::HTTP::Get.new(uri)
+    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(req)
+    end
+    JSON.parse(res.body).first.to_h
   end
 end
