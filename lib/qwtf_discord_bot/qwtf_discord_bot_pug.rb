@@ -243,17 +243,7 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         )
 
-        # winning_team = pug.team(winning_team_no).map do |player_id|
-        #   e.display_name_for(player_id)
-        # end
-
-        # non_winning_teams = pug.actual_teams.tap { |team| team.delete(winning_team_no) }
-
-        # losing_players = non_winning_teams.values.flatten.map do |player_id|
-        #   e.display_name_for(player_id)
-        # end
-
-        send_embedded_message("Team #{winning_team_no} wins", e.channel)
+        send_embedded_message("Team #{winning_team_no} wins. [Ratings](http://ratings.fortressone.org)", e.channel)
       end
     end
 
@@ -288,7 +278,7 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         )
 
-        send_embedded_message("Match drawn", e.channel)
+        send_embedded_message("Match drawn. [Ratings](http://ratings.fortressone.org)", e.channel)
       end
     end
 
