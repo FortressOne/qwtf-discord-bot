@@ -139,7 +139,7 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
         return send_msg("Which team? E.G. `!team 1`", e.channel) unless args.any?
-        return send_msg("Choose a team between 0 and 2", e.channel) unless ["1", "2"].any?(args.first)
+        return send_msg("Choose a team between 0 and 2", e.channel) unless ["0", "1", "2"].any?(args.first)
 
         team_no = args.first.to_i
         pug_already_full = pug.full?
