@@ -13,7 +13,15 @@ class QwtfDiscordBotPug # :nodoc:
       token: QwtfDiscordBot.config.token,
       client_id: QwtfDiscordBot.config.client_id,
       help_command: false,
-      prefix: '!'
+      prefix: proc do |message|
+        match = /^\!(\w+)(.*)/.match(message.content)
+        if match
+          first = match[1]
+          rest = match[2]
+          # Return the modified string with the first word lowercase:
+          "#{first.downcase}#{rest}"
+        end
+      end
     )
 
     bot.command :help do |event, *args|
@@ -450,7 +458,9 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def send_msg(message, channel)
-    channel.send_message(message) && puts(message)
+    embed = Discordrb::Webhooks::Embed.new
+    embed.description = message
+    channel.send_embed(nil, embed) && puts(message)
   end
 
   def post_results(json)
