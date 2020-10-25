@@ -30,7 +30,7 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :join do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg("You've already joined", e.channel) if pug.joined?(e.user_id)
+        return send_embedded_message("You've already joined", e.channel) if pug.joined?(e.user_id)
 
         join_pug(e, pug)
         start_pug(pug, e) if pug.full?
@@ -39,9 +39,9 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :status do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg('No PUG has been started. `!join` to create', e.channel) unless pug.active?
+        return send_embedded_message('No PUG has been started. `!join` to create', e.channel) unless pug.active?
 
-        send_msg(
+        send_embedded_message(
           [
             "#{pug.player_slots} joined",
             "Map: #{pug.game_map}",
@@ -54,15 +54,15 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :teamsize do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg("Team size is #{pug.teamsize}", e.channel) unless args.any?
+        return send_embedded_message("Team size is #{pug.teamsize}", e.channel) unless args.any?
 
         new_teamsize = args[0].to_i
-        return send_msg('Team size should be a number higher than 0', e.channel) unless new_teamsize > 0
+        return send_embedded_message('Team size should be a number higher than 0', e.channel) unless new_teamsize > 0
 
         if new_teamsize
           pug.teamsize = new_teamsize
 
-          send_msg(
+          send_embedded_message(
             [
               "Team size set to #{pug.teamsize}",
               "#{pug.player_slots} joined"
@@ -72,7 +72,7 @@ class QwtfDiscordBotPug # :nodoc:
 
           start_pug(pug, e) if pug.full?
         else
-          send_msg(
+          send_embedded_message(
             [
               "Current team size is #{pug.teamsize}",
               "#{pug.player_slots} joined"
@@ -85,8 +85,8 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :leave do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
-        return send_msg("You're not in the PUG", e.channel) unless pug.joined?(e.user_id)
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message("You're not in the PUG", e.channel) unless pug.joined?(e.user_id)
 
         pug.leave(e.user_id)
 
@@ -97,7 +97,7 @@ class QwtfDiscordBotPug # :nodoc:
 
         snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
-        send_msg(
+        send_embedded_message(
           snippets.join(MSG_SNIPPET_DELIMITER),
           e.channel
         )
@@ -108,12 +108,12 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :kick do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg("Kick who? e.g. `!kick @#{e.display_name}`", e.channel) unless args.any?
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message("Kick who? e.g. `!kick @#{e.display_name}`", e.channel) unless args.any?
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
 
         args.each do |arg|
           unless arg.match(/<@!\d+>/)
-            send_msg("#{arg} isn't a valid mention", e.channel)
+            send_embedded_message("#{arg} isn't a valid mention", e.channel)
             next
           end
 
@@ -121,7 +121,7 @@ class QwtfDiscordBotPug # :nodoc:
           display_name = e.display_name_for(user_id) || arg
 
           unless pug.joined?(user_id)
-            send_msg("#{display_name} isn't in the PUG", e.channel)
+            send_embedded_message("#{display_name} isn't in the PUG", e.channel)
             next
           end
 
@@ -134,7 +134,7 @@ class QwtfDiscordBotPug # :nodoc:
 
           snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
-          send_msg(
+          send_embedded_message(
             snippets.join(MSG_SNIPPET_DELIMITER),
             e.channel
           )
@@ -146,20 +146,20 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg("Which team? E.G. `!team 1`", e.channel) unless args.any?
-        return send_msg("Choose a team between 0 and 2", e.channel) unless ["0", "1", "2"].any?(args.first)
+        return send_embedded_message("Which team? E.G. `!team 1`", e.channel) unless args.any?
+        return send_embedded_message("Choose a team between 0 and 2", e.channel) unless ["0", "1", "2"].any?(args.first)
 
         team_no = args.first.to_i
         pug_already_full = pug.full?
 
         if args.count == 1
           user_id = e.user_id
-          return send_msg("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
+          return send_embedded_message("You're already in team #{team_no}", e.channel) if pug.team(team_no).include?(user_id)
 
           join_pug(e, pug) unless pug.joined?(user_id)
           pug.join_team(team_no: team_no, player_id: user_id)
 
-          send_msg(
+          send_embedded_message(
             [
               "#{e.display_name} joins team #{team_no}",
               "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
@@ -168,7 +168,7 @@ class QwtfDiscordBotPug # :nodoc:
         else
           args[1..-1].each do |mention|
             unless mention.match(/<@!\d+>/)
-              send_msg("#{arg} isn't a valid mention", e.channel)
+              send_embedded_message("#{arg} isn't a valid mention", e.channel)
               next
             end
 
@@ -176,13 +176,13 @@ class QwtfDiscordBotPug # :nodoc:
             display_name = e.display_name_for(user_id) || arg
 
             unless pug.joined?(user_id)
-              send_msg("#{display_name} isn't in the PUG", e.channel)
+              send_embedded_message("#{display_name} isn't in the PUG", e.channel)
               next
             end
 
             pug.join_team(team_no: team_no, player_id: user_id)
 
-            send_msg(
+            send_embedded_message(
               [
                 "#{display_name} joins team #{team_no}",
                 "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
@@ -198,25 +198,25 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :unteam do |event, *args|
       setup_pug(event) do |e, pug|
         user_id = e.user_id
-        return send_msg('No PUG has been started. `!join` to create', e.channel) unless pug.active?
-        return send_msg("You aren't in this PUG", e.channel) unless pug.joined?(user_id)
-        return send_msg("You aren't in a team", e.channel) if pug.team(0).include?(user_id)
+        return send_embedded_message('No PUG has been started. `!join` to create', e.channel) unless pug.active?
+        return send_embedded_message("You aren't in this PUG", e.channel) unless pug.joined?(user_id)
+        return send_embedded_message("You aren't in a team", e.channel) if pug.team(0).include?(user_id)
 
         pug.join_team(team_no: 0, player_id: user_id)
-        send_msg("#{e.display_name} has no team", e.channel)
+        send_embedded_message("#{e.display_name} has no team", e.channel)
       end
     end
 
     bot.command :win do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
 
         winning_team_no = args[0]
 
-        return send_msg("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
+        return send_embedded_message("Not a valid team", e.channel) unless pug.team(winning_team_no).any?
 
         if pug.actual_teams.count < 2
-          return send_msg(
+          return send_embedded_message(
             "There must be at least two teams with players to submit a result", e.channel
           )
         end
@@ -253,16 +253,16 @@ class QwtfDiscordBotPug # :nodoc:
         #   e.display_name_for(player_id)
         # end
 
-        send_msg("Team #{winning_team_no} wins", e.channel)
+        send_embedded_message("Team #{winning_team_no} wins", e.channel)
       end
     end
 
     bot.command :draw do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
 
         if pug.actual_teams.count < 2
-          return send_msg(
+          return send_embedded_message(
             "There must be at least two teams with players to submit a result", e.channel
           )
         end
@@ -288,13 +288,13 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         )
 
-        send_msg("Match drawn", e.channel)
+        send_embedded_message("Match drawn", e.channel)
       end
     end
 
     bot.command :end do |event, *args|
       setup_pug(event) do |e, pug|
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
 
         end_pug(pug, e.channel)
       end
@@ -303,47 +303,47 @@ class QwtfDiscordBotPug # :nodoc:
     bot.command :addmap do |event, *args|
       setup_pug(event) do |e, pug|
         maps = args
-        return send_msg("What map? e.g. `!addmap 2fort5r`", e.channel) unless maps.any?
+        return send_embedded_message("What map? e.g. `!addmap 2fort5r`", e.channel) unless maps.any?
 
         pug.add_maps(maps)
-        send_msg("#{maps.join(', ')} added to maps", e.channel)
+        send_embedded_message("#{maps.join(', ')} added to maps", e.channel)
       end
     end
 
     bot.command :removemap do |event, *args|
       setup_pug(event) do |e, pug|
         maps = args
-        return send_msg("What map? e.g. `!removemap 2fort5r`", e.channel) unless maps.any?
+        return send_embedded_message("What map? e.g. `!removemap 2fort5r`", e.channel) unless maps.any?
 
         pug.remove_maps(maps)
-        send_msg("#{maps.join(', ')} removed from maps", e.channel)
+        send_embedded_message("#{maps.join(', ')} removed from maps", e.channel)
       end
     end
 
     bot.command :maps do |event, *args|
       setup_pug(event) do |e, pug|
         maps = pug.maps
-        return send_msg('No maps have been added. `!addmap`', e.channel) unless maps.any?
+        return send_embedded_message('No maps have been added. `!addmap`', e.channel) unless maps.any?
 
-        send_msg(maps.join(', '), e.channel)
+        send_embedded_message(maps.join(', '), e.channel)
       end
     end
 
     bot.command :map do |event, *args|
       setup_pug(event) do |e, pug|
         maps = pug.maps
-        return send_msg('No maps have been added. `!addmap`', e.channel) unless maps.any?
-        return send_msg(no_active_pug_message, e.channel) unless pug.active?
+        return send_embedded_message('No maps have been added. `!addmap`', e.channel) unless maps.any?
+        return send_embedded_message(no_active_pug_message, e.channel) unless pug.active?
 
         if args.empty?
-          return send_msg('No map has been set for the current PUG', e.channel) unless pug.game_map
-          send_msg("Current map is #{pug.game_map}", e.channel)
+          return send_embedded_message('No map has been set for the current PUG', e.channel) unless pug.game_map
+          send_embedded_message("Current map is #{pug.game_map}", e.channel)
         else
           game_map = args.first
-          return send_msg("#{game_map} isn't in the map list. `!addmap` to add it.", e.channel) unless maps.include?(game_map)
+          return send_embedded_message("#{game_map} isn't in the map list. `!addmap` to add it.", e.channel) unless maps.include?(game_map)
 
           pug.game_map = game_map
-          send_msg("Map set to #{game_map}", e.channel)
+          send_embedded_message("Map set to #{game_map}", e.channel)
         end
       end
     end
@@ -359,7 +359,7 @@ class QwtfDiscordBotPug # :nodoc:
                 "Notification role set to #{roles}"
               end
 
-        send_msg(msg, e.channel)
+        send_embedded_message(msg, e.channel)
       end
     end
 
@@ -382,7 +382,7 @@ class QwtfDiscordBotPug # :nodoc:
       snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
     end
 
-    send_msg(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
+    send_embedded_message(snippets.join(MSG_SNIPPET_DELIMITER), e.channel)
   end
 
   def setup_pug(event)
@@ -420,7 +420,7 @@ class QwtfDiscordBotPug # :nodoc:
       pug_teams
     ].join("\n")
 
-    send_msg(msg, event.channel)
+    send_embedded_message(msg, event.channel)
   end
 
   def pug_teams_message(pug, event)
@@ -450,14 +450,14 @@ class QwtfDiscordBotPug # :nodoc:
 
   def end_pug(pug, channel_id)
     pug.end_pug
-    send_msg('PUG ended', channel_id)
+    send_embedded_message('PUG ended', channel_id)
   end
 
   def no_active_pug_message
     "There's no active PUG"
   end
 
-  def send_msg(message, channel)
+  def send_embedded_message(message, channel)
     embed = Discordrb::Webhooks::Embed.new
     embed.description = message
     channel.send_embed(nil, embed) && puts(message)
