@@ -130,7 +130,7 @@ class Pug
   end
 
   def actual_teams
-    teams.tap { |team| team.delete("0") }
+    teams.tap { |team| team.delete(0) }
   end
 
   private

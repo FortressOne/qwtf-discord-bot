@@ -173,14 +173,14 @@ class QwtfDiscordBotPug # :nodoc:
 
         if args.count == 1
           user_id = e.user_id
-          return send_embedded_message("You're already in #{team_name(team_no)}", e.channel) if pug.team(team_no).include?(user_id)
+          return send_embedded_message("You're already in #{TEAM_NAMES[team_no]}", e.channel) if pug.team(team_no).include?(user_id)
 
           join_pug(e, pug) unless pug.joined?(user_id)
           pug.join_team(team_no: team_no, player_id: user_id)
 
           send_embedded_message(
             [
-              "#{e.display_name} joins #{team_name(team_no)}",
+              "#{e.display_name} joins #{TEAM_NAMES[team_no]}",
               "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
             ].join(MSG_SNIPPET_DELIMITER), e.channel
           )
@@ -203,7 +203,7 @@ class QwtfDiscordBotPug # :nodoc:
 
             send_embedded_message(
               [
-                "#{display_name} joins #{team_name(team_no)}",
+                "#{display_name} joins #{TEAM_NAMES[team_no]}",
                 "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
               ].join(MSG_SNIPPET_DELIMITER), e.channel
             )
@@ -262,7 +262,7 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         )
 
-        send_embedded_message("#{TEAM_NAMES[winning_team_no]} team wins. [Ratings](http://ratings.fortressone.org)", e.channel)
+        send_embedded_message("#{TEAM_NAMES[winning_team_no]} wins. [Ratings](http://ratings.fortressone.org)", e.channel)
       end
     end
 
@@ -378,7 +378,7 @@ class QwtfDiscordBotPug # :nodoc:
   private
 
   def team_name(team_no)
-    [team_no, TEAM_NAMES[team_no]].join(MSG_SNIPPET_DELIMITER)
+    [team_no, TEAM_NAMES[team_no]].join(" ")
   end
 
   def mention_to_user_id(mention)
@@ -407,6 +407,7 @@ class QwtfDiscordBotPug # :nodoc:
 
   def start_pug(pug, event)
     if !pug.actual_teams.any?
+      send_embedded_message("Choosing fair teams...", event.channel)
       teams = get_fair_teams(pug.joined_players)
 
       teams.each do |team_no, player_ids|
@@ -416,45 +417,32 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    pug_teams = pug.teams.map do |team_no, player_ids|
-      team_mentions = player_ids.map do |player_id|
-        event.mention_for(player_id)
-      end
+    footer = [
+      pug.game_map,
+      "#{pug.player_slots} joined",
+    ].compact.join(MSG_SNIPPET_DELIMITER)
 
-      team_status_line(
-        team_no: team_no.to_i,
-        names: team_mentions,
-        teamsize: pug.teamsize
+    send_embedded_message("Time to play!", event.channel) do |embed|
+      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+        text: footer
       )
-    end
 
-    msg = [
-      'Time to play!',
-      pug_teams
-    ].join("\n")
+      pug.teams.each do |team_no, player_ids|
+        team_mentions = player_ids.map do |player_id|
+          event.mention_for(player_id)
+        end
 
-    send_embedded_message(msg, event.channel)
-  end
-
-  def pug_teams_message(pug, event)
-    pug.teams.map do |team_no, player_ids|
-      team_display_names = player_ids.map do |player_id|
-        event.display_name_for(player_id)
+        embed.add_field(
+          Discordrb::Webhooks::EmbedField.new(
+            {
+              inline: true,
+              name: team_name(team_no),
+              value: team_mentions.join("\n")
+            }
+          )
+        )
       end
-
-      team_status_line(
-        team_no: team_no.to_i,
-        names: team_display_names,
-        teamsize: pug.teamsize
-      )
     end
-  end
-
-  def team_status_line(team_no:, names:, teamsize:)
-    [
-      "#{TEAM_NAMES[team_no]}: #{names.join(', ')}",
-      "#{names.count}/#{teamsize}"
-    ].join(MSG_SNIPPET_DELIMITER)
   end
 
   def end_pug(pug, channel_id)
