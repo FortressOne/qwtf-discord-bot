@@ -122,9 +122,11 @@ class Pug
   end
 
   def teams
-    teams_keys.inject({}) do |teams, team|
-      teams.merge({ team.split(':').last => redis.smembers(team).map(&:to_i) })
+    all_teams = teams_keys.inject({}) do |teams, team|
+      teams.merge({ team.split(':').last.to_i => redis.smembers(team).map(&:to_i) })
     end
+
+    all_teams.sort.to_h
   end
 
   def actual_teams
