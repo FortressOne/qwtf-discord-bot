@@ -42,12 +42,16 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         return send_embedded_message('No PUG has been started. `!join` to create', e.channel) unless pug.active?
 
-        message = [
+        footer = [
+          pug.game_map,
           "#{pug.player_slots} joined",
-          "Map: #{pug.game_map}",
-        ].join(MSG_SNIPPET_DELIMITER),
+        ].compact.join(MSG_SNIPPET_DELIMITER)
 
-        send_embedded_message(message, e.channel) do |embed|
+        send_embedded_message(nil, e.channel) do |embed|
+          embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+            text: footer
+          )
+
           pug.teams.each do |team_no, player_ids|
             team_display_names = player_ids.map do |player_id|
               e.display_name_for(player_id)
