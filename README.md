@@ -97,6 +97,7 @@ This responds to discord messages:
   - `!removemap <map_name>`
   - `!maps`
   - `!map <map_name>`
+  - `!choose`
   - `!win <team_no>`
   - `!draw`
   - `!notify <@role>`

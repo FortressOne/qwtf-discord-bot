@@ -26,7 +26,7 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     bot.command :help do |event, *args|
-      "Pug commands: `!status`, `!join`, `!team <team_no>`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map <map_name>`, `!notify <@role>`"
+      "Pug commands: `!status`, `!join`, `!team <team_no>`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map <map_name>`, `!choose`, `!notify <@role>`"
     end
 
     bot.command :join do |event, *args|
@@ -35,6 +35,18 @@ class QwtfDiscordBotPug # :nodoc:
 
         join_pug(e, pug)
         start_pug(pug, e) if pug.full?
+      end
+    end
+
+    bot.command :choose do |event, *args|
+      setup_pug(event) do |e, pug|
+        return send_embedded_message("Can't choose teams until PUG is full", e.channel) unless pug.full?
+
+        pug.joined_players.each do |player_id|
+          pug.join_team(team_no: 0, player_id: player_id)
+        end
+
+        start_pug(pug, e)
       end
     end
 
