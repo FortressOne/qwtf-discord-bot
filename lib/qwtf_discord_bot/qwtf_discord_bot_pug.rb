@@ -7,7 +7,7 @@ class QwtfDiscordBotPug # :nodoc:
   include QwtfDiscordBot
 
   MSG_SNIPPET_DELIMITER = ' · '
-  TEAM_NAMES = { 0 => "No team", 1 => "Blue", 2 => "Red" }
+  TEAM_NAMES = { 1 => "Blue", 2 => "Red" }
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -236,9 +236,9 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        unless ["0", "1", "2"].any?(args.first)
+        unless ["1", "2"].any?(args.first)
           return send_embedded_message(
-            description: "Choose a team between 0 and 2",
+            description: "Choose `!team 1`, `!team 2`, or `!unteam` to leave team",
             channel: e.channel
           )
         end
@@ -331,7 +331,7 @@ class QwtfDiscordBotPug # :nodoc:
         pug.join_team(team_no: 0, player_id: user_id)
 
         send_embedded_message(
-          description: "#{e.display_name} has no team",
+          description: "#{e.display_name} leaves team",
           channel: e.channel
         )
       end
@@ -585,6 +585,8 @@ class QwtfDiscordBotPug # :nodoc:
   private
 
   def team_name(team_no)
+    return "No team" if team_no == 0
+
     [team_no, TEAM_NAMES[team_no]].join(" ")
   end
 
