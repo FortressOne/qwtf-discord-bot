@@ -105,40 +105,34 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         unless args.any?
           return send_embedded_message(
-            description: "Team size is #{pug.teamsize}",
+            description: [
+              "Each team has #{pug.teamsize} players",
+              "#{pug.player_slots} joined"
+            ].join(MSG_SNIPPET_DELIMITER),
             channel: e.channel
           )
         end
 
         new_teamsize = args[0].to_i
-        unless new_teamsize > 0
+
+        if new_teamsize < 1
           return send_embedded_message(
-            description: "Team size should be a number higher than 0",
+            description: "Team size should be 1 or more",
             channel: e.channel
           )
         end
 
-        if new_teamsize
-          pug.teamsize = new_teamsize
+        pug.teamsize = new_teamsize
 
-          send_embedded_message(
-            description: [
-              "Team size set to #{pug.teamsize}",
-              "#{pug.player_slots} joined"
-            ].join(MSG_SNIPPET_DELIMITER),
-            channel: e.channel
-          )
+        send_embedded_message(
+          description: [
+            "Each team has #{pug.teamsize} players",
+            "#{pug.player_slots} joined"
+          ].join(MSG_SNIPPET_DELIMITER),
+          channel: e.channel
+        )
 
-          start_pug(pug, e) if pug.full?
-        else
-          send_embedded_message(
-            description: [
-              "Current team size is #{pug.teamsize}",
-              "#{pug.player_slots} joined"
-            ].join(MSG_SNIPPET_DELIMITER),
-            channel: e.channel
-          )
-        end
+        start_pug(pug, e) if pug.full?
       end
     end
 
@@ -165,9 +159,10 @@ class QwtfDiscordBotPug # :nodoc:
           "#{pug.player_slots} remain"
         ]
 
-        snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
+        message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
         send_embedded_message(
+          message: message,
           description: snippets.join(MSG_SNIPPET_DELIMITER),
           channel: e.channel
         )
@@ -219,9 +214,10 @@ class QwtfDiscordBotPug # :nodoc:
             "#{pug.player_slots} remain"
           ]
 
-          snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
+          message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
 
           send_embedded_message(
+            message: message,
             description: snippets.join(MSG_SNIPPET_DELIMITER),
             channel: e.channel
           )
@@ -600,13 +596,15 @@ class QwtfDiscordBotPug # :nodoc:
     pug.join(e.user_id)
 
     if pug.joined_player_count == 1
-      snippets = ["#{e.display_name} creates a PUG", pug.player_slots, pug.notify_roles]
+      snippets = ["#{e.display_name} creates a PUG", "#{pug.player_slots} joined"]
+      message = pug.notify_roles
     else
-      snippets = ["#{e.display_name} joins the PUG", pug.player_slots]
-      snippets << "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
+      snippets = ["#{e.display_name} joins the PUG", "#{pug.player_slots} joined"]
+      message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
     end
 
     send_embedded_message(
+      message: message,
       description: snippets.join(MSG_SNIPPET_DELIMITER),
       channel: e.channel
     )
@@ -639,8 +637,14 @@ class QwtfDiscordBotPug # :nodoc:
       "#{pug.player_slots} joined",
     ].compact.join(MSG_SNIPPET_DELIMITER)
 
+    mentions = pug.joined_players.map do |player_id|
+      event.mention_for(player_id)
+    end
+
+    mention_line = "Time to play! #{mentions.join(" ")}"
+
     send_embedded_message(
-      description: "Time to play!",
+      message: mention_line,
       channel: event.channel
     ) do |embed|
       embed.footer = Discordrb::Webhooks::EmbedFooter.new(
@@ -649,7 +653,7 @@ class QwtfDiscordBotPug # :nodoc:
 
       pug.teams.each do |team_no, player_ids|
         team_mentions = player_ids.map do |player_id|
-          event.mention_for(player_id)
+          event.display_name_for(player_id)
         end
 
         embed.add_field(
@@ -678,7 +682,7 @@ class QwtfDiscordBotPug # :nodoc:
     "There's no active PUG"
   end
 
-  def send_embedded_message(message: nil, description:, channel:)
+  def send_embedded_message(message: nil, description: nil, channel:)
     embed = Discordrb::Webhooks::Embed.new
     embed.description = description
     yield(embed) if block_given?
