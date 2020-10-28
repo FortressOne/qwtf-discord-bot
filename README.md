@@ -90,14 +90,14 @@ This responds to discord messages:
   - `!join`
   - `!leave`
   - `!teamsize <no_of_players>`
-  - `!kick <@player>`
+  - `!kick <@player> [@player2]`
   - `!team <team_no>`
   - `!unteam`
   - `!addmap <map_name>`
   - `!removemap <map_name>`
   - `!maps`
-  - `!map <map_name>`
-  - `!choose`
+  - `!map [map_name]`
+  - `!choose [n]`
   - `!win <team_no>`
   - `!draw`
   - `!notify <@role>`

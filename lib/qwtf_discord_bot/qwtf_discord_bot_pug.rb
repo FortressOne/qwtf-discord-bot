@@ -26,7 +26,7 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     bot.command :help do |event, *args|
-      "Pug commands: `!status`, `!join`, `!team <team_no>`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map <map_name>`, `!choose`, `!notify <@role>`"
+      "Pug commands: `!status`, `!join`, `!team <team_no> [@player1] [@player2]`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map [map_name]`, `!choose [n]`, `!notify <@role>`"
     end
 
     bot.command :join do |event, *args|
@@ -45,18 +45,28 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :choose do |event, *args|
       setup_pug(event) do |e, pug|
-        if !pug.full?
+        if pug.joined_players.count.odd?
           return send_embedded_message(
-            description: "Can't choose teams until PUG is full",
+            description: "Can't choose teams with odd number of players",
+            channel: event.channel
+          )
+        end
+
+        if args.any? && args.first.to_i < 1
+          return send_embedded_message(
+            description: "Choose a number higher than 0; e.g. `!choose 2`",
             channel: e.channel
           )
         end
 
-        pug.joined_players.each do |player_id|
-          pug.join_team(team_no: 0, player_id: player_id)
-        end
+        iteration = if args.any?
+                      args.first.to_i - 1
+                    else
+                      0
+                    end
 
-        start_pug(pug, e)
+        choose_fair_teams(pug: pug, event: e, iteration: iteration)
+        status(pug: pug, event: e)
       end
     end
 
@@ -69,35 +79,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        footer = [
-          pug.game_map,
-          "#{pug.player_slots} joined",
-        ].compact.join(MSG_SNIPPET_DELIMITER)
-
-        send_embedded_message(
-          description: nil,
-          channel: e.channel
-        ) do |embed|
-          embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-            text: footer
-          )
-
-          pug.teams.each do |team_no, player_ids|
-            team_display_names = player_ids.map do |player_id|
-              e.display_name_for(player_id)
-            end
-
-            embed.add_field(
-              Discordrb::Webhooks::EmbedField.new(
-                {
-                  inline: true,
-                  name: team_name(team_no),
-                  value: team_display_names.join("\n")
-                }
-              )
-            )
-          end
-        end
+        status(pug: pug, event: e)
       end
     end
 
@@ -619,20 +601,70 @@ class QwtfDiscordBotPug # :nodoc:
     nil # stop discordrb printing return value
   end
 
-  def start_pug(pug, event)
-    if !pug.actual_teams.any?
-      send_embedded_message(
-        description: "Choosing fair teams...",
+  def choose_fair_teams(pug:, event:, iteration: 0)
+    if !pug.full?
+      return send_embedded_message(
+        description: "Can't choose teams until PUG is full",
+        channel: e.channel
+      )
+    end
+
+    send_embedded_message(
+      description: "Choosing fair teams...",
+      channel: event.channel
+    )
+
+    combinations = get_fair_teams(pug.joined_players)
+    teams = combinations[iteration]
+
+    if !teams
+      return send_embedded_message(
+        description: "There are only #{combinations.count} possible combinations",
         channel: event.channel
       )
-      teams = get_fair_teams(pug.joined_players)
+    end
 
-      teams.each do |team_no, player_ids|
-        player_ids.each do |player_id|
-          pug.join_team(team_no: team_no, player_id: player_id)
-        end
+    teams.each do |team_no, player_ids|
+      player_ids.each do |player_id|
+        pug.join_team(team_no: team_no, player_id: player_id)
       end
     end
+  end
+
+  def status(pug:, event:)
+    footer = [
+      pug.game_map,
+      "#{pug.player_slots} joined"
+    ].compact.join(MSG_SNIPPET_DELIMITER)
+
+    send_embedded_message(
+      description: nil,
+      channel: event.channel
+    ) do |embed|
+      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+        text: footer
+      )
+
+      pug.teams.each do |team_no, player_ids|
+        team_display_names = player_ids.map do |player_id|
+          event.display_name_for(player_id)
+        end
+
+        embed.add_field(
+          Discordrb::Webhooks::EmbedField.new(
+            {
+              inline: true,
+              name: team_name(team_no),
+              value: team_display_names.join("\n")
+            }
+          )
+        )
+      end
+    end
+  end
+
+  def start_pug(pug, event)
+    choose_fair_teams(pug: pug, event: event) unless pug.actual_teams.any?
 
     footer = [
       pug.game_map,
@@ -695,6 +727,7 @@ class QwtfDiscordBotPug # :nodoc:
     uri = URI("#{ENV['RATINGS_API_URL']}matches/")
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
     req.body = json
+
     Net::HTTP.start(uri.hostname, uri.port) do |http|
       http.request(req)
     end
@@ -705,9 +738,11 @@ class QwtfDiscordBotPug # :nodoc:
     params = { 'players[]' => players }
     uri.query = URI.encode_www_form(params)
     req = Net::HTTP::Get.new(uri)
+
     res = Net::HTTP.start(uri.hostname, uri.port) do |http|
       http.request(req)
     end
-    JSON.parse(res.body).first.to_h
+
+    JSON.parse(res.body).map(&:to_h)
   end
 end
