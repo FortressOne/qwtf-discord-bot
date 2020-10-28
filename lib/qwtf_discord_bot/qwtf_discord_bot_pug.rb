@@ -605,7 +605,7 @@ class QwtfDiscordBotPug # :nodoc:
     if !pug.full?
       return send_embedded_message(
         description: "Can't choose teams until PUG is full",
-        channel: e.channel
+        channel: event.channel
       )
     end
 
