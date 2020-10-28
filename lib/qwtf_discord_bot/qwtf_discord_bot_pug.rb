@@ -65,8 +65,9 @@ class QwtfDiscordBotPug # :nodoc:
                       0
                     end
 
-        choose_fair_teams(pug: pug, event: e, iteration: iteration)
-        status(pug: pug, event: e)
+        if choose_fair_teams(pug: pug, event: e, iteration: iteration)
+          status(pug: pug, event: e)
+        end
       end
     end
 
@@ -606,7 +607,7 @@ class QwtfDiscordBotPug # :nodoc:
       return send_embedded_message(
         description: "Can't choose teams until PUG is full",
         channel: event.channel
-      )
+      ) && nil
     end
 
     send_embedded_message(
@@ -621,7 +622,7 @@ class QwtfDiscordBotPug # :nodoc:
       return send_embedded_message(
         description: "There are only #{combinations.count} possible combinations",
         channel: event.channel
-      )
+      ) && nil
     end
 
     teams.each do |team_no, player_ids|
