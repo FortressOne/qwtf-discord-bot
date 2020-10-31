@@ -261,15 +261,6 @@ class QwtfDiscordBotPug # :nodoc:
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
-
-            unless pug.joined?(user_id)
-              send_embedded_message(
-                description: "#{display_name} isn't in the PUG",
-                channel: e.channel
-              )
-              next
-            end
-
             pug.join_team(team_no: team_no, player_id: user_id)
 
             send_embedded_message(
