@@ -65,9 +65,9 @@ class QwtfDiscordBotPug # :nodoc:
                       0
                     end
 
-        if choose_fair_teams(pug: pug, event: e, iteration: iteration)
-          status(pug: pug, event: e)
-        end
+
+        message_obj = choose_fair_teams(pug: pug, event: e, iteration: iteration)
+        status(pug: pug, event: e, message_obj: message_obj) if message_obj
       end
     end
 
@@ -610,7 +610,7 @@ class QwtfDiscordBotPug # :nodoc:
       ) && nil
     end
 
-    send_embedded_message(
+    message_obj = send_embedded_message(
       description: "Choosing fair teams...",
       channel: event.channel
     )
@@ -621,7 +621,8 @@ class QwtfDiscordBotPug # :nodoc:
     if !teams
       return send_embedded_message(
         description: "There are only #{combinations.count} possible combinations",
-        channel: event.channel
+        channel: event.channel,
+        message_obj: message_obj
       ) && nil
     end
 
@@ -630,9 +631,11 @@ class QwtfDiscordBotPug # :nodoc:
         pug.join_team(team_no: team_no, player_id: player_id)
       end
     end
+
+    message_obj
   end
 
-  def status(pug:, event:)
+  def status(pug:, event:, message_obj: nil)
     footer = [
       pug.game_map,
       "#{pug.player_slots} joined"
@@ -640,7 +643,8 @@ class QwtfDiscordBotPug # :nodoc:
 
     send_embedded_message(
       description: nil,
-      channel: event.channel
+      channel: event.channel,
+      message_obj: message_obj
     ) do |embed|
       embed.footer = Discordrb::Webhooks::EmbedFooter.new(
         text: footer
@@ -717,11 +721,20 @@ class QwtfDiscordBotPug # :nodoc:
     "There's no active PUG"
   end
 
-  def send_embedded_message(message: nil, description: nil, channel:)
+  def send_embedded_message(message: nil, description: nil, channel:, message_obj: nil)
     embed = Discordrb::Webhooks::Embed.new
     embed.description = description
     yield(embed) if block_given?
-    channel.send_embed(message, embed) && puts(message)
+
+    if message_obj
+      message_obj.edit(message, embed).tap do
+        puts(message)
+      end
+    else
+      channel.send_embed(message, embed).tap do
+        puts(message)
+      end
+    end
   end
 
   def post_results(json)
