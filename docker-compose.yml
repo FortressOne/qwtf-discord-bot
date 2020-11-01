@@ -39,3 +39,16 @@ services:
       - type: bind
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
         target: /discord-bot/config.yaml
+  discord-dashboard-bot:
+    image: fortressone/discord-bot:latest
+    command: dashboard
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis
+      - RATINGS_API_URL
+    volumes:
+      - type: bind
+        source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
+        target: /discord-bot/config.yaml

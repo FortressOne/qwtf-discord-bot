@@ -21,6 +21,16 @@ class QstatRequest
     embed
   end
 
+  def update_embed(embed)
+    return nil if is_empty?
+
+    teams.each do |team|
+      embed.add_field(team.to_embed_field)
+    end
+
+    embed
+  end
+
   def to_message
     return server_summary if is_empty?
 

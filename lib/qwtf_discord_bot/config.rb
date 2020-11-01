@@ -1,4 +1,5 @@
 require 'endpoint'
+require 'dashboard'
 
 class Config
   def initialize(config)
@@ -16,6 +17,12 @@ class Config
   def endpoints
     @endpoints ||= @config['endpoints'].map do |endpoint|
       Endpoint.new(endpoint)
+    end
+  end
+
+  def dashboards
+    @dashboards ||= @config['dashboards'].map do |channel|
+      Dashboard.new(channel)
     end
   end
 
