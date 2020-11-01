@@ -352,7 +352,7 @@ class QwtfDiscordBotPug # :nodoc:
           teams.merge({ name => { players: players, result: result } })
         end
 
-        post_results(
+        id = post_results(
           {
             match: {
               map: pug.game_map,
@@ -363,10 +363,10 @@ class QwtfDiscordBotPug # :nodoc:
               }
             }
           }.to_json
-        )
+        ).body
 
         send_embedded_message(
-          description: "#{TEAM_NAMES[winning_team_no]} wins. [Ratings](http://ratings.fortressone.org)",
+          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. [Ratings](http://ratings.fortressone.org)",
           channel: e.channel
         )
       end
@@ -396,7 +396,7 @@ class QwtfDiscordBotPug # :nodoc:
         teams.merge({ name => { players: players, result: 0 } })
         end
 
-        post_results(
+        id = post_results(
           {
             match: {
               map: pug.game_map,
@@ -407,10 +407,10 @@ class QwtfDiscordBotPug # :nodoc:
               }
             }
           }.to_json
-        )
+        ).body
 
         send_embedded_message(
-          description: "Match drawn. [Ratings](http://ratings.fortressone.org)",
+          description: "Match ##{id} drawn. [Ratings](http://ratings.fortressone.org)",
           channel: e.channel
         )
       end
