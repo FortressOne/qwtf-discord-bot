@@ -320,6 +320,13 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        if !pug.full?
+          return send_embedded_message(
+            description: "Can't report unless PUG is full",
+            channel: event.channel
+          )
+        end
+
         unless args.any?
           return send_embedded_message(
             description: "Specify winning team; e.g. `!win 1`",
@@ -378,6 +385,13 @@ class QwtfDiscordBotPug # :nodoc:
           return send_embedded_message(
             description: no_active_pug_message,
             channel: e.channel
+          )
+        end
+
+        if !pug.full?
+          return send_embedded_message(
+            description: "Can't report unless PUG is full",
+            channel: event.channel
           )
         end
 
