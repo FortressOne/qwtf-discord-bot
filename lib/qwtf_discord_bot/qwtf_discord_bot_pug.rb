@@ -288,26 +288,47 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        unless pug.joined?(user_id)
-          return send_embedded_message(
-            description: "You aren't in this PUG",
+        if args.empty?
+          unless pug.joined?(user_id)
+            return send_embedded_message(
+              description: "You aren't in this PUG",
+              channel: e.channel
+            )
+          end
+
+          if pug.team(0).include?(user_id)
+            return send_embedded_message(
+              description: "You aren't in a team",
+              channel: e.channel
+            )
+          end
+
+          pug.join_team(team_no: 0, player_id: user_id)
+
+          send_embedded_message(
+            description: "#{e.display_name} leaves team",
             channel: e.channel
           )
+        else
+          args.each do |mention|
+            unless mention.match(/<@!\d+>/)
+              send_embedded_message(
+                description: "#{arg} isn't a valid mention",
+                channel: e.channel
+              )
+              next
+            end
+
+            user_id = mention_to_user_id(mention)
+            display_name = e.display_name_for(user_id) || arg
+            pug.join_team(team_no: 0, player_id: user_id)
+
+            send_embedded_message(
+              description: "#{display_name} leaves team",
+              channel: e.channel
+            )
+          end
         end
-
-        if pug.team(0).include?(user_id)
-          return send_embedded_message(
-            description: "You aren't in a team",
-            channel: e.channel
-          )
-        end
-
-        pug.join_team(team_no: 0, player_id: user_id)
-
-        send_embedded_message(
-          description: "#{e.display_name} leaves team",
-          channel: e.channel
-        )
       end
     end
 
