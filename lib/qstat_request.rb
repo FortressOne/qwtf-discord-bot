@@ -143,7 +143,7 @@ class QstatRequest
   end
 
   def build_roster
-    return nil if is_empty?
+    return [] if is_empty?
 
     roster = Roster.new
 

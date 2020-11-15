@@ -11,10 +11,12 @@ class Dashboard
       qstat_request = QstatRequest.new(endpoint)
 
       if qstat_request.is_empty?
-        next unless @messages[endpoint]
+        if @messages[endpoint]
+          @messages[endpoint].delete
+          @messages.delete(endpoint)
+        end
 
-        @messages[endpoint].delete
-        @messages.delete(endpoint)
+        next
       end
 
       embed = qstat_request.to_full_embed
