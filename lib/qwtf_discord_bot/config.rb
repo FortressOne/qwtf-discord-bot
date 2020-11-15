@@ -21,9 +21,7 @@ class Config
   end
 
   def dashboards
-    @dashboards ||= @config['dashboards'].map do |channel|
-      Dashboard.new(channel)
-    end
+    @dashboards ||= @config['dashboards']
   end
 
   def emojis

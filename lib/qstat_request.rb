@@ -1,4 +1,6 @@
 class QstatRequest
+  MSG_SNIPPET_DELIMITER = ' · '
+
   attr_accessor :result
 
   def initialize(endpoint)
@@ -21,14 +23,17 @@ class QstatRequest
     embed
   end
 
-  def update_embed(embed)
-    return nil if is_empty?
+  def to_full_embed
+    Discordrb::Webhooks::Embed.new.tap do |embed|
+      embed.add_field(
+        name: name,
+        value: embed_summary,
+      )
 
-    teams.each do |team|
-      embed.add_field(team.to_embed_field)
+      teams.each do |team|
+        embed.add_field(team.to_embed_field)
+      end
     end
-
-    embed
   end
 
   def to_message
@@ -39,9 +44,40 @@ class QstatRequest
 
   def server_summary
     return "#{@endpoint} isn't responding" unless game_map
-    return "#{name} | #{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers}" unless has_spectators?
 
-    "#{name} | #{@endpoint} | #{game_map} | #{numplayers}/#{maxplayers} players | #{numspectators}/#{maxspectators} spectators"
+    if !has_spectators?
+      return [
+        name,
+        @endpoint,
+        game_map,
+        "#{numplayers}/#{maxplayers}"
+      ].join(MSG_SNIPPET_DELIMITER)
+    end
+
+    [
+      name,
+      @endpoint,
+      game_map,
+      "#{numplayers}/#{maxplayers} players",
+      "#{numspectators}/#{maxspectators} spectators"
+    ].join(MSG_SNIPPET_DELIMITER)
+  end
+
+  def embed_summary
+    if !has_spectators?
+      return [
+        @endpoint,
+        game_map,
+        "#{numplayers}/#{maxplayers}"
+      ].join(MSG_SNIPPET_DELIMITER)
+    end
+
+    [
+      @endpoint,
+      game_map,
+      "#{numplayers}/#{maxplayers} players",
+      "#{numspectators}/#{maxspectators} spectators"
+    ].join(MSG_SNIPPET_DELIMITER)
   end
 
   def is_empty?
