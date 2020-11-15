@@ -1,5 +1,5 @@
 class QwtfDiscordBotDashboard
-  THIRTY_SECONDS = 5
+  THIRTY_SECONDS = 30
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
