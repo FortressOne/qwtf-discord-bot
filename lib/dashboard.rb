@@ -37,6 +37,8 @@ class Dashboard
       @channel_id
     )
 
+    puts JSON.parse(data)
+
     Discordrb::Channel.new(JSON.parse(data), @bot)
   end
 end
