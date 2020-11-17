@@ -32,13 +32,13 @@ class Dashboard
   private
 
   def channel
-    data = Discordrb::API::Channel.resolve(
-      "Bot #{QwtfDiscordBot.config.token}",
-      @channel_id
-    )
+    @channel ||= begin
+                   data = Discordrb::API::Channel.resolve(
+                     "Bot #{QwtfDiscordBot.config.token}",
+                     @channel_id
+                   )
 
-    puts JSON.parse(data)
-
-    Discordrb::Channel.new(JSON.parse(data), @bot)
+                   Discordrb::Channel.new(JSON.parse(data), @bot)
+                 end
   end
 end
