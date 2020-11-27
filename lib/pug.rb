@@ -11,8 +11,7 @@ class Pug
   end
 
   def join(player_id)
-    redis.setnx(pug_key, Time.now)
-
+    redis.setnx(pug_key, Time.now.to_i)
     redis.sadd(team_key(0), player_id)
   end
 
@@ -139,6 +138,14 @@ class Pug
     end
   end
 
+  def update_last_result_time
+    redis.set(last_result_time_key, Time.now.to_i)
+  end
+
+  def last_result_time
+    redis.get(last_result_time_key).to_i
+  end
+
   private
 
   def leave_teams(player_id)
@@ -153,6 +160,10 @@ class Pug
 
   def team_key(team_no)
     [pug_key, 'teams', team_no].join(':')
+  end
+
+  def last_result_time_key
+    [channel_key, 'last_result_time'].join(':')
   end
 
   def pug_key

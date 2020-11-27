@@ -8,6 +8,7 @@ class QwtfDiscordBotPug # :nodoc:
 
   MSG_SNIPPET_DELIMITER = ' · '
   TEAM_NAMES = { 1 => "Blue", 2 => "Red" }
+  ONE_MINUTE = 60
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -334,6 +335,13 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :win do |event, *args|
       setup_pug(event) do |e, pug|
+        unless args.any?
+          return send_embedded_message(
+            description: "Specify winning team; e.g. `!win 1`",
+            channel: e.channel
+          )
+        end
+
         unless pug.active?
           return send_embedded_message(
             description: no_active_pug_message,
@@ -348,17 +356,19 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        unless args.any?
-          return send_embedded_message(
-            description: "Specify winning team; e.g. `!win 1`",
-            channel: e.channel
-          )
-        end
-
         unless ["1", "2"].any?(args.first)
           return send_embedded_message(
             description: "Invalid team number",
             channel: e.channel
+          )
+        end
+
+        if pug.last_result_time && pug.last_result_time > one_minute_ago
+          time_ago = Time.now.to_i - pug.last_result_time
+
+          return send_embedded_message(
+            description: "Please wait #{ONE_MINUTE - time_ago} more seconds before reporting",
+            channel: event.channel
           )
         end
 
@@ -380,7 +390,8 @@ class QwtfDiscordBotPug # :nodoc:
           teams.merge({ name => { players: players, result: result } })
         end
 
-        id = post_results(
+        id = report(
+          pug,
           {
             match: {
               map: pug.game_map,
@@ -425,6 +436,15 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        if pug.last_result_time && pug.last_result_time > one_minute_ago
+          time_ago = Time.now.to_i - pug.last_result_time
+
+          return send_embedded_message(
+            description: "Please wait #{ONE_MINUTE - time_ago} more seconds before reporting",
+            channel: event.channel
+          )
+        end
+
         team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
@@ -433,7 +453,8 @@ class QwtfDiscordBotPug # :nodoc:
         teams.merge({ name => { players: players, result: 0 } })
         end
 
-        id = post_results(
+        id = report(
+          pug,
           {
             match: {
               map: pug.game_map,
@@ -767,6 +788,11 @@ class QwtfDiscordBotPug # :nodoc:
     end
   end
 
+  def report(pug, json)
+    pug.update_last_result_time
+    post_results(json)
+  end
+
   def post_results(json)
     uri = URI("#{ENV['RATINGS_API_URL']}matches/")
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
@@ -788,5 +814,9 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     JSON.parse(res.body).map(&:to_h)
+  end
+
+  def one_minute_ago
+    Time.now.to_i - ONE_MINUTE
   end
 end
