@@ -393,8 +393,10 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         ).body
 
+        pug.unteam_all_players
+
         send_embedded_message(
-          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. [Ratings](http://ratings.fortressone.org)",
+          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Ratings](http://ratings.fortressone.org)",
           channel: e.channel
         )
       end
@@ -444,8 +446,10 @@ class QwtfDiscordBotPug # :nodoc:
           }.to_json
         ).body
 
+        pug.unteam_all_players
+
         send_embedded_message(
-          description: "Match ##{id} drawn. [Ratings](http://ratings.fortressone.org)",
+          description: "Match ##{id} drawn. `!choose` again. [Ratings](http://ratings.fortressone.org)",
           channel: e.channel
         )
       end

@@ -133,6 +133,12 @@ class Pug
     teams.tap { |team| team.delete(0) }
   end
 
+  def unteam_all_players
+    joined_players.each do |player_id|
+      join_team(team_no: 0, player_id: player_id)
+    end
+  end
+
   private
 
   def leave_teams(player_id)
