@@ -5,12 +5,12 @@ class Dashboard
     @messages = {}
 
     old_dashboard_channel = @server.channels.find do |chan|
-      chan.name == "dashboard" && chan.topic = "QWTF Bot Dashboard"
+      chan.name == dashboard_config["name"] && chan.topic = "QWTF Bot Dashboard"
     end
 
     old_dashboard_channel && old_dashboard_channel.delete
 
-    @channel = @server.create_channel("dashboard")
+    @channel = @server.create_channel(dashboard_config["name"])
     @channel.topic = "QWTF Bot Dashboard"
     @channel.position = dashboard_config["position"]
   end

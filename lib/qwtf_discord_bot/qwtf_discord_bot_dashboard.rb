@@ -17,7 +17,7 @@ class QwtfDiscordBotDashboard
       end
     )
 
-    bot.run(true) && sleep(5)
+    bot.run(true)
 
     @dashboards ||= QwtfDiscordBot.config.dashboards.map do |dashboard_config|
       Dashboard.new(dashboard_config, bot)
