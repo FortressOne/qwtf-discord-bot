@@ -56,6 +56,13 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
       hwguy: "<:hwguy_blue:456062063190736926>"
       spy: "<:spy_blue:456062062032846849>"
       engineer: "<:engineer_blue:456062031125020683>"
+  dashboards:
+    - server_id: 744911007859736616
+      name: "active-servers"
+      endpoints:
+        - "sydney.fortressone.org"
+        - "sydney.fortressone.org:27510"
+        - "dallas.fortressone.org"
   ```
 
 - Use  the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable to specify an

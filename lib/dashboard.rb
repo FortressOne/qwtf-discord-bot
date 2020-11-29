@@ -12,14 +12,14 @@ class Dashboard
 
     @channel = if old_dashboard_channel
       position = old_dashboard_channel.position
-      category = old_dashboard_channel.category
       topic = old_dashboard_channel.topic
+      category = old_dashboard_channel.category
       old_dashboard_channel.delete
 
       @server.create_channel(channel_name).tap do |channel|
         channel.position = position
-        channel.category = category
-        channel.topic = topic
+        channel.topic = topic if topic
+        channel.category = category if category
       end
     else
       @server.create_channel(channel_name).tap do |channel|
