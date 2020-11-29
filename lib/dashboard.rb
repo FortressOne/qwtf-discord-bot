@@ -4,15 +4,28 @@ class Dashboard
     @endpoints = dashboard_config["endpoints"]
     @messages = {}
 
+    channel_name = dashboard_config["name"]
+
     old_dashboard_channel = @server.channels.find do |chan|
-      chan.name == dashboard_config["name"] && chan.topic = "QWTF Bot Dashboard"
+      chan.name == channel_name
     end
 
-    old_dashboard_channel && old_dashboard_channel.delete
+    @channel = if old_dashboard_channel
+      position = old_dashboard_channel.position
+      category = old_dashboard_channel.category
+      topic = old_dashboard_channel.topic
+      old_dashboard_channel.delete
 
-    @channel = @server.create_channel(dashboard_config["name"])
-    @channel.topic = "QWTF Bot Dashboard"
-    @channel.position = dashboard_config["position"]
+      @server.create_channel(channel_name).tap do |channel|
+        channel.position = position
+        channel.category = category
+        channel.topic = topic
+      end
+    else
+      @server.create_channel(channel_name).tap do |channel|
+        channel.topic = "QWTF Bot Dashboard"
+      end
+    end
   end
 
   def update
