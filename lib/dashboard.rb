@@ -1,9 +1,18 @@
 class Dashboard
-  def initialize(channel, bot)
-    @channel_id = channel["id"]
-    @endpoints = channel["endpoints"]
-    @bot = bot
+  def initialize(dashboard_config, bot)
+    @server = bot.server(dashboard_config["server_id"])
+    @endpoints = dashboard_config["endpoints"]
     @messages = {}
+
+    old_dashboard_channel = @server.channels.find do |chan|
+      chan.name == "dashboard" && chan.topic = "QWTF Bot Dashboard"
+    end
+
+    old_dashboard_channel && old_dashboard_channel.delete
+
+    @channel = @server.create_channel("dashboard")
+    @channel.topic = "QWTF Bot Dashboard"
+    @channel.position = dashboard_config["position"]
   end
 
   def update
@@ -24,21 +33,8 @@ class Dashboard
       @messages[endpoint] = if @messages[endpoint]
                               @messages[endpoint].edit(nil, embed)
                             else
-                              channel.send_embed(nil, embed)
+                              @channel.send_embed(nil, embed)
                             end
     end
-  end
-
-  private
-
-  def channel
-    @channel ||= begin
-                   data = Discordrb::API::Channel.resolve(
-                     "Bot #{QwtfDiscordBot.config.token}",
-                     @channel_id
-                   )
-
-                   Discordrb::Channel.new(JSON.parse(data), @bot)
-                 end
   end
 end

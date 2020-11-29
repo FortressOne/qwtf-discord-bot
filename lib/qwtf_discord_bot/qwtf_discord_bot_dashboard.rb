@@ -17,8 +17,10 @@ class QwtfDiscordBotDashboard
       end
     )
 
-    @dashboards ||= QwtfDiscordBot.config.dashboards.map do |channel|
-      Dashboard.new(channel, bot)
+    bot.run(true)
+
+    @dashboards ||= QwtfDiscordBot.config.dashboards.map do |dashboard_config|
+      Dashboard.new(dashboard_config, bot)
     end
 
     every(THIRTY_SECONDS) do
