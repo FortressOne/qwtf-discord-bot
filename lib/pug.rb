@@ -16,6 +16,7 @@ class Pug
   end
 
   def join_team(team_no:, player_id:)
+    redis.setnx(pug_key, Time.now.to_i)
     leave_teams(player_id)
     redis.sadd(team_key(team_no), player_id)
   end
