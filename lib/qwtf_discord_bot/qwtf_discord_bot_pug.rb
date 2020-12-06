@@ -46,6 +46,13 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :choose do |event, *args|
       setup_pug(event) do |e, pug|
+        if pug.joined_players.count > pug.maxplayers
+          return send_embedded_message(
+            description: "Too many players, increase `!teamsize` or `!kick` extras",
+            channel: event.channel
+          )
+        end
+
         if pug.joined_players.count.odd?
           return send_embedded_message(
             description: "Can't choose teams with odd number of players",
