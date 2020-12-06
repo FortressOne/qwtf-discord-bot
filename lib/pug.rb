@@ -147,6 +147,10 @@ class Pug
     redis.get(last_result_time_key).to_i
   end
 
+  def equal_number_of_players_on_each_team?
+    actual_teams.map(&:size).uniq.size == 1
+  end
+
   private
 
   def leave_teams(player_id)

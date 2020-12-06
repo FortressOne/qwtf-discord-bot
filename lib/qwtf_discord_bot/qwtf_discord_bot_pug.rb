@@ -356,6 +356,13 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        if pug.equal_number_of_players_on_each_team?
+          return send_embedded_message(
+            description: "Can't report unless teams have same number of players",
+            channel: event.channel
+          )
+        end
+
         unless ["1", "2"].any?(args.first)
           return send_embedded_message(
             description: "Invalid team number",
@@ -425,6 +432,13 @@ class QwtfDiscordBotPug # :nodoc:
         if !pug.full?
           return send_embedded_message(
             description: "Can't report unless PUG is full",
+            channel: event.channel
+          )
+        end
+
+        if pug.equal_number_of_players_on_each_team?
+          return send_embedded_message(
+            description: "Can't report unless teams have same number of players",
             channel: event.channel
           )
         end
