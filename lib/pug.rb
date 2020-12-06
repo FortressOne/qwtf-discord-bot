@@ -148,7 +148,11 @@ class Pug
   end
 
   def equal_number_of_players_on_each_team?
-    actual_teams.map(&:size).uniq.size == 1
+    team_player_counts = actual_teams.map do |_name, players|
+      players.size
+    end
+
+    team_player_counts.uniq.size == 1
   end
 
   private
