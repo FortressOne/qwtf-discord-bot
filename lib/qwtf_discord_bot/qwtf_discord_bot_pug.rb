@@ -240,7 +240,13 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          join_pug(e, pug) unless pug.joined?(user_id)
+          if pug.team(team_no).size >= pug.teamsize
+            return send_embedded_message(
+              description: "Team is full",
+              channel: e.channel
+            )
+          end
+
           pug.join_team(team_no: team_no, player_id: user_id)
 
           send_embedded_message(
@@ -252,6 +258,13 @@ class QwtfDiscordBotPug # :nodoc:
           )
         else
           args[1..-1].each do |mention|
+            if pug.team(team_no).size >= pug.teamsize
+              return send_embedded_message(
+                description: "Team is full",
+                channel: e.channel
+              )
+            end
+
             unless mention.match(/<@!\d+>/)
               send_embedded_message(
                 description: "#{arg} isn't a valid mention",
