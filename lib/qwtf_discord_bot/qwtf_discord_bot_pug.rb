@@ -8,7 +8,7 @@ class QwtfDiscordBotPug # :nodoc:
 
   MSG_SNIPPET_DELIMITER = ' · '
   TEAM_NAMES = { 1 => "Blue", 2 => "Red" }
-  ONE_MINUTE = 60
+  TEN_MINUTES = 10 * 60
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -390,11 +390,9 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        if pug.last_result_time && pug.last_result_time > one_minute_ago
-          time_ago = Time.now.to_i - pug.last_result_time
-
+        if pug.last_result_time && pug.last_result_time > ten_minutes_ago
           return send_embedded_message(
-            description: "Please wait #{ONE_MINUTE - time_ago} more seconds before reporting",
+            description: "A match was reported less than 10 minutes ago",
             channel: event.channel
           )
         end
@@ -430,8 +428,6 @@ class QwtfDiscordBotPug # :nodoc:
             }
           }.to_json
         ).body
-
-        pug.unteam_all_players
 
         send_embedded_message(
           description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Ratings](http://ratings.fortressone.org)",
@@ -470,11 +466,11 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        if pug.last_result_time && pug.last_result_time > one_minute_ago
+        if pug.last_result_time && pug.last_result_time > ten_minutes_ago
           time_ago = Time.now.to_i - pug.last_result_time
 
           return send_embedded_message(
-            description: "Please wait #{ONE_MINUTE - time_ago} more seconds before reporting",
+            description: "A match was reported less than 10 minutes ago",
             channel: event.channel
           )
         end
@@ -500,8 +496,6 @@ class QwtfDiscordBotPug # :nodoc:
             }
           }.to_json
         ).body
-
-        pug.unteam_all_players
 
         send_embedded_message(
           description: "Match ##{id} drawn. `!choose` again. [Ratings](http://ratings.fortressone.org)",
@@ -850,7 +844,7 @@ class QwtfDiscordBotPug # :nodoc:
     JSON.parse(res.body).map(&:to_h)
   end
 
-  def one_minute_ago
-    Time.now.to_i - ONE_MINUTE
+  def ten_minutes_ago
+    Time.now.to_i - TEN_MINUTES
   end
 end
