@@ -647,7 +647,7 @@ class QwtfDiscordBotPug # :nodoc:
   private
 
   def team_name(team_no)
-    return "No team" if team_no == 0
+    return "Queue" if team_no == 0
 
     [team_no, TEAM_NAMES[team_no]].join(" ")
   end
