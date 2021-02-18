@@ -126,7 +126,7 @@ they haven't been connected for more than ten minutes.
 
 Build:
 
-    gem build qwtf_discrd_bot.gemspec
+    gem build qwtf_discord_bot.gemspec
 
 
 Install:
