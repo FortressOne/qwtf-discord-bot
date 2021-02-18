@@ -2,7 +2,6 @@ class Dashboard
   def initialize(dashboard_config, bot)
     @server = bot.server(dashboard_config["server_id"])
     @endpoints = dashboard_config["endpoints"]
-    @messages = {}
 
     channel_name = dashboard_config["name"]
 
@@ -11,31 +10,37 @@ class Dashboard
     end
 
     @channel = if old_dashboard_channel
-      position = old_dashboard_channel.position
-      topic = old_dashboard_channel.topic
-      category = old_dashboard_channel.category
-      old_dashboard_channel.delete
+                 old_messages = JSON.parse(
+                   Discordrb::API::Channel.messages(
+                     "Bot #{QwtfDiscordBot.config.token}",
+                     old_dashboard_channel.id,
+                     100
+                   )
+                 )
 
-      @server.create_channel(channel_name).tap do |channel|
-        channel.position = position
-        channel.topic = topic if topic
-        channel.category = category if category
-      end
-    else
-      @server.create_channel(channel_name).tap do |channel|
-        channel.topic = "QWTF Bot Dashboard"
-      end
-    end
+                 old_messages.each do |old_message|
+                   sleep 2
+                   old_dashboard_channel.message(old_message['id']).delete
+                 end
+
+                 old_dashboard_channel
+               else
+                 @server.create_channel(channel_name).tap do |channel|
+                   channel.topic = "QWTF Bot Dashboard"
+                 end
+               end
   end
 
   def update
+    messages = {}
+
     @endpoints.each do |endpoint|
       qstat_request = QstatRequest.new(endpoint)
 
       if qstat_request.is_empty?
-        if @messages[endpoint]
-          @messages[endpoint].delete
-          @messages.delete(endpoint)
+        if messages[endpoint]
+          messages[endpoint].delete
+          messages.delete(endpoint)
         end
 
         next
@@ -43,8 +48,8 @@ class Dashboard
 
       embed = qstat_request.to_full_embed
 
-      @messages[endpoint] = if @messages[endpoint]
-                              @messages[endpoint].edit(nil, embed)
+      messages[endpoint] = if messages[endpoint]
+                              messages[endpoint].edit(nil, embed)
                             else
                               @channel.send_embed(nil, embed)
                             end
