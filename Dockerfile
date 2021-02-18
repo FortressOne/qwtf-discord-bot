@@ -1,4 +1,4 @@
-FROM ruby:2.6
+FROM ruby:3.0
 WORKDIR /discord-bot/
 RUN git clone https://github.com/multiplay/qstat.git \
  && cd /discord-bot/qstat \
