@@ -131,7 +131,7 @@ Build:
 
 Install:
 
- 
+
     gem install --local qwtf_discord_bot-$(cat VERSION).gem
 
 
