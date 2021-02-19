@@ -735,13 +735,9 @@ class QwtfDiscordBotPug # :nodoc:
         end
 
         embed.add_field(
-          Discordrb::Webhooks::EmbedField.new(
-            {
-              inline: true,
-              name: team_name(team_no),
-              value: team_display_names.join("\n")
-            }
-          )
+          inline: true,
+          name: team_name(team_no),
+          value: team_display_names.join("\n")
         )
       end
     end
@@ -775,13 +771,9 @@ class QwtfDiscordBotPug # :nodoc:
         end
 
         embed.add_field(
-          Discordrb::Webhooks::EmbedField.new(
-            {
-              inline: true,
-              name: team_name(team_no),
-              value: team_mentions.join("\n")
-            }
-          )
+          inline: true,
+          name: team_name(team_no),
+          value: team_mentions.join("\n")
         )
       end
     end
