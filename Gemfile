@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'bundler'
-gem 'discordrb'
+gem 'discordrb', '3.4.0'
 gem 'redis'
 gem 'thor'
 
