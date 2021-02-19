@@ -17,7 +17,7 @@ class QstatRequest
     embed = Discordrb::Webhooks::Embed.new
 
     teams.each do |team|
-      embed.add_field << team.to_embed_field
+      embed << team.to_embed_field
     end
 
     embed
