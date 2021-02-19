@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    qwtf_discord_bot (5.5.18)
+    qwtf_discord_bot (5.5.23)
       discordrb (= 3.4.0)
       redis (~> 4.2)
       thor (~> 1.1)
@@ -84,7 +84,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
-  discordrb
+  discordrb (= 3.4.0)
   factory_bot
   pry
   qwtf_discord_bot!

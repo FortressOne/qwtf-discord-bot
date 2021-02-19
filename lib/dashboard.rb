@@ -2,6 +2,8 @@ class Dashboard
   def initialize(dashboard_config, bot)
     @server = bot.server(dashboard_config["server_id"])
     @endpoints = dashboard_config["endpoints"]
+    @messages = {}
+
 
     channel_name = dashboard_config["name"]
 
@@ -32,15 +34,13 @@ class Dashboard
   end
 
   def update
-    messages = {}
-
     @endpoints.each do |endpoint|
       qstat_request = QstatRequest.new(endpoint)
 
       if qstat_request.is_empty?
-        if messages[endpoint]
-          messages[endpoint].delete
-          messages.delete(endpoint)
+        if @messages[endpoint]
+          @messages[endpoint].delete
+          @messages.delete(endpoint)
         end
 
         next
@@ -48,8 +48,8 @@ class Dashboard
 
       embed = qstat_request.to_full_embed
 
-      messages[endpoint] = if messages[endpoint]
-                              messages[endpoint].edit(nil, embed)
+      @messages[endpoint] = if @messages[endpoint]
+                              @messages[endpoint].edit(nil, embed)
                             else
                               @channel.send_embed(nil, embed)
                             end
