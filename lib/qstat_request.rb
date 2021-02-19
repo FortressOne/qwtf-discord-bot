@@ -115,7 +115,10 @@ class QstatRequest
   end
 
   def name
-    data['name']
+    name = data['name']
+    return address if name.empty?
+
+    name
   end
 
   def address
