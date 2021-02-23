@@ -180,8 +180,8 @@ Build:
 
 Push:
 
-    docker tag discord-bot fortressone/discord-bot:latest
-    docker push fortressone/discord-bot:latest
+    docker tag discord-bot fortressone/discord-bot:latest \
+      && docker push fortressone/discord-bot:latest
 
 
 Create AWS instance:
