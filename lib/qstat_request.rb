@@ -45,39 +45,39 @@ class QstatRequest
   def server_summary
     return "#{@endpoint} isn't responding" unless game_map
 
-    if !has_spectators?
-      return [
-        name,
-        @endpoint,
-        game_map,
-        "#{numplayers}/#{maxplayers}"
-      ].join(MSG_SNIPPET_DELIMITER)
-    end
+    info = [name, @endpoint, game_map]
 
-    [
-      name,
-      @endpoint,
-      game_map,
-      "#{numplayers}/#{maxplayers} players",
-      "#{numspectators}/#{maxspectators} spectators"
-    ].join(MSG_SNIPPET_DELIMITER)
+    info += if !has_spectators?
+              ["#{numplayers}/#{maxplayers}"]
+            else
+              [
+                "#{numplayers}/#{maxplayers} players",
+                "#{numspectators}/#{maxspectators} spectators"
+              ]
+            end
+
+    info.join(MSG_SNIPPET_DELIMITER)
+  end
+
+  def join_link
+    "[Join](http://phobos.baseq.fr:9999/join?url=#{@endpoint})"
   end
 
   def embed_summary
-    if !has_spectators?
-      return [
-        @endpoint,
-        game_map,
-        "#{numplayers}/#{maxplayers}"
-      ].join(MSG_SNIPPET_DELIMITER)
-    end
+    info = [@endpoint, game_map]
 
-    [
-      @endpoint,
-      game_map,
-      "#{numplayers}/#{maxplayers} players",
-      "#{numspectators}/#{maxspectators} spectators"
-    ].join(MSG_SNIPPET_DELIMITER)
+    info += if !has_spectators?
+              ["#{numplayers}/#{maxplayers}"]
+            else
+              [
+                "#{numplayers}/#{maxplayers} players",
+                "#{numspectators}/#{maxspectators} spectators"
+              ]
+            end
+
+    info << join_link
+
+    info.join(MSG_SNIPPET_DELIMITER)
   end
 
   def is_empty?
