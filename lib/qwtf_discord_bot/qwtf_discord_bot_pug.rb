@@ -694,7 +694,10 @@ class QwtfDiscordBotPug # :nodoc:
       channel: event.channel
     )
 
-    combinations = get_fair_teams(pug.joined_players)
+    combinations = get_fair_teams(
+      channel_id: event.channel.id, players: pug.joined_players
+    )
+
     teams = combinations[iteration]
 
     if !teams
@@ -823,9 +826,9 @@ class QwtfDiscordBotPug # :nodoc:
     end
   end
 
-  def get_fair_teams(players)
+  def get_fair_teams(channel_id:, players:)
     uri = URI("#{ENV['RATINGS_API_URL']}fair_teams/new")
-    params = { 'players[]' => players }
+    params = { :channel_id => channel_id, 'players[]' => players }
     uri.query = URI.encode_www_form(params)
     req = Net::HTTP::Get.new(uri)
 
