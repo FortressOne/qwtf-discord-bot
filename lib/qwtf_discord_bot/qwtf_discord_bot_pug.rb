@@ -247,13 +247,6 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          if pug.team(team_no).size >= pug.teamsize
-            return send_embedded_message(
-              description: "Team is full",
-              channel: e.channel
-            )
-          end
-
           pug.join_team(team_no: team_no, player_id: user_id)
 
           send_embedded_message(
