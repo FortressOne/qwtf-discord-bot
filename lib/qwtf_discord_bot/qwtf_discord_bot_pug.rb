@@ -247,13 +247,6 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          if pug.team(team_no).size >= pug.teamsize
-            return send_embedded_message(
-              description: "Team is full",
-              channel: e.channel
-            )
-          end
-
           pug.join_team(team_no: team_no, player_id: user_id)
 
           send_embedded_message(
@@ -430,7 +423,7 @@ class QwtfDiscordBotPug # :nodoc:
         ).body
 
         send_embedded_message(
-          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Ratings](http://ratings.fortressone.org)",
+          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Ratings](#{discord_channel_leaderboard_url(e.channel.id)})",
           channel: e.channel
         )
       end
@@ -498,7 +491,7 @@ class QwtfDiscordBotPug # :nodoc:
         ).body
 
         send_embedded_message(
-          description: "Match ##{id} drawn. `!choose` again. [Ratings](http://ratings.fortressone.org)",
+          description: "Match ##{id} drawn. `!choose` again. [Ratings](#{discord_channel_leaderboard_url(e.channel.id)})",
           channel: e.channel
         )
       end
@@ -694,7 +687,10 @@ class QwtfDiscordBotPug # :nodoc:
       channel: event.channel
     )
 
-    combinations = get_fair_teams(pug.joined_players)
+    combinations = get_fair_teams(
+      channel_id: event.channel.id, players: pug.joined_players
+    )
+
     teams = combinations[iteration]
 
     if !teams
@@ -814,7 +810,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def post_results(json)
-    uri = URI("#{ENV['RATINGS_API_URL']}matches/")
+    uri = URI([ENV['RATINGS_API_URL'], 'matches'].join('/'))
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
     req.body = json
 
@@ -823,9 +819,9 @@ class QwtfDiscordBotPug # :nodoc:
     end
   end
 
-  def get_fair_teams(players)
-    uri = URI("#{ENV['RATINGS_API_URL']}fair_teams/new")
-    params = { 'players[]' => players }
+  def get_fair_teams(channel_id:, players:)
+    uri = URI([ENV['RATINGS_API_URL'], 'fair_teams', 'new'].join('/'))
+    params = { :channel_id => channel_id, 'players[]' => players }
     uri.query = URI.encode_www_form(params)
     req = Net::HTTP::Get.new(uri)
 
@@ -838,5 +834,9 @@ class QwtfDiscordBotPug # :nodoc:
 
   def ten_minutes_ago
     Time.now.to_i - TEN_MINUTES
+  end
+
+  def discord_channel_leaderboard_url(channel_id)
+    [ENV['RATINGS_APP_URL'], "discord_channels", channel_id].join('/')
   end
 end
