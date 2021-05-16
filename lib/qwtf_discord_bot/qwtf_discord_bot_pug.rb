@@ -73,7 +73,6 @@ class QwtfDiscordBotPug # :nodoc:
                       0
                     end
 
-
         message_obj = choose_fair_teams(pug: pug, event: e, iteration: iteration)
         status(pug: pug, event: e, message_obj: message_obj) if message_obj
       end
