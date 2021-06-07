@@ -257,13 +257,6 @@ class QwtfDiscordBotPug # :nodoc:
           )
         else
           args[1..-1].each do |mention|
-            if pug.team(team_no).size >= pug.teamsize
-              return send_embedded_message(
-                description: "Team is full",
-                channel: e.channel
-              )
-            end
-
             unless mention.match(/<@!\d+>/)
               send_embedded_message(
                 description: "#{arg} isn't a valid mention",

@@ -140,6 +140,14 @@ Push:
     gem push qwtf_discord_bot-$(cat VERSION).gem
 
 
+## Develop
+
+```
+bundle install
+bundle exec bin/qwtf_discord_bot
+```
+
+
 ## Docker
 
 Run:
