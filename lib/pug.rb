@@ -12,16 +12,17 @@ class Pug
 
   def join(player_id)
     redis.setnx(pug_key, Time.now.to_i)
-    redis.sadd(team_key(0), player_id)
+    redis.zadd(queue_key, player_id)
   end
 
   def join_team(team_no:, player_id:)
     redis.setnx(pug_key, Time.now.to_i)
+    leave_queue(player_id)
     leave_teams(player_id)
     redis.sadd(team_key(team_no), player_id)
   end
 
-  def joined_players
+  def teamed_players
     teams_keys.inject([]) do |players, team|
       players + redis.smembers(team).map(&:to_i)
     end
@@ -55,16 +56,24 @@ class Pug
     redis.set(teamsize_key, teamsize)
   end
 
+  def total_player_count
+    teamed_player_count + queued_player_count
+  end
+
   def full?
-    joined_player_count >= maxplayers
+    total_player_count >= maxplayers
   end
 
   def empty?
-    joined_player_count.zero?
+    total_player_count.zero?
   end
 
-  def joined_player_count
-    joined_players.count
+  def teamed_player_count
+    teamed_players.count
+  end
+
+  def queued_player_count
+    redis.zcount(queue_key, "-inf", "+inf")
   end
 
   def team_player_count(team_no)
@@ -72,11 +81,11 @@ class Pug
   end
 
   def player_slots
-    "#{joined_player_count}/#{maxplayers}"
+    "#{total_player_count}/#{maxplayers}"
   end
 
   def slots_left
-    maxplayers - joined_player_count
+    maxplayers - total_player_count
   end
 
   def game_map=(map)
@@ -104,6 +113,7 @@ class Pug
   end
 
   def leave(player_id)
+    leave_queue(player_id)
     leave_teams(player_id)
   end
 
@@ -114,7 +124,7 @@ class Pug
   end
 
   def joined?(player_id)
-    joined_players.include?(player_id)
+    teamed_players.include?(player_id) || redis.zrank(queue_key, player_id)
   end
 
   def maxplayers
@@ -134,7 +144,7 @@ class Pug
   end
 
   def unteam_all_players
-    joined_players.each do |player_id|
+    teamed_players.each do |player_id|
       join_team(team_no: 0, player_id: player_id)
     end
   end
@@ -157,6 +167,10 @@ class Pug
 
   private
 
+  def leave_queue(player_id)
+    redis.zrem(queue_key, player_id)
+  end
+
   def leave_teams(player_id)
     teams_keys.each do |team|
       redis.srem(team, player_id)
@@ -165,6 +179,10 @@ class Pug
 
   def teams_keys
     redis.keys([pug_key, 'teams:*'].join(':'))
+  end
+
+  def queue_key
+    [pug_key, 'queue'].join(':')
   end
 
   def team_key(team_no)
