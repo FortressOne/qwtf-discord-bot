@@ -132,6 +132,10 @@ class Pug
     teamsize * no_of_teams
   end
 
+  def queue
+    redis.zrange(queue_key, 0, -1).map(&:to_i)
+  end
+
   def teams
     all_teams = teams_keys.inject({}) do |teams, team|
       teams.merge({ team.split(':').last.to_i => redis.smembers(team).map(&:to_i) })

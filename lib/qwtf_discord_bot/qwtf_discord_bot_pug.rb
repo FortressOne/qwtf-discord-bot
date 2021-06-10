@@ -644,7 +644,7 @@ class QwtfDiscordBotPug # :nodoc:
   def join_pug(e, pug)
     pug.join(e.user_id)
 
-    if pug.joined_player_count == 1
+    if pug.total_player_count == 1
       snippets = ["#{e.display_name} creates a PUG", "#{pug.player_slots} joined"]
       message = pug.notify_roles
     else
@@ -715,6 +715,16 @@ class QwtfDiscordBotPug # :nodoc:
     ) do |embed|
       embed.footer = Discordrb::Webhooks::EmbedFooter.new(
         text: footer
+      )
+
+      queue_display_names = pug.queue.map do |player_id|
+        event.display_name_for(player_id)
+      end
+
+      embed.add_field(
+        inline: true,
+        name: "Queue",
+        value: queue_display_names.join("\n")
       )
 
       pug.teams.each do |team_no, player_ids|
