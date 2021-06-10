@@ -309,7 +309,7 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          pug.join_team(team_no: 0, player_id: user_id)
+          pug.join_front_of_queue(user_id)
 
           send_embedded_message(
             description: "#{e.display_name} leaves team",
@@ -327,7 +327,7 @@ class QwtfDiscordBotPug # :nodoc:
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
-            pug.join_team(team_no: 0, player_id: user_id)
+            pug.join_front_of_queue(user_id)
 
             send_embedded_message(
               description: "#{display_name} leaves team",

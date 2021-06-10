@@ -1,6 +1,7 @@
 class Pug
   DEFAULT_TEAMSIZE = 4
   MIN_NO_OF_TEAMS = 2
+  EPOCH = 0
 
   def self.for(channel_id)
     new(channel_id)
@@ -14,6 +15,11 @@ class Pug
     timestamp = Time.now.to_i
     redis.setnx(pug_key, timestamp)
     redis.zadd(queue_key, timestamp, player_id)
+  end
+
+  def join_front_of_queue(player_id)
+    leave_teams(player_id)
+    redis.zadd(queue_key, EPOCH, player_id)
   end
 
   def join_team(team_no:, player_id:)
