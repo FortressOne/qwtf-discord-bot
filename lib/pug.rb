@@ -11,8 +11,9 @@ class Pug
   end
 
   def join(player_id)
-    redis.setnx(pug_key, Time.now.to_i)
-    redis.zadd(queue_key, player_id)
+    timestamp = Time.now.to_i
+    redis.setnx(pug_key, timestamp)
+    redis.zadd(queue_key, timestamp, player_id)
   end
 
   def join_team(team_no:, player_id:)
