@@ -746,7 +746,7 @@ class QwtfDiscordBotPug # :nodoc:
       "#{pug.player_slots} joined",
     ].compact.join(MSG_SNIPPET_DELIMITER)
 
-    mentions = pug.all_players.map do |player_id|
+    mentions = pug.players.map do |player_id|
       event.mention_for(player_id)
     end
 

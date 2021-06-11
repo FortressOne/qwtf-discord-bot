@@ -1,7 +1,6 @@
 class Pug
   DEFAULT_TEAMSIZE = 4
   MIN_NO_OF_TEAMS = 2
-  EPOCH = 0
 
   def self.for(channel_id)
     new(channel_id)
@@ -21,10 +20,6 @@ class Pug
     join(player_id)
     unteam(player_id)
     redis.sadd(team_key(team_no), player_id)
-  end
-
-  def all_players
-    queued_players + teamed_players
   end
 
   def up_now_players
@@ -85,10 +80,6 @@ class Pug
 
   def teamed_player_count
     teamed_players.count
-  end
-
-  def queued_player_count
-    redis.zcount(queue_key, "-inf", "+inf")
   end
 
   def team_player_count(team_no)
@@ -180,11 +171,11 @@ class Pug
     end
   end
 
-  private
-
   def players
     redis.zrange(queue_key, 0, -1).map(&:to_i)
   end
+
+  private
 
   def leave_queue(player_id)
     redis.zrem(queue_key, player_id)
