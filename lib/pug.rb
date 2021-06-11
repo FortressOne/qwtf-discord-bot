@@ -74,6 +74,10 @@ class Pug
     total_player_count >= maxplayers
   end
 
+  def has_exactly_maxplayers?
+    total_player_count == maxplayers
+  end
+
   def empty?
     total_player_count.zero?
   end
