@@ -19,7 +19,7 @@ class Pug
 
   def join_team(team_no:, player_id:)
     join(player_id)
-    leave_teams(player_id)
+    unteam(player_id)
     redis.sadd(team_key(team_no), player_id)
   end
 
@@ -119,7 +119,11 @@ class Pug
 
   def leave(player_id)
     leave_queue(player_id)
-    leave_teams(player_id)
+    unteam(player_id)
+  end
+
+  def unteam(player_id)
+
   end
 
   def end_pug
@@ -129,7 +133,7 @@ class Pug
   end
 
   def joined?(player_id)
-    teamed_players.include?(player_id) || redis.zrank(queue_key, player_id)
+    redis.zrank(queue_key, player_id)
   end
 
   def maxplayers
@@ -164,6 +168,12 @@ class Pug
     team_player_counts.uniq.size == 1
   end
 
+  def unteam(player_id)
+    teams_keys.each do |team|
+      redis.srem(team, player_id)
+    end
+  end
+
   private
 
   def players
@@ -172,12 +182,6 @@ class Pug
 
   def leave_queue(player_id)
     redis.zrem(queue_key, player_id)
-  end
-
-  def leave_teams(player_id)
-    teams_keys.each do |team|
-      redis.srem(team, player_id)
-    end
   end
 
   def teams_keys

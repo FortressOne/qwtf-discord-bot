@@ -295,14 +295,14 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          if pug.team(0).include?(user_id)
+          if !pug.teamed_players.include?(user_id)
             return send_embedded_message(
               description: "You aren't in a team",
               channel: e.channel
             )
           end
 
-          pug.unteam(player_id)
+          pug.unteam(user_id)
 
           send_embedded_message(
             description: "#{e.display_name} leaves team",
@@ -320,7 +320,7 @@ class QwtfDiscordBotPug # :nodoc:
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
-            pug.unteam(player_id)
+            pug.unteam(user_id)
 
             send_embedded_message(
               description: "#{display_name} leaves team",
