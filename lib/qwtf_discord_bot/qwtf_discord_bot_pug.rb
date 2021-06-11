@@ -40,7 +40,7 @@ class QwtfDiscordBotPug # :nodoc:
         end
 
         join_pug(e, pug)
-        start_pug(pug, e) if pug.full?
+        start_pug(pug, e) if pug.has_exactly_maxplayers?
       end
     end
 
@@ -272,7 +272,7 @@ class QwtfDiscordBotPug # :nodoc:
           end
         end
 
-        start_pug(pug, e) if !pug_already_full && pug.full?
+        start_pug(pug, e) if !pug_already_full && pug.has_exactly_maxplayers?
       end
     end
 
