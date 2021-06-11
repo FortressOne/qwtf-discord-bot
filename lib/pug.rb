@@ -161,7 +161,7 @@ class Pug
   end
 
   def equal_number_of_players_on_each_team?
-    team_player_counts = actual_teams.map do |_name, players|
+    team_player_counts = teams.map do |_name, players|
       players.size
     end
 

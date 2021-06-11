@@ -377,14 +377,14 @@ class QwtfDiscordBotPug # :nodoc:
 
         winning_team_no = args.first.to_i
 
-        if pug.actual_teams.count < 2
+        if pug.teams.count < 2
           return send_embedded_message(
             description: "There must be at least two teams with players to submit a result",
             channel: e.channel
           )
         end
 
-        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -437,7 +437,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        if pug.actual_teams.count < 2
+        if pug.teams.count < 2
           return send_embedded_message(
             description: "There must be at least two teams with players to submit a result",
             channel: e.channel
@@ -453,7 +453,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -737,7 +737,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
-    choose_fair_teams(pug: pug, event: event) unless pug.actual_teams.any?
+    choose_fair_teams(pug: pug, event: event) unless pug.teams.any?
 
     footer = [
       pug.game_map,
@@ -757,6 +757,18 @@ class QwtfDiscordBotPug # :nodoc:
       embed.footer = Discordrb::Webhooks::EmbedFooter.new(
         text: footer
       )
+
+      if pug.queued_players.any?
+        queue_display_names = pug.queued_players.map do |player_id|
+          event.display_name_for(player_id)
+        end
+
+        embed.add_field(
+          inline: true,
+          name: "Queue",
+          value: queue_display_names.join("\n")
+        )
+      end
 
       pug.teams.each do |team_no, player_ids|
         team_mentions = player_ids.map do |player_id|
