@@ -14,19 +14,17 @@ class Pug
   def join(player_id)
     timestamp = Time.now.to_i
     redis.setnx(pug_key, timestamp)
-    redis.zadd(queue_key, timestamp, player_id)
-  end
-
-  def join_front_of_queue(player_id)
-    leave_teams(player_id)
-    redis.zadd(queue_key, EPOCH, player_id)
+    redis.zadd(queue_key, timestamp, player_id, nx: true)
   end
 
   def join_team(team_no:, player_id:)
-    redis.setnx(pug_key, Time.now.to_i)
-    leave_queue(player_id)
+    join(player_id)
     leave_teams(player_id)
     redis.sadd(team_key(team_no), player_id)
+  end
+
+  def all_players
+    queued_players + teamed_players
   end
 
   def teamed_players
@@ -64,7 +62,7 @@ class Pug
   end
 
   def total_player_count
-    teamed_player_count + queued_player_count
+    players.count
   end
 
   def full?
@@ -138,8 +136,8 @@ class Pug
     teamsize * no_of_teams
   end
 
-  def queue
-    redis.zrange(queue_key, 0, -1).map(&:to_i)
+  def queued_players
+    players - teamed_players
   end
 
   def teams
@@ -148,16 +146,6 @@ class Pug
     end
 
     all_teams.sort.to_h
-  end
-
-  def actual_teams
-    teams.tap { |team| team.delete(0) }
-  end
-
-  def unteam_all_players
-    teamed_players.each do |player_id|
-      join_team(team_no: 0, player_id: player_id)
-    end
   end
 
   def update_last_result_time
@@ -177,6 +165,10 @@ class Pug
   end
 
   private
+
+  def players
+    redis.zrange(queue_key, 0, -1).map(&:to_i)
+  end
 
   def leave_queue(player_id)
     redis.zrem(queue_key, player_id)
@@ -237,6 +229,6 @@ class Pug
   end
 
   def no_of_teams
-    [actual_teams.count, MIN_NO_OF_TEAMS].max
+    [teams.count, MIN_NO_OF_TEAMS].max
   end
 end
