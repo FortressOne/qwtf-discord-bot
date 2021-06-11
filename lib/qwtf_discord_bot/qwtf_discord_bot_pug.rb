@@ -673,7 +673,7 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     combinations = get_fair_teams(
-      channel_id: event.channel.id, players: pug.all_players
+      channel_id: event.channel.id, players: pug.up_now_players
     )
 
     teams = combinations[iteration]
@@ -685,6 +685,8 @@ class QwtfDiscordBotPug # :nodoc:
         message_obj: message_obj
       ) && nil
     end
+
+    pug.destroy_teams
 
     teams.each do |team_no, player_ids|
       player_ids.each do |player_id|

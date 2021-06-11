@@ -27,6 +27,16 @@ class Pug
     queued_players + teamed_players
   end
 
+  def up_now_players
+    players[0, maxplayers]
+  end
+
+  def destroy_teams
+    teamed_players.each do |player_id|
+      unteam(player_id)
+    end
+  end
+
   def teamed_players
     teams_keys.inject([]) do |players, team|
       players + redis.smembers(team).map(&:to_i)
@@ -120,10 +130,6 @@ class Pug
   def leave(player_id)
     leave_queue(player_id)
     unteam(player_id)
-  end
-
-  def unteam(player_id)
-
   end
 
   def end_pug
