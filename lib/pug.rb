@@ -11,17 +11,28 @@ class Pug
   end
 
   def join(player_id)
-    redis.setnx(pug_key, Time.now.to_i)
-    redis.sadd(team_key(0), player_id)
+    timestamp = Time.now.to_i
+    redis.setnx(pug_key, timestamp)
+    redis.zadd(queue_key, timestamp, player_id, nx: true)
   end
 
   def join_team(team_no:, player_id:)
-    redis.setnx(pug_key, Time.now.to_i)
-    leave_teams(player_id)
+    join(player_id)
+    unteam(player_id)
     redis.sadd(team_key(team_no), player_id)
   end
 
-  def joined_players
+  def up_now_players
+    players[0, maxplayers]
+  end
+
+  def destroy_teams
+    teamed_players.each do |player_id|
+      unteam(player_id)
+    end
+  end
+
+  def teamed_players
     teams_keys.inject([]) do |players, team|
       players + redis.smembers(team).map(&:to_i)
     end
@@ -55,16 +66,20 @@ class Pug
     redis.set(teamsize_key, teamsize)
   end
 
+  def total_player_count
+    players.count
+  end
+
   def full?
-    joined_player_count >= maxplayers
+    total_player_count >= maxplayers
   end
 
   def empty?
-    joined_player_count.zero?
+    total_player_count.zero?
   end
 
-  def joined_player_count
-    joined_players.count
+  def teamed_player_count
+    teamed_players.count
   end
 
   def team_player_count(team_no)
@@ -72,11 +87,11 @@ class Pug
   end
 
   def player_slots
-    "#{joined_player_count}/#{maxplayers}"
+    "#{total_player_count}/#{maxplayers}"
   end
 
   def slots_left
-    maxplayers - joined_player_count
+    maxplayers - total_player_count
   end
 
   def game_map=(map)
@@ -104,7 +119,8 @@ class Pug
   end
 
   def leave(player_id)
-    leave_teams(player_id)
+    leave_queue(player_id)
+    unteam(player_id)
   end
 
   def end_pug
@@ -114,11 +130,15 @@ class Pug
   end
 
   def joined?(player_id)
-    joined_players.include?(player_id)
+    redis.zrank(queue_key, player_id)
   end
 
   def maxplayers
     teamsize * no_of_teams
+  end
+
+  def queued_players
+    players - teamed_players
   end
 
   def teams
@@ -127,16 +147,6 @@ class Pug
     end
 
     all_teams.sort.to_h
-  end
-
-  def actual_teams
-    teams.tap { |team| team.delete(0) }
-  end
-
-  def unteam_all_players
-    joined_players.each do |player_id|
-      join_team(team_no: 0, player_id: player_id)
-    end
   end
 
   def update_last_result_time
@@ -148,23 +158,35 @@ class Pug
   end
 
   def equal_number_of_players_on_each_team?
-    team_player_counts = actual_teams.map do |_name, players|
+    team_player_counts = teams.map do |_name, players|
       players.size
     end
 
     team_player_counts.uniq.size == 1
   end
 
-  private
-
-  def leave_teams(player_id)
+  def unteam(player_id)
     teams_keys.each do |team|
       redis.srem(team, player_id)
     end
   end
 
+  def players
+    redis.zrange(queue_key, 0, -1).map(&:to_i)
+  end
+
+  private
+
+  def leave_queue(player_id)
+    redis.zrem(queue_key, player_id)
+  end
+
   def teams_keys
     redis.keys([pug_key, 'teams:*'].join(':'))
+  end
+
+  def queue_key
+    [pug_key, 'queue'].join(':')
   end
 
   def team_key(team_no)
@@ -208,6 +230,6 @@ class Pug
   end
 
   def no_of_teams
-    [actual_teams.count, MIN_NO_OF_TEAMS].max
+    [teams.count, MIN_NO_OF_TEAMS].max
   end
 end

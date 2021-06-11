@@ -46,16 +46,9 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :choose do |event, *args|
       setup_pug(event) do |e, pug|
-        if pug.joined_players.count > pug.maxplayers
+        if !pug.full?
           return send_embedded_message(
-            description: "Too many players, increase `!teamsize` or `!kick` extras",
-            channel: event.channel
-          )
-        end
-
-        if pug.joined_players.count.odd?
-          return send_embedded_message(
-            description: "Can't choose teams with odd number of players",
+            description: "Not enough players, reduce !teamsize",
             channel: event.channel
           )
         end
@@ -302,14 +295,14 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
-          if pug.team(0).include?(user_id)
+          if !pug.teamed_players.include?(user_id)
             return send_embedded_message(
               description: "You aren't in a team",
               channel: e.channel
             )
           end
 
-          pug.join_team(team_no: 0, player_id: user_id)
+          pug.unteam(user_id)
 
           send_embedded_message(
             description: "#{e.display_name} leaves team",
@@ -327,7 +320,7 @@ class QwtfDiscordBotPug # :nodoc:
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
-            pug.join_team(team_no: 0, player_id: user_id)
+            pug.unteam(user_id)
 
             send_embedded_message(
               description: "#{display_name} leaves team",
@@ -384,14 +377,14 @@ class QwtfDiscordBotPug # :nodoc:
 
         winning_team_no = args.first.to_i
 
-        if pug.actual_teams.count < 2
+        if pug.teams.count < 2
           return send_embedded_message(
             description: "There must be at least two teams with players to submit a result",
             channel: e.channel
           )
         end
 
-        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -444,7 +437,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        if pug.actual_teams.count < 2
+        if pug.teams.count < 2
           return send_embedded_message(
             description: "There must be at least two teams with players to submit a result",
             channel: e.channel
@@ -460,7 +453,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        team_results = pug.actual_teams.inject({}) do |teams, (name, player_ids)|
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
           players = player_ids.inject({}) do |memo, id|
             memo.merge({ id => e.display_name_for(id) })
           end
@@ -644,7 +637,7 @@ class QwtfDiscordBotPug # :nodoc:
   def join_pug(e, pug)
     pug.join(e.user_id)
 
-    if pug.joined_player_count == 1
+    if pug.total_player_count == 1
       snippets = ["#{e.display_name} creates a PUG", "#{pug.player_slots} joined"]
       message = pug.notify_roles
     else
@@ -669,7 +662,7 @@ class QwtfDiscordBotPug # :nodoc:
   def choose_fair_teams(pug:, event:, iteration: 0)
     if !pug.full?
       return send_embedded_message(
-        description: "Can't choose teams until PUG is full",
+        description: "Not enough players, reduce !teamsize",
         channel: event.channel
       ) && nil
     end
@@ -680,7 +673,7 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     combinations = get_fair_teams(
-      channel_id: event.channel.id, players: pug.joined_players
+      channel_id: event.channel.id, players: pug.up_now_players
     )
 
     teams = combinations[iteration]
@@ -692,6 +685,8 @@ class QwtfDiscordBotPug # :nodoc:
         message_obj: message_obj
       ) && nil
     end
+
+    pug.destroy_teams
 
     teams.each do |team_no, player_ids|
       player_ids.each do |player_id|
@@ -717,6 +712,18 @@ class QwtfDiscordBotPug # :nodoc:
         text: footer
       )
 
+      if pug.queued_players.any?
+        queue_display_names = pug.queued_players.map do |player_id|
+          event.display_name_for(player_id)
+        end
+
+        embed.add_field(
+          inline: true,
+          name: "Queue",
+          value: queue_display_names.join("\n")
+        )
+      end
+
       pug.teams.each do |team_no, player_ids|
         team_display_names = player_ids.map do |player_id|
           event.display_name_for(player_id)
@@ -732,14 +739,14 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
-    choose_fair_teams(pug: pug, event: event) unless pug.actual_teams.any?
+    choose_fair_teams(pug: pug, event: event) unless pug.teams.any?
 
     footer = [
       pug.game_map,
       "#{pug.player_slots} joined",
     ].compact.join(MSG_SNIPPET_DELIMITER)
 
-    mentions = pug.joined_players.map do |player_id|
+    mentions = pug.players.map do |player_id|
       event.mention_for(player_id)
     end
 
@@ -752,6 +759,18 @@ class QwtfDiscordBotPug # :nodoc:
       embed.footer = Discordrb::Webhooks::EmbedFooter.new(
         text: footer
       )
+
+      if pug.queued_players.any?
+        queue_display_names = pug.queued_players.map do |player_id|
+          event.display_name_for(player_id)
+        end
+
+        embed.add_field(
+          inline: true,
+          name: "Queue",
+          value: queue_display_names.join("\n")
+        )
+      end
 
       pug.teams.each do |team_no, player_ids|
         team_mentions = player_ids.map do |player_id|
