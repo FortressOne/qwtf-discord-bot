@@ -41,9 +41,7 @@ class QstatRequest
   end
 
   def server_summary
-    return "#{@endpoint} isn't responding" unless game_map
-
-    info = [name, @endpoint, game_map]
+    info = [name, game_map]
 
     info += if !has_spectators?
               ["#{numplayers}/#{maxplayers}"]
@@ -53,6 +51,8 @@ class QstatRequest
                 "#{numspectators}/#{maxspectators} spectators"
               ]
             end
+
+    info << "<qw://#{@endpoint}>"
 
     info.join(MSG_SNIPPET_DELIMITER)
   end
