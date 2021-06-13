@@ -11,28 +11,26 @@ class QstatRequest
     @result ||= execute
   end
 
-  def to_embed
-    return nil if is_empty?
-
-    embed = Discordrb::Webhooks::Embed.new
-
-    teams.each do |team|
-      embed << team.to_embed_field
-    end
-
-    embed
-  end
-
   def to_full_embed
     Discordrb::Webhooks::Embed.new.tap do |embed|
       embed.add_field(
         name: name,
-        value: embed_summary,
+        value: join_link,
       )
 
       teams.each do |team|
         embed << team.to_embed_field
       end
+
+      footer = [game_map, "#{numplayers}/#{maxplayers} players"]
+
+      if has_spectators?
+        footer << "#{numspectators}/#{maxspectators} spectators"
+      end
+
+      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+        text: footer.join(MSG_SNIPPET_DELIMITER)
+      )
     end
   end
 
@@ -43,28 +41,7 @@ class QstatRequest
   end
 
   def server_summary
-    return "#{@endpoint} isn't responding" unless game_map
-
-    info = [name, @endpoint, game_map]
-
-    info += if !has_spectators?
-              ["#{numplayers}/#{maxplayers}"]
-            else
-              [
-                "#{numplayers}/#{maxplayers} players",
-                "#{numspectators}/#{maxspectators} spectators"
-              ]
-            end
-
-    info.join(MSG_SNIPPET_DELIMITER)
-  end
-
-  def join_link
-    "[Join](http://phobos.baseq.fr:9999/join?url=#{@endpoint})"
-  end
-
-  def embed_summary
-    info = [@endpoint, game_map]
+    info = [name, game_map]
 
     info += if !has_spectators?
               ["#{numplayers}/#{maxplayers}"]
@@ -80,6 +57,10 @@ class QstatRequest
     info.join(MSG_SNIPPET_DELIMITER)
   end
 
+  def join_link
+    "<qw://#{@endpoint}>"
+  end
+
   def is_empty?
     !has_players? && !has_spectators?
   end
@@ -90,6 +71,10 @@ class QstatRequest
 
   def has_players?
     numplayers && numplayers > 0
+  end
+
+  def live_server?
+    !game_map.nil?
   end
 
   private
