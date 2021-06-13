@@ -52,7 +52,7 @@ class QstatRequest
               ]
             end
 
-    info << "<qw://#{@endpoint}>"
+    info << join_link
 
     info.join(MSG_SNIPPET_DELIMITER)
   end
