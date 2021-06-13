@@ -4,7 +4,6 @@ class Dashboard
     @endpoints = dashboard_config["endpoints"]
     @messages = {}
 
-
     channel_name = dashboard_config["name"]
 
     old_dashboard_channel = @server.channels.find do |chan|
