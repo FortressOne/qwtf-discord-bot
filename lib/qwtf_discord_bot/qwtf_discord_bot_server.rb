@@ -16,20 +16,17 @@ class QwtfDiscordBotServer
         message = 'Provide a server address e.g. `!server ' \
           'sydney.fortressone.org` or use `!active` or `!all`'
         event.channel.send_message(message)
-        puts message
-      else
-        endpoint = args.first
-        qstat_response = QstatRequest.new(endpoint)
-        message = qstat_response.server_summary
-        embed = qstat_response.to_embed
 
-        if embed
-          event.channel.send_embed(message, embed)
-          puts message
-        else
-          event.channel.send_message(message)
-          puts message
-        end
+        return puts message
+      end
+
+      endpoint = args.first
+      request = QstatRequest.new(endpoint)
+
+      if !request.live_server?
+        event.channel.send_message("#{endpoint} isn't responding")
+      else
+        event.channel.send_embed(nil, request.to_full_embed)
       end
     end
 
@@ -43,20 +40,16 @@ class QwtfDiscordBotServer
       if endpoints_for_this_channel.empty?
         message = 'There are no servers associated with this channel'
         event.channel.send_message(message)
-        puts message
-      else
-        endpoints_for_this_channel.each do |endpoint|
-          qstat_request = QstatRequest.new(endpoint.address)
-          message = qstat_request.server_summary
-          embed = qstat_request.to_embed
+        return puts message
+      end
 
-          if embed
-            event.channel.send_embed(message, embed)
-            puts message
-          else
-            event.channel.send_message(message)
-            puts message
-          end
+      endpoints_for_this_channel.each do |endpoint|
+        request = QstatRequest.new(endpoint.address)
+
+        if !request.live_server?
+          event.channel.send_message("#{endpoint} isn't responding")
+        else
+          event.channel.send_embed(nil, request.to_full_embed)
         end
       end
 
@@ -73,35 +66,27 @@ class QwtfDiscordBotServer
       if endpoints_for_this_channel.empty?
         message = 'There are no servers associated with this channel'
         event.channel.send_message(message)
-        puts message
-      else
-        qstat_requests = endpoints_for_this_channel.map do |endpoint|
-          QstatRequest.new(endpoint.address)
-        end
-
-        servers_with_players = qstat_requests.reject do |server|
-          server.is_empty?
-        end
-
-        if servers_with_players.empty?
-          message = "All ##{event.channel.name} servers are empty"
-          event.channel.send_message(message)
-          puts message
-        else
-          servers_with_players.each do |server|
-            message = server.server_summary
-            embed = server.to_embed
-
-            if embed
-              event.channel.send_embed(message, embed)
-              puts message
-            else
-              event.channel.send_message(message)
-              puts message
-            end
-          end
-        end
+        return puts message
       end
+
+      qstat_requests = endpoints_for_this_channel.map do |endpoint|
+        QstatRequest.new(endpoint.address)
+      end
+
+      servers_with_players = qstat_requests.reject do |server|
+        server.is_empty?
+      end
+
+      if servers_with_players.empty?
+        message = "All ##{event.channel.name} servers are empty"
+        event.channel.send_message(message)
+        return puts message
+      end
+
+      servers_with_players.each do |server|
+        event.channel.send_embed(nil, server.to_full_embed)
+      end
+
       return nil
     end
 
