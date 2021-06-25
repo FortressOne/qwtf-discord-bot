@@ -320,6 +320,14 @@ class QwtfDiscordBotPug # :nodoc:
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || arg
+
+            unless pug.joined?(user_id)
+              return send_embedded_message(
+                description: "#{display_name} isn't in this PUG",
+                channel: e.channel
+              )
+            end
+
             pug.unteam(user_id)
 
             send_embedded_message(
