@@ -9,6 +9,7 @@ class QwtfDiscordBotPug # :nodoc:
   MSG_SNIPPET_DELIMITER = ' · '
   TEAM_NAMES = { 1 => "Blue", 2 => "Red" }
   TEN_MINUTES = 10 * 60
+  VALID_MENTION = /<@!?\d+>/
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -170,17 +171,17 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        args.each do |arg|
-          unless arg.match(/<@!\d+>/)
+        args.each do |mention|
+          unless mention.match(VALID_MENTION)
             send_embedded_message(
-              description: "#{arg} isn't a valid mention",
+              description: "#{mention} isn't a valid mention",
               channel: e.channel
             )
             next
           end
 
-          user_id = mention_to_user_id(arg)
-          display_name = e.display_name_for(user_id) || arg
+          user_id = mention_to_user_id(mention)
+          display_name = e.display_name_for(user_id) || mention
 
           unless pug.joined?(user_id)
             send_embedded_message(
@@ -250,16 +251,16 @@ class QwtfDiscordBotPug # :nodoc:
           )
         else
           args[1..-1].each do |mention|
-            unless mention.match(/<@!\d+>/)
+            unless mention.match(VALID_MENTION)
               send_embedded_message(
-                description: "#{arg} isn't a valid mention",
+                description: "#{mention} isn't a valid mention",
                 channel: e.channel
               )
               next
             end
 
             user_id = mention_to_user_id(mention)
-            display_name = e.display_name_for(user_id) || arg
+            display_name = e.display_name_for(user_id) || mention
             pug.join_team(team_no: team_no, player_id: user_id)
 
             send_embedded_message(
@@ -310,16 +311,16 @@ class QwtfDiscordBotPug # :nodoc:
           )
         else
           args.each do |mention|
-            unless mention.match(/<@!\d+>/)
+            unless mention.match(VALID_MENTION)
               send_embedded_message(
-                description: "#{arg} isn't a valid mention",
+                description: "#{mention} isn't a valid mention",
                 channel: e.channel
               )
               next
             end
 
             user_id = mention_to_user_id(mention)
-            display_name = e.display_name_for(user_id) || arg
+            display_name = e.display_name_for(user_id) || mention
 
             unless pug.joined?(user_id)
               return send_embedded_message(
