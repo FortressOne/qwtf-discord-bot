@@ -47,7 +47,7 @@ class QwtfDiscordBotServer
         request = QstatRequest.new(endpoint.address)
 
         if !request.live_server?
-          event.channel.send_message("#{endpoint} isn't responding")
+          event.channel.send_message("#{endpoint.address} isn't responding")
         else
           event.channel.send_embed(nil, request.to_full_embed)
         end
