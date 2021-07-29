@@ -213,14 +213,14 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
-        unless args.any?
+        if args.empty?
           return send_embedded_message(
             description: "Which team? E.G. `!team 1`",
             channel: e.channel
           )
         end
 
-        unless ["1", "2"].any?(args.first)
+        if ["1", "2"].none?(args.first)
           return send_embedded_message(
             description: "Choose `!team 1`, `!team 2`, or `!unteam` to leave team",
             channel: e.channel
@@ -640,7 +640,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def mention_to_user_id(mention)
-    mention[3..-2].to_i
+    mention[/\d+/].to_i
   end
 
   def join_pug(e, pug)
