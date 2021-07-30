@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    qwtf_discord_bot (6.1.5)
+    qwtf_discord_bot (6.1.6)
       discordrb (= 3.4.0)
       redis (~> 4.2)
       thor (~> 1.1)
@@ -28,6 +28,7 @@ GEM
       rest-client (>= 2.1.0.rc1)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.7.6)
     event_emitter (0.2.6)
     factory_bot (6.1.0)
       activesupport (>= 5.0.0)
@@ -85,6 +86,7 @@ PLATFORMS
 DEPENDENCIES
   bundler
   discordrb (= 3.4.0)
+  dotenv
   factory_bot
   pry
   qwtf_discord_bot!

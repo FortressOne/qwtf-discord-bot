@@ -9,6 +9,7 @@ gem 'thor'
 
 group :development do
   gem 'pry'
+  gem 'dotenv'
 end
 
 group :test do
