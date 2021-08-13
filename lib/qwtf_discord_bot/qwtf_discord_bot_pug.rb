@@ -45,6 +45,20 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    bot.command :jizzoin do |event, *args|
+      setup_pug(event) do |e, pug|
+        if pug.joined?(e.user_id)
+          return send_embedded_message(
+            description: "You've already jizzed",
+            channel: e.channel
+          )
+        end
+
+        join_pug(e, pug)
+        start_pug(pug, e) if pug.has_exactly_maxplayers?
+      end
+    end
+
     bot.command :choose do |event, *args|
       setup_pug(event) do |e, pug|
         if !pug.full?
