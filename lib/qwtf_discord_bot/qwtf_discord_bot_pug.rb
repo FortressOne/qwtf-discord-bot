@@ -417,7 +417,7 @@ class QwtfDiscordBotPug # :nodoc:
         ).body
 
         send_embedded_message(
-          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Ratings](#{discord_channel_leaderboard_url(e.channel.id)})",
+          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Results](#{discord_channel_leaderboard_url(e.channel.id)})",
           channel: e.channel
         )
       end
@@ -485,7 +485,7 @@ class QwtfDiscordBotPug # :nodoc:
         ).body
 
         send_embedded_message(
-          description: "Match ##{id} drawn. `!choose` again. [Ratings](#{discord_channel_leaderboard_url(e.channel.id)})",
+          description: "Match ##{id} drawn. `!choose` again. [Results](#{discord_channel_leaderboard_url(e.channel.id)})",
           channel: e.channel
         )
       end
