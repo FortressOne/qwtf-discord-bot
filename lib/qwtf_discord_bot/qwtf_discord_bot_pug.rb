@@ -648,7 +648,7 @@ class QwtfDiscordBotPug # :nodoc:
 
     if pug.total_player_count == 1
       snippets = ["#{e.display_name} creates a PUG", "#{pug.player_slots} joined"]
-      message = pug.notify_roles
+      message = "#{pug.notify_roles} PUG started"
     else
       snippets = ["#{e.display_name} joins the PUG", "#{pug.player_slots} joined"]
       message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
