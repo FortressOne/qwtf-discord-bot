@@ -2,6 +2,7 @@
 
 require 'pug'
 require 'event_decorator'
+require 'active_support/core_ext/array/conversions'
 
 class QwtfDiscordBotPug # :nodoc:
   include QwtfDiscordBot
@@ -171,12 +172,13 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        description = []
+        message = ""
+        footer = ""
+
         args.each do |mention|
-          unless mention.match(VALID_MENTION)
-            send_embedded_message(
-              description: "#{mention} isn't a valid mention",
-              channel: e.channel
-            )
+          if !mention.match(VALID_MENTION)
+            description << "#{mention} isn't a valid mention"
             next
           end
 
@@ -184,30 +186,29 @@ class QwtfDiscordBotPug # :nodoc:
           display_name = e.display_name_for(user_id) || mention
 
           unless pug.joined?(user_id)
-            send_embedded_message(
-              description: "#{display_name} isn't in the PUG",
-              channel: e.channel
-            )
+            description << "#{display_name} isn't in the PUG"
             next
           end
 
           pug.leave(user_id)
 
-          snippets = [
-            "#{display_name} is kicked from the PUG",
-            "#{pug.player_slots} remain"
-          ]
-
           message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
-
-          send_embedded_message(
-            message: message,
-            description: snippets.join(MSG_SNIPPET_DELIMITER),
-            channel: e.channel
-          )
-
-          break end_pug(pug, e.channel) if pug.empty?
+          description << "#{display_name} is kicked from the PUG"
         end
+
+        footer = "#{pug.player_slots} remain"
+
+        send_embedded_message(
+          message: message,
+          description: description.join("\n"),
+          channel: e.channel
+        ) do |embed|
+          embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+            text: footer
+          )
+        end
+
+        end_pug(pug, e.channel) if pug.empty?
       end
     end
 
@@ -249,13 +250,34 @@ class QwtfDiscordBotPug # :nodoc:
             ].join(MSG_SNIPPET_DELIMITER),
             channel: e.channel
           )
+        elsif args.count == 2
+          mention = args.last
+
+          if !mention.match(VALID_MENTION)
+            return send_embedded_message(
+              description: "#{mention} isn't a valid mention",
+              channel: e.channel
+            )
+          end
+
+          user_id = mention_to_user_id(mention)
+          display_name = e.display_name_for(user_id) || mention
+          pug.join_team(team_no: team_no, player_id: user_id)
+
+          send_embedded_message(
+            description: [
+              "#{display_name} joins #{TEAM_NAMES[team_no]}",
+              "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+            ].join(MSG_SNIPPET_DELIMITER),
+            channel: e.channel
+          )
         else
+          errors = []
+          teamers = []
+
           args[1..-1].each do |mention|
-            unless mention.match(VALID_MENTION)
-              send_embedded_message(
-                description: "#{mention} isn't a valid mention",
-                channel: e.channel
-              )
+            if !mention.match(VALID_MENTION)
+              errors << "#{mention} isn't a valid mention"
               next
             end
 
@@ -263,14 +285,19 @@ class QwtfDiscordBotPug # :nodoc:
             display_name = e.display_name_for(user_id) || mention
             pug.join_team(team_no: team_no, player_id: user_id)
 
-            send_embedded_message(
-              description: [
-                "#{display_name} joins #{TEAM_NAMES[team_no]}",
-                "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
-              ].join(MSG_SNIPPET_DELIMITER),
-              channel: e.channel
-            )
+            teamers << display_name
           end
+
+          description = errors << [
+            "#{teamers.to_sentence} join #{TEAM_NAMES[team_no]}",
+            "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+          ].join(MSG_SNIPPET_DELIMITER)
+
+
+          send_embedded_message(
+            description: description.join("\n"),
+            channel: e.channel
+          )
         end
 
         start_pug(pug, e) if !pug_already_full && pug.has_exactly_maxplayers?

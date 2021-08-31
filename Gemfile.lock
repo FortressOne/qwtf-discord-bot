@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    qwtf_discord_bot (6.1.6)
+    qwtf_discord_bot (6.1.8)
+      activesupport (~> 6.1)
       discordrb (= 3.4.0)
       redis (~> 4.2)
       thor (~> 1.1)
@@ -84,6 +85,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activesupport
   bundler
   discordrb (= 3.4.0)
   dotenv

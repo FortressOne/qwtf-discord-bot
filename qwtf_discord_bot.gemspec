@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'discordrb', '3.4.0'
   spec.add_runtime_dependency 'redis', '~> 4.2'
   spec.add_runtime_dependency 'thor', '~>1.1'
+  spec.add_runtime_dependency 'activesupport', '~>6.1'
 end
