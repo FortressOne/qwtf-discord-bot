@@ -250,27 +250,6 @@ class QwtfDiscordBotPug # :nodoc:
             ].join(MSG_SNIPPET_DELIMITER),
             channel: e.channel
           )
-        elsif args.count == 2
-          mention = args.last
-
-          if !mention.match(VALID_MENTION)
-            return send_embedded_message(
-              description: "#{mention} isn't a valid mention",
-              channel: e.channel
-            )
-          end
-
-          user_id = mention_to_user_id(mention)
-          display_name = e.display_name_for(user_id) || mention
-          pug.join_team(team_no: team_no, player_id: user_id)
-
-          send_embedded_message(
-            description: [
-              "#{display_name} joins #{TEAM_NAMES[team_no]}",
-              "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
-            ].join(MSG_SNIPPET_DELIMITER),
-            channel: e.channel
-          )
         else
           errors = []
           teamers = []
@@ -289,10 +268,16 @@ class QwtfDiscordBotPug # :nodoc:
           end
 
           description = errors << [
-            "#{teamers.to_sentence} join #{TEAM_NAMES[team_no]}",
-            "#{pug.team_player_count(team_no)}/#{pug.teamsize}"
+            [
+              teamers.to_sentence,
+              teamers.count == 1 ? "joins" : "join",
+              TEAM_NAMES[team_no]
+            ].join(" "),
+            [
+              pug.team_player_count(team_no),
+              pug.teamsize
+            ].join("/")
           ].join(MSG_SNIPPET_DELIMITER)
-
 
           send_embedded_message(
             description: description.join("\n"),
