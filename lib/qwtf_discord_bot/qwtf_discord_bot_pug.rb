@@ -293,7 +293,7 @@ class QwtfDiscordBotPug # :nodoc:
       setup_pug(event) do |e, pug|
         user_id = e.user_id
 
-        unless pug.active?
+        if !pug.active?
           return send_embedded_message(
             description: 'No PUG has been started. `!join` to create',
             channel: e.channel
@@ -301,7 +301,7 @@ class QwtfDiscordBotPug # :nodoc:
         end
 
         if args.empty?
-          unless pug.joined?(user_id)
+          if !pug.joined?(user_id)
             return send_embedded_message(
               description: "You aren't in this PUG",
               channel: e.channel
@@ -322,32 +322,38 @@ class QwtfDiscordBotPug # :nodoc:
             channel: e.channel
           )
         else
+          errors = []
+          unteamers = []
+
           args.each do |mention|
-            unless mention.match(VALID_MENTION)
-              send_embedded_message(
-                description: "#{mention} isn't a valid mention",
-                channel: e.channel
-              )
+            if !mention.match(VALID_MENTION)
+              errors << "#{mention} isn't a valid mention"
               next
             end
 
             user_id = mention_to_user_id(mention)
             display_name = e.display_name_for(user_id) || mention
 
-            unless pug.joined?(user_id)
-              return send_embedded_message(
-                description: "#{display_name} isn't in this PUG",
-                channel: e.channel
-              )
+            if !pug.joined?(user_id)
+              errors << "#{display_name} isn't in this PUG"
+              next
             end
 
             pug.unteam(user_id)
 
-            send_embedded_message(
-              description: "#{display_name} leaves team",
-              channel: e.channel
-            )
+            unteamers << display_name
           end
+
+          description = errors << [
+            unteamers.to_sentence,
+            unteamers.count == 1 ? "goes" : "go",
+            "into the queue"
+          ].join(" ")
+
+          send_embedded_message(
+            description: description.join("\n"),
+            channel: e.channel
+          )
         end
       end
     end
