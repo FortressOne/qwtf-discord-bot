@@ -32,7 +32,7 @@ class QwtfDiscordBotPug # :nodoc:
     `!notify <@role>` Set @role for alerts
   MESSAGE
 
-  HELP = { commands: COMMANDS, footer: "`<>` required, `[]` optional" } 
+  HELP = { commands: COMMANDS, footer: "!command <required> [optional]" }
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -806,7 +806,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     message_obj = send_embedded_message(
-      description: "Choosing fair teams...",
+      description: "Choosing teams...",
       channel: event.channel
     )
 
