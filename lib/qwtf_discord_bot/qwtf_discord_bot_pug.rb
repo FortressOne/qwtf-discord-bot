@@ -12,6 +12,28 @@ class QwtfDiscordBotPug # :nodoc:
   TEN_MINUTES = 10 * 60
   VALID_MENTION = /<@!?\d+>/
 
+  COMMANDS = <<~MESSAGE
+    `!status` Shows who has joined
+    `!join [@player1] [@player2]` Join PUG. Can also join other players
+    `!leave` Leave PUG
+    `!kick <@player> [@player2]` Kick one or more other players
+    `!team <team_no> [@player1] [@player2]` Join team
+    `!unteam [@player1] [@player2]` Leave team and go to front of queue
+    `!choose [n]` Choose fair teams. Pass number for nth fairest team
+    `!shuffle` Choose random teams.
+    `!win <team_no>` Report winning team
+    `!draw` Report draw
+    `!end` End PUG. Kicks all players
+    `!teamsize <no_of_players>` Set number of players in a team
+    `!addmap <map_name>` Add map to map list
+    `!removemap <map_name>` Remove map from map list
+    `!maps` Show map list
+    `!map [map_name]` Show or set map
+    `!notify <@role>` Set @role for alerts
+  MESSAGE
+
+  HELP = { commands: COMMANDS, footer: "`<>` required, `[]` optional" } 
+
   def run
     bot = Discordrb::Commands::CommandBot.new(
       token: QwtfDiscordBot.config.token,
@@ -29,7 +51,14 @@ class QwtfDiscordBotPug # :nodoc:
     )
 
     bot.command :help do |event, *args|
-      "Pug commands: `!status`, `!join`, `!team <team_no> [@player1] [@player2]`, `!unteam`, `!leave`, `!kick <@player>`, `!win <team_no>`, `!draw`, `!end`, `!teamsize <no_of_players>`, `!addmap <map_name>`, `!removemap <map_name>`, `!maps`, `!map [map_name]`, `!choose [n]`, `!notify <@role>`"
+      send_embedded_message(
+        description: HELP[:commands],
+        channel: event.channel
+      ) do |embed|
+        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: HELP[:footer]
+        )
+      end
     end
 
     bot.command :join do |event, *args|
@@ -122,7 +151,21 @@ class QwtfDiscordBotPug # :nodoc:
                       0
                     end
 
-        message_obj = choose_fair_teams(pug: pug, event: e, iteration: iteration)
+        message_obj = choose_teams(pug: pug, event: e, iteration: iteration)
+        status(pug: pug, event: e, message_obj: message_obj) if message_obj
+      end
+    end
+
+    bot.command :shuffle do |event|
+      setup_pug(event) do |e, pug|
+        if !pug.full?
+          return send_embedded_message(
+            description: "Not enough players, reduce !teamsize",
+            channel: event.channel
+          )
+        end
+
+        message_obj = choose_teams(pug: pug, event: e)
         status(pug: pug, event: e, message_obj: message_obj) if message_obj
       end
     end
@@ -754,7 +797,7 @@ class QwtfDiscordBotPug # :nodoc:
     nil # stop discordrb printing return value
   end
 
-  def choose_fair_teams(pug:, event:, iteration: 0)
+  def choose_teams(pug:, event:, iteration: nil)
     if !pug.full?
       return send_embedded_message(
         description: "Not enough players, reduce !teamsize",
@@ -771,14 +814,18 @@ class QwtfDiscordBotPug # :nodoc:
       channel_id: event.channel.id, players: pug.up_now_players
     )
 
-    teams = combinations[iteration]
+    if iteration
+      teams = combinations[iteration]
 
-    if !teams
-      return send_embedded_message(
-        description: "There are only #{combinations.count} possible combinations",
-        channel: event.channel,
-        message_obj: message_obj
-      ) && nil
+      if !teams
+        return send_embedded_message(
+          description: "There are only #{combinations.count} possible combinations",
+          channel: event.channel,
+          message_obj: message_obj
+        ) && nil
+      end
+    else
+      teams = combinations.sample
     end
 
     pug.destroy_teams
