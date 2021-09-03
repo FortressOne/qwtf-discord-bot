@@ -72,6 +72,8 @@ class QwtfDiscordBotPug # :nodoc:
           if pug.total_player_count == 0
             message = "#{pug.notify_roles} PUG started"
             description << "#{e.display_name} creates a PUG"
+          elsif pug.slots_left.between?(1, 3)
+            message = "#{pug.slots_left} more #{pug.notify_roles}"
           end
 
           if joiners.any?
@@ -86,6 +88,7 @@ class QwtfDiscordBotPug # :nodoc:
             pug.total_player_count,
             pug.maxplayers
           ].join("/")
+
 
           send_embedded_message(
             message: message,
