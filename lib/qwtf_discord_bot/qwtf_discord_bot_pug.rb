@@ -43,7 +43,6 @@ class QwtfDiscordBotPug # :nodoc:
           end
 
           join_pug(e, pug)
-          start_pug(pug, e) if pug.has_exactly_maxplayers?
         else
           errors = []
           joiners = []
@@ -96,6 +95,8 @@ class QwtfDiscordBotPug # :nodoc:
             channel: e.channel
           )
         end
+
+        start_pug(pug, e) if pug.has_exactly_maxplayers?
       end
     end
 
@@ -833,8 +834,6 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
-    choose_fair_teams(pug: pug, event: event) unless pug.teams.any?
-
     footer = [
       pug.game_map,
       "#{pug.player_slots} joined",
@@ -844,7 +843,7 @@ class QwtfDiscordBotPug # :nodoc:
       event.mention_for(player_id)
     end
 
-    mention_line = "Time to play! #{mentions.join(" ")}"
+    mention_line = "`!choose`, `!shuffle` or `!team` up. #{mentions.join(" ")}"
 
     send_embedded_message(
       message: mention_line,
