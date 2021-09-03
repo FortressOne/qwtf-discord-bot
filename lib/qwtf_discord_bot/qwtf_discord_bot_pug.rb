@@ -34,15 +34,65 @@ class QwtfDiscordBotPug # :nodoc:
 
     bot.command :join do |event, *args|
       setup_pug(event) do |e, pug|
-        if pug.joined?(e.user_id)
-          return send_embedded_message(
-            description: "You've already joined",
+        if args.empty?
+          if pug.joined?(e.user_id)
+            return send_embedded_message(
+              description: "You've already joined",
+              channel: e.channel
+            )
+          end
+
+          join_pug(e, pug)
+          start_pug(pug, e) if pug.has_exactly_maxplayers?
+        else
+          errors = []
+          joiners = []
+
+          args.each do |mention|
+            if !mention.match(VALID_MENTION)
+              errors << "#{mention} isn't a valid mention"
+              next
+            end
+
+            user_id = mention_to_user_id(mention)
+            display_name = e.display_name_for(user_id) || mention
+
+            if pug.joined?(user_id)
+              errors << "#{display_name} is already in this PUG"
+              next
+            end
+
+            pug.join(user_id)
+            joiners << display_name
+          end
+
+          message = ""
+          description = []
+
+          if pug.total_player_count == 0
+            message = "#{pug.notify_roles} PUG started"
+            description << "#{e.display_name} creates a PUG"
+          end
+
+          if joiners.any?
+            description << [
+              joiners.to_sentence,
+              joiners.count == 1 ? "joins" : "join",
+              "the PUG"
+            ].join(" ")
+          end
+
+          description << [
+            pug.total_player_count,
+            pug.maxplayers
+          ].join("/")
+
+          send_embedded_message(
+            message: message,
+            description: [errors, description.join(MSG_SNIPPET_DELIMITER)].join("\n"),
             channel: e.channel
           )
         end
-
-        join_pug(e, pug)
-        start_pug(pug, e) if pug.has_exactly_maxplayers?
       end
     end
 
@@ -172,13 +222,12 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        description = []
-        message = ""
-        footer = ""
+        errors = []
+        kickees = []
 
         args.each do |mention|
           if !mention.match(VALID_MENTION)
-            description << "#{mention} isn't a valid mention"
+            errors << "#{mention} isn't a valid mention"
             next
           end
 
@@ -186,27 +235,42 @@ class QwtfDiscordBotPug # :nodoc:
           display_name = e.display_name_for(user_id) || mention
 
           unless pug.joined?(user_id)
-            description << "#{display_name} isn't in the PUG"
+            errors << "#{display_name} isn't in the PUG"
             next
           end
 
           pug.leave(user_id)
 
-          message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
-          description << "#{display_name} is kicked from the PUG"
+          kickees << display_name
         end
 
-        footer = "#{pug.player_slots} remain"
+        message = ""
+        description = []
+
+        if pug.slots_left == 1
+          message = "#{pug.slots_left} more #{pug.notify_roles}"
+        end
+
+        if kickees.any?
+          description << [
+            kickees.to_sentence,
+            kickees.count == 1 ? "is" : "are",
+            "kicked from the PUG"
+          ].join(" ")
+        end
+
+        description << [
+          [pug.total_player_count, pug.maxplayers].join("/"),
+          "remain"
+        ].join(" ")
+
+        description = [errors, description.join(MSG_SNIPPET_DELIMITER)].join("\n")
 
         send_embedded_message(
           message: message,
-          description: description.join("\n"),
+          description: description,
           channel: e.channel
-        ) do |embed|
-          embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-            text: footer
-          )
-        end
+        )
 
         end_pug(pug, e.channel) if pug.empty?
       end
