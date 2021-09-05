@@ -824,7 +824,23 @@ class QwtfDiscordBotPug # :nodoc:
         ) && nil
       end
     else
-      teams = combinations.sample
+      weighted_combinations = combinations.map.with_index do |combination, index|
+        { weight: 1/(index+1.0), combination: combination }
+      end
+
+      total = weighted_combinations.inject(0) do |sum, wt|
+        sum + wt[:weight]
+      end
+
+      chosen_weighted_team_index = rand(0..total)
+      counter = 0.0
+
+      weighted_combination = weighted_combinations.find do |wt|
+        counter += wt[:weight]
+        chosen_weighted_team_index <= counter
+      end
+
+      teams = weighted_combination[:combination]
     end
 
     pug.destroy_teams
