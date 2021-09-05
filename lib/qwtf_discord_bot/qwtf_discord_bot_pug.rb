@@ -117,7 +117,6 @@ class QwtfDiscordBotPug # :nodoc:
             pug.maxplayers
           ].join("/")
 
-
           send_embedded_message(
             message: message,
             description: [errors, description.join(MSG_SNIPPET_DELIMITER)].join("\n"),
@@ -881,49 +880,17 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def start_pug(pug, event)
-    footer = [
-      pug.game_map,
-      "#{pug.player_slots} joined",
-    ].compact.join(MSG_SNIPPET_DELIMITER)
-
     mentions = pug.players.map do |player_id|
       event.mention_for(player_id)
     end
 
-    mention_line = "`!choose`, `!shuffle` or `!team` up. #{mentions.join(" ")}"
+    mention_line = mentions.join(" ")
 
     send_embedded_message(
       message: mention_line,
-      channel: event.channel
-    ) do |embed|
-      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-        text: footer
-      )
-
-      if pug.queued_players.any?
-        queue_display_names = pug.queued_players.map do |player_id|
-          event.display_name_for(player_id)
-        end
-
-        embed.add_field(
-          inline: true,
-          name: "Queue",
-          value: queue_display_names.join("\n")
-        )
-      end
-
-      pug.teams.each do |team_no, player_ids|
-        team_mentions = player_ids.map do |player_id|
-          event.display_name_for(player_id)
-        end
-
-        embed.add_field(
-          inline: true,
-          name: team_name(team_no),
-          value: team_mentions.join("\n")
-        )
-      end
-    end
+      channel: event.channel,
+      description: "Time to play. `!choose`, `!shuffle` or `!team` up."
+    )
   end
 
   def end_pug(pug, channel_id)
