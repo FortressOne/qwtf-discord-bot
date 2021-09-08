@@ -66,7 +66,7 @@ A Discord bot for checking the status of QuakeWorld Team Fortress servers
   ```
 
 - Use  the `QWTF_DISCORD_BOT_CONFIG_FILE` environment variable to specify an
-  alternative config file path
+  alternative config file path.
 
       export QWTF_DISCORD_BOT_CONFIG_FILE="config.yaml"
 
