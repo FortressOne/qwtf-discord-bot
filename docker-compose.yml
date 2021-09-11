@@ -34,8 +34,8 @@ services:
       - redis
     environment:
       - REDIS_URL=redis://redis
-      - RATINGS_API_URL
-      - RATINGS_APP_URL
+      - RESULTS_API_URL
+      - RESULTS_APP_URL
     volumes:
       - type: bind
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
@@ -48,7 +48,7 @@ services:
       - redis
     environment:
       - REDIS_URL=redis://redis
-      - RATINGS_API_URL
+      - RESULTS_API_URL
     volumes:
       - type: bind
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"

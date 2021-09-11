@@ -944,7 +944,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def post_results(json)
-    uri = URI([ENV['RATINGS_API_URL'], 'matches'].join('/'))
+    uri = URI([ENV['RESULTS_API_URL'], 'matches'].join('/'))
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
     req.body = json
 
@@ -954,7 +954,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def get_fair_teams(channel_id:, players:)
-    uri = URI([ENV['RATINGS_API_URL'], 'fair_teams', 'new'].join('/'))
+    uri = URI([ENV['RESULTS_API_URL'], 'fair_teams', 'new'].join('/'))
     params = { :channel_id => channel_id, 'players[]' => players }
     uri.query = URI.encode_www_form(params)
     req = Net::HTTP::Get.new(uri)
@@ -971,6 +971,6 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def discord_channel_leaderboard_url(channel_id)
-    [ENV['RATINGS_APP_URL'], "discord_channels", channel_id].join('/')
+    [ENV['RESULTS_APP_URL'], "discord_channels", channel_id].join('/')
   end
 end
