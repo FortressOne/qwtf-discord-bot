@@ -948,7 +948,9 @@ class QwtfDiscordBotPug # :nodoc:
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
     req.body = json
 
-    Net::HTTP.start(uri.hostname, uri.port) do |http|
+    https? = uri.scheme == "https"
+
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: https?) do |http|
       http.request(req)
     end
   end
@@ -959,7 +961,9 @@ class QwtfDiscordBotPug # :nodoc:
     uri.query = URI.encode_www_form(params)
     req = Net::HTTP::Get.new(uri)
 
-    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    https? = uri.scheme == "https"
+
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: https?) do |http|
       http.request(req)
     end
 
