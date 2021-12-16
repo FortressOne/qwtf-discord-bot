@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'bundler'
-gem 'discordrb', '3.4.0'
+gem 'discordrb', github: 'shardlab/discordrb', branch: 'main'
 gem 'redis'
 gem 'thor'
 gem 'activesupport'
