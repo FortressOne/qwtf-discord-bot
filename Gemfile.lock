@@ -16,10 +16,6 @@ PATH
   remote: .
   specs:
     qwtf_discord_bot (6.3.1)
-      activesupport (~> 6.1)
-      discordrb
-      redis (~> 4.2)
-      thor (~> 1.1)
 
 GEM
   remote: https://rubygems.org/
