@@ -551,6 +551,83 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
+    # exactly the same as !win but allows consecutive reports
+    bot.command :forcewin do |event, *args|
+      setup_pug(event) do |e, pug|
+        unless args.any?
+          return send_embedded_message(
+            description: "Specify winning team; e.g. `!win 1`",
+            channel: e.channel
+          )
+        end
+
+        unless pug.active?
+          return send_embedded_message(
+            description: no_active_pug_message,
+            channel: e.channel
+          )
+        end
+
+        if !pug.full?
+          return send_embedded_message(
+            description: "Can't report unless PUG is full",
+            channel: event.channel
+          )
+        end
+
+        if !pug.equal_number_of_players_on_each_team?
+          return send_embedded_message(
+            description: "Can't report unless teams have same number of players",
+            channel: event.channel
+          )
+        end
+
+        unless ["1", "2"].any?(args.first)
+          return send_embedded_message(
+            description: "Invalid team number",
+            channel: e.channel
+          )
+        end
+
+        winning_team_no = args.first.to_i
+
+        if pug.teams.count < 2
+          return send_embedded_message(
+            description: "There must be at least two teams with players to submit a result",
+            channel: e.channel
+          )
+        end
+
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+          players = player_ids.inject({}) do |memo, id|
+            memo.merge({ id => e.display_name_for(id) })
+          end
+
+          result = winning_team_no.to_i == name.to_i ? 1 : -1
+          teams.merge({ name => { players: players, result: result } })
+        end
+
+        id = report(
+          pug,
+          {
+            match: {
+              map: pug.game_map,
+              teams: team_results,
+              discord_channel: {
+                channel_id: e.channel_id,
+                name: "#{e.channel.server.name} ##{e.channel.name}"
+              }
+            }
+          }.to_json
+        ).body
+
+        send_embedded_message(
+          description: "#{TEAM_NAMES[winning_team_no]} wins game ##{id}. `!choose` again. [Results](#{discord_channel_leaderboard_url(e.channel.id)})",
+          channel: e.channel
+        )
+      end
+    end
+
     bot.command :draw do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
@@ -587,6 +664,66 @@ class QwtfDiscordBotPug # :nodoc:
           return send_embedded_message(
             description: "A match was reported less than 10 minutes ago",
             channel: event.channel
+          )
+        end
+
+        team_results = pug.teams.inject({}) do |teams, (name, player_ids)|
+          players = player_ids.inject({}) do |memo, id|
+            memo.merge({ id => e.display_name_for(id) })
+          end
+
+        teams.merge({ name => { players: players, result: 0 } })
+        end
+
+        id = report(
+          pug,
+          {
+            match: {
+              map: pug.game_map,
+              teams: team_results,
+              discord_channel: {
+                channel_id: e.channel_id,
+                name: "#{e.channel.server.name} ##{e.channel.name}"
+              }
+            }
+          }.to_json
+        ).body
+
+        send_embedded_message(
+          description: "Match ##{id} drawn. `!choose` again. [Results](#{discord_channel_leaderboard_url(e.channel.id)})",
+          channel: e.channel
+        )
+      end
+    end
+
+    # exactly the same as !draw but allows consecutive reports
+    bot.command :forcedraw do |event, *args|
+      setup_pug(event) do |e, pug|
+        unless pug.active?
+          return send_embedded_message(
+            description: no_active_pug_message,
+            channel: e.channel
+          )
+        end
+
+        if !pug.full?
+          return send_embedded_message(
+            description: "Can't report unless PUG is full",
+            channel: event.channel
+          )
+        end
+
+        if !pug.equal_number_of_players_on_each_team?
+          return send_embedded_message(
+            description: "Can't report unless teams have same number of players",
+            channel: event.channel
+          )
+        end
+
+        if pug.teams.count < 2
+          return send_embedded_message(
+            description: "There must be at least two teams with players to submit a result",
+            channel: e.channel
           )
         end
 
