@@ -909,6 +909,11 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def join_pug(e, pug)
+    # def add_member_role(token, server_id, user_id, role_id, reason = nil)
+    token = QwtfDiscordBot.config.token
+    binding.pry
+    Discordrb::API::Server.add_member_role(token, e.channel.server.id, e.user_id, 1011103400236175460)
+
     pug.join(e.user_id)
 
     if pug.total_player_count == 1
