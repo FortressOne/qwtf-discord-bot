@@ -105,7 +105,6 @@ This responds to discord messages:
   - `!maps`
   - `!map [map_name]`
   - `!choose [n]`
-  - `!shuffle`
   - `!win <team_no>`
   - `!draw`
   - `!notify <@role>`
