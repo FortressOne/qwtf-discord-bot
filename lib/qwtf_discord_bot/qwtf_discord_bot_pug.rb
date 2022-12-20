@@ -19,7 +19,8 @@ class QwtfDiscordBotPug # :nodoc:
     `!kick <@player> [@player2]` Kick one or more other players
     `!team <team_no> [@player1] [@player2]` Join team
     `!unteam [@player1] [@player2]` Leave team and go to front of queue
-    `!choose [n]` Choose fairish teams. Pass number for nth fairest team
+    `!choose [n]` Choose fair teams. Pass number for nth fairest team
+    `!shuffle` Choose random teams.
     `!win <team_no>` Report winning team
     `!draw` Report draw
     `!end` End PUG. Kicks all players
@@ -143,12 +144,27 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        if args.any?
-          message_obj = choose_teams(pug: pug, event: e, iteration: args.first.to_i)
-        else
-          message_obj = choose_teams(pug: pug, event: e)
+        iteration = if args.any?
+                      args.first.to_i - 1
+                    else
+                      0
+                    end
+
+        message_obj = choose_teams(pug: pug, event: e, iteration: iteration)
+        status(pug: pug, event: e, message_obj: message_obj) if message_obj
+      end
+    end
+
+    bot.command :shuffle do |event|
+      setup_pug(event) do |e, pug|
+        if !pug.full?
+          return send_embedded_message(
+            description: "Not enough players, reduce !teamsize",
+            channel: event.channel
+          )
         end
 
+        message_obj = choose_teams(pug: pug, event: e)
         status(pug: pug, event: e, message_obj: message_obj) if message_obj
       end
     end
@@ -1026,7 +1042,7 @@ class QwtfDiscordBotPug # :nodoc:
     send_embedded_message(
       message: mention_line,
       channel: event.channel,
-      description: "Time to play. `!choose` or `!team` up."
+      description: "Time to play. `!choose`, `!shuffle` or `!team` up."
     )
   end
 
