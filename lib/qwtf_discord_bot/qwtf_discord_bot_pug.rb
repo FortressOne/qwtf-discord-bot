@@ -1052,8 +1052,6 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def end_pug(pug, event)
-    channel_id = event.channel_id
-
     event.find_users(pug.players).map do |player|
       player.remove_role(ENV['READY_ROLE'])
     end
@@ -1062,7 +1060,7 @@ class QwtfDiscordBotPug # :nodoc:
 
     send_embedded_message(
       description: 'PUG ended',
-      channel: channel_id
+      channel: event.channel
     )
   end
 
