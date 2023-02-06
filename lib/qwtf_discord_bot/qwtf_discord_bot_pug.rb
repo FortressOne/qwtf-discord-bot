@@ -355,6 +355,7 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
+          e.find_user(user_id).add_role(ENV['READY_ROLE'])
           pug.join_team(team_no: team_no, player_id: user_id)
 
           send_embedded_message(
@@ -375,9 +376,9 @@ class QwtfDiscordBotPug # :nodoc:
             end
 
             user_id = mention_to_user_id(mention)
-            display_name = e.display_name_for(user_id) || mention
+            e.find_user(user_id).add_role(ENV['READY_ROLE'])
             pug.join_team(team_no: team_no, player_id: user_id)
-
+            display_name = e.display_name_for(user_id) || mention
             teamers << display_name
           end
 
