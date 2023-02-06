@@ -1,4 +1,6 @@
 class EventDecorator
+  attr_accessor :event
+
   def initialize(event)
     @event = event
   end
@@ -43,7 +45,13 @@ class EventDecorator
     find_users(user_ids).map(&:display_name)
   end
 
-  private
+  def user
+    @event.user
+  end
+
+  def find_user(user_id)
+    users.find { |user| user.id == user_id }
+  end
 
   def find_users(user_ids)
     user_ids.map do |user_id|
@@ -51,15 +59,9 @@ class EventDecorator
     end
   end
 
-  def find_user(user_id)
-    users.find { |user| user.id == user_id }
-  end
+  private
 
   def server
     @event.server
-  end
-
-  def user
-    @event.user
   end
 end

@@ -35,7 +35,7 @@ class QwtfDiscordBotPug # :nodoc:
   HELP = { commands: COMMANDS, footer: "!command <required> [optional]" }
 
   def run
-    bot = Discordrb::Commands::CommandBot.new(
+    @bot = Discordrb::Commands::CommandBot.new(
       token: QwtfDiscordBot.config.token,
       client_id: QwtfDiscordBot.config.client_id,
       help_command: false,
@@ -50,7 +50,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     )
 
-    bot.command :help do |event, *args|
+    @bot.command :help do |event, *args|
       send_embedded_message(
         description: HELP[:commands],
         channel: event.channel
@@ -61,7 +61,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :join do |event, *args|
+    @bot.command :join do |event, *args|
       setup_pug(event) do |e, pug|
         if args.empty?
           if pug.joined?(e.user_id)
@@ -71,6 +71,7 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
+          e.user.add_role(ENV['READY_ROLE'])
           join_pug(e, pug)
         else
           errors = []
@@ -90,6 +91,7 @@ class QwtfDiscordBotPug # :nodoc:
               next
             end
 
+            e.find_user(user_id).add_role(ENV['READY_ROLE'])
             pug.join(user_id)
             joiners << display_name
           end
@@ -128,7 +130,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :choose do |event, *args|
+    @bot.command :choose do |event, *args|
       setup_pug(event) do |e, pug|
         if !pug.full?
           return send_embedded_message(
@@ -155,7 +157,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :shuffle do |event|
+    @bot.command :shuffle do |event|
       setup_pug(event) do |e, pug|
         if !pug.full?
           return send_embedded_message(
@@ -169,7 +171,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :status do |event, *args|
+    @bot.command :status do |event, *args|
       setup_pug(event) do |e, pug|
         if !pug.active?
           return send_embedded_message(
@@ -182,7 +184,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :teamsize do |event, *args|
+    @bot.command :teamsize do |event, *args|
       setup_pug(event) do |e, pug|
         unless args.any?
           return send_embedded_message(
@@ -217,7 +219,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :leave do |event, *args|
+    @bot.command :leave do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
@@ -233,6 +235,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        e.user.remove_role(ENV['READY_ROLE'])
         pug.leave(e.user_id)
 
         snippets = [
@@ -248,11 +251,11 @@ class QwtfDiscordBotPug # :nodoc:
           channel: e.channel
         )
 
-        end_pug(pug, e.channel) if pug.empty?
+        end_pug(pug, e) if pug.empty?
       end
     end
 
-    bot.command :kick do |event, *args|
+    @bot.command :kick do |event, *args|
       setup_pug(event) do |e, pug|
         unless args.any?
           return send_embedded_message(
@@ -285,6 +288,7 @@ class QwtfDiscordBotPug # :nodoc:
             next
           end
 
+          e.find_user(user_id).remove_role(ENV['READY_ROLE'])
           pug.leave(user_id)
 
           kickees << display_name
@@ -318,11 +322,11 @@ class QwtfDiscordBotPug # :nodoc:
           channel: e.channel
         )
 
-        end_pug(pug, e.channel) if pug.empty?
+        end_pug(pug, e) if pug.empty?
       end
     end
 
-    bot.command :team do |event, *args|
+    @bot.command :team do |event, *args|
       setup_pug(event) do |e, pug|
         if args.empty?
           return send_embedded_message(
@@ -399,7 +403,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :unteam do |event, *args|
+    @bot.command :unteam do |event, *args|
       setup_pug(event) do |e, pug|
         user_id = e.user_id
 
@@ -468,7 +472,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :win do |event, *args|
+    @bot.command :win do |event, *args|
       setup_pug(event) do |e, pug|
         unless args.any?
           return send_embedded_message(
@@ -552,7 +556,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     # exactly the same as !win but allows consecutive reports
-    bot.command :forcewin do |event, *args|
+    @bot.command :forcewin do |event, *args|
       setup_pug(event) do |e, pug|
         unless args.any?
           return send_embedded_message(
@@ -628,7 +632,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :draw do |event, *args|
+    @bot.command :draw do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
@@ -697,7 +701,7 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     # exactly the same as !draw but allows consecutive reports
-    bot.command :forcedraw do |event, *args|
+    @bot.command :forcedraw do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
@@ -756,7 +760,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :end do |event, *args|
+    @bot.command :end do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
@@ -765,11 +769,11 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        end_pug(pug, e.channel)
+        end_pug(pug, e)
       end
     end
 
-    bot.command :addmap do |event, *args|
+    @bot.command :addmap do |event, *args|
       setup_pug(event) do |e, pug|
         maps = args
 
@@ -788,7 +792,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :removemap do |event, *args|
+    @bot.command :removemap do |event, *args|
       setup_pug(event) do |e, pug|
         maps = args
 
@@ -808,7 +812,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :maps do |event, *args|
+    @bot.command :maps do |event, *args|
       setup_pug(event) do |e, pug|
         maps = pug.maps
         unless maps.any?
@@ -825,7 +829,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :map do |event, *args|
+    @bot.command :map do |event, *args|
       setup_pug(event) do |e, pug|
         maps = pug.maps
 
@@ -875,7 +879,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.command :notify do |event, *args|
+    @bot.command :notify do |event, *args|
       setup_pug(event) do |e, pug|
         roles = args.join(' ')
         pug.notify_roles = roles
@@ -893,7 +897,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    bot.run
+    @bot.run
   end
 
   private
@@ -909,6 +913,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def join_pug(e, pug)
+    e.user.add_role(ENV['READY_ROLE'])
     pug.join(e.user_id)
 
     if pug.total_player_count == 1
@@ -1046,7 +1051,13 @@ class QwtfDiscordBotPug # :nodoc:
     )
   end
 
-  def end_pug(pug, channel_id)
+  def end_pug(pug, event)
+    channel_id = event.channel_id
+
+    event.find_users(pug.players).map do |player|
+      player.remove_role(ENV['READY_ROLE'])
+    end
+
     pug.end_pug
 
     send_embedded_message(
