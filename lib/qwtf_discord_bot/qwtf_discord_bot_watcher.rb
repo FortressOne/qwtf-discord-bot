@@ -14,7 +14,7 @@ class QwtfDiscordBotWatcher
         request.player_names.each do |name|
           redis_key = ['watcher', address, name].join(':')
 
-          unless seen_recently?(redis_key)
+          if !seen_recently?(redis_key)
             endpoint.channel_ids.each do |channel_id|
               report_joined(
                 name: name,

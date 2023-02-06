@@ -206,6 +206,18 @@ docker-machine create \
 ```
 
 
+### Update configs in production
+
+This is silly and needs to be fixed but in the meantime serves as a note to me so I don't forget:
+
+Edit production.yaml then:
+```
+source .env.discord-bot
+eval $(docker-machine env discord-bot)
+docker-machine scp production.yaml discord-bot:/home/ubuntu/.config/qwtf_discord_bot/config.yaml
+docker restart qwtf-discord-bot_discord-dashboard-bot_1
+```
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
