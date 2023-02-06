@@ -71,6 +71,7 @@ class QwtfDiscordBotPug # :nodoc:
             )
           end
 
+          e.user.add_role(ENV['READY_ROLE'])
           join_pug(e, pug)
         else
           errors = []
@@ -90,6 +91,7 @@ class QwtfDiscordBotPug # :nodoc:
               next
             end
 
+            e.find_user(user_id).add_role(ENV['READY_ROLE'])
             pug.join(user_id)
             joiners << display_name
           end
@@ -233,6 +235,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
+        e.user.remove_role(ENV['READY_ROLE'])
         pug.leave(e.user_id)
 
         snippets = [
@@ -248,7 +251,7 @@ class QwtfDiscordBotPug # :nodoc:
           channel: e.channel
         )
 
-        end_pug(pug, e.channel) if pug.empty?
+        end_pug(pug, e) if pug.empty?
       end
     end
 
@@ -285,6 +288,7 @@ class QwtfDiscordBotPug # :nodoc:
             next
           end
 
+          e.find_user(user_id).remove_role(ENV['READY_ROLE'])
           pug.leave(user_id)
 
           kickees << display_name
@@ -318,7 +322,7 @@ class QwtfDiscordBotPug # :nodoc:
           channel: e.channel
         )
 
-        end_pug(pug, e.channel) if pug.empty?
+        end_pug(pug, e) if pug.empty?
       end
     end
 
@@ -765,7 +769,7 @@ class QwtfDiscordBotPug # :nodoc:
           )
         end
 
-        end_pug(pug, e.channel)
+        end_pug(pug, e)
       end
     end
 
@@ -909,11 +913,7 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def join_pug(e, pug)
-    # def add_member_role(token, server_id, user_id, role_id, reason = nil)
-    # Discordrb::API::Server.add_member_role(token, e.channel.server.id, e.user_id, 1011102649040510976)
-    token = QwtfDiscordBot.config.token
-    @bot.server(e.channel.server.id).member(e.user_id).add_role(1011102649040510976)
-
+    e.user.add_role(ENV['READY_ROLE'])
     pug.join(e.user_id)
 
     if pug.total_player_count == 1
@@ -1051,7 +1051,13 @@ class QwtfDiscordBotPug # :nodoc:
     )
   end
 
-  def end_pug(pug, channel_id)
+  def end_pug(pug, event)
+    channel_id = event.channel_id
+
+    event.find_users(pug.players).map do |player|
+      player.remove_role(ENV['READY_ROLE'])
+    end
+
     pug.end_pug
 
     send_embedded_message(
