@@ -831,53 +831,34 @@ class QwtfDiscordBotPug # :nodoc:
     end
 
     @bot.command :map do |event, *args|
-      setup_pug(event) do |e, pug|
-        maps = pug.maps
+      uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions'].join('/'))
+      req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
 
-        unless maps.any?
-          return send_embedded_message(
-            description: 'No maps have been added. `!addmap`',
-            channel: e.channel
-          )
-        end
+      req.body = {
+        map_suggestion: {
+          discord_channel_id: event.channel.id,
+          discord_player_id: event.user.id
+        }
+      }.to_json
 
-        unless pug.active?
-          return send_embedded_message(
-            description: no_active_pug_message,
-            channel: e.channel
-          )
-        end
+      is_https = uri.scheme == "https"
 
-        if args.empty?
-          unless pug.game_map
-            return send_embedded_message(
-              description: 'No map has been set for the current PUG',
-              channel: e.channel
-            )
-          end
-
-          send_embedded_message(
-            description: "Current map is #{pug.game_map}",
-            channel: e.channel
-          )
-        else
-          game_map = args.first
-
-          unless maps.include?(game_map)
-            return send_embedded_message(
-              description: "#{game_map} isn't in the map list. `!addmap` to add it.",
-              channel: e.channel
-            )
-          end
-
-          pug.game_map = game_map
-
-          send_embedded_message(
-            description: "Map set to #{game_map}",
-            channel: e.channel
-          )
-        end
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
+        http.request(req)
       end
+
+      body = JSON.parse(res.body)
+
+      description = if body
+                      "How about #{body}?"
+                    else
+                      "I'm out of ideas, you choose."
+                    end
+
+      send_embedded_message(
+        description: description,
+        channel: event.channel
+      )
     end
 
     @bot.command :notify do |event, *args|
