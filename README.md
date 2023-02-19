@@ -93,23 +93,19 @@ This responds to discord messages:
     qwtf-discord-bot pug
 
 This responds to discord messages:
-  - `!status`
-  - `!join`
-  - `!leave`
-  - `!teamsize <no_of_players>`
-  - `!kick <@player> [@player2]`
-  - `!team <team_no>`
-  - `!unteam`
-  - `!addmap <map_name>`
-  - `!removemap <map_name>`
-  - `!maps`
-  - `!map [map_name]`
-  - `!choose [n]`
-  - `!shuffle`
-  - `!win <team_no>`
-  - `!draw`
-  - `!notify <@role>`
-  - `!end`
+- `!status` Shows who has joined
+- `!join [@player1] [@player2]` Join PUG. Can also join other players
+- `!leave` Leave PUG
+- `!kick <@player> [@player2]` Kick one or more other players
+- `!team <team_no> [@player1] [@player2]` Join team
+- `!unteam [@player1] [@player2]` Leave team and go to front of queue
+- `!choose` Choose a bit fair a bit random teams.
+- `!choose [n]` Choose fair teams. Pass number for nth fairest team
+- `!end` End PUG. Kicks all players
+- `!teamsize <no_of_players>` Set number of players in a team
+- `!maps` Show map list
+- `!map [map_name]` Show or set map
+- `!notify <@role>` Set @role for alerts
 
 
 #### Watcher
