@@ -24,7 +24,7 @@ class QwtfDiscordBotPug # :nodoc:
     `!end` End PUG. Kicks all players
     `!teamsize <no_of_players>` Set number of players in a team
     `!maps` Show map list
-    `!map [map_name]` Show or set map
+    `!map` Suggest a map
     `!notify <@role>` Set @role for alerts
   MESSAGE
 

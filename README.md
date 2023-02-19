@@ -104,7 +104,7 @@ This responds to discord messages:
 - `!end` End PUG. Kicks all players
 - `!teamsize <no_of_players>` Set number of players in a team
 - `!maps` Show map list
-- `!map [map_name]` Show or set map
+- `!map` Suggest a map
 - `!notify <@role>` Set @role for alerts
 
 
@@ -199,6 +199,19 @@ docker-machine create \
   --amazonec2-root-size 30 \
   --amazonec2-region ap-southeast-2 \
   discord-bot
+```
+
+
+### Deploy
+
+Push image to dockerhub then:
+
+```
+source .env.discord-bot
+eval $(docker-machine env discord-bot)
+docker-compose pull
+docker restart qwtf-discord-bot_discord-dashboard-bot_1
+docker-compose up -d discord-command-bot discord-dashboard-bot discord-pug-bot discord-watcher-bot
 ```
 
 
