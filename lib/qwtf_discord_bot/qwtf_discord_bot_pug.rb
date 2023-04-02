@@ -609,6 +609,7 @@ class QwtfDiscordBotPug # :nodoc:
         ) && nil
       end
     else
+      # a rough zipf distribution
       weighted_combinations = combinations.map.with_index do |combination, index|
         { weight: 1/(index+1.0), combination: combination }
       end
