@@ -54,3 +54,15 @@ services:
       - type: bind
         source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
         target: /discord-bot/config.yaml
+  discord-vote-bot:
+    image: fortressone/discord-bot:latest
+    command: vote
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis
+    volumes:
+      - type: bind
+        source: "/home/ubuntu/.config/qwtf_discord_bot/config.yaml"
+        target: /discord-bot/config.yaml

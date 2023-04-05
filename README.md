@@ -119,6 +119,13 @@ they haven't been connected for more than ten minutes.
 ![screenshot of bot reporting player joining server](watcher_screenshot.png)
 
 
+#### Vote
+
+    qwtf-discord-bot vote
+
+A map voting tool. `!vote` grabs the teamsize from Redis and sends this along with channel information to the API to get a list of recommended maps. Can also be used for arbitrary voting if voting options are provided as comma separated arguments.
+
+
 ## Gem
 
 Build:
@@ -178,6 +185,14 @@ Only discord-bot pug:
       discord-bot pug
 
 
+Only discord-bot vote:
+
+    docker run -it \
+      --env QWTF_DISCORD_BOT_CONFIG_FILE=config.yaml \
+      --mount type=bind,source="$(pwd)"/config.yaml,target=/discord-bot/config.yaml \
+      discord-bot vote
+
+
 Build:
 
     docker build --tag=discord-bot .
@@ -211,7 +226,7 @@ source .env.discord-bot
 eval $(docker-machine env discord-bot)
 docker-compose pull
 docker restart qwtf-discord-bot_discord-dashboard-bot_1
-docker-compose up -d discord-command-bot discord-dashboard-bot discord-pug-bot discord-watcher-bot
+docker-compose up -d discord-command-bot discord-dashboard-bot discord-pug-bot discord-watcher-bot discord-vote-bot
 ```
 
 
