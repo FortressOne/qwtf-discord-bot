@@ -29,26 +29,24 @@ class QwtfDiscordBotVote
 
     embed_mutex = Mutex.new
 
-    # Register the vote when someone adds a reaction
     bot.reaction_add do |event|
-      if !pug(event).joined?(event.user.id)
-        next
-      end
+      next if !vote_thread&.alive?
+      next if !pug(event).joined?(event.user.id)
+      next if event.message.id != @vote_message.id
 
-      if vote_thread&.alive? && event.message.id == @vote_message.id
-        emoji = event.emoji.to_s
-        map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
+      emoji = event.emoji.to_s
+      map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
 
-        if votes.key?(map_name)
-          user_id = event.user.id
-          unless event.user.current_bot?
-            votes[map_name] += 1
-            majority = pug(event).teamsize + 1
+      if votes.key?(map_name)
+        user_id = event.user.id
+        unless event.user.current_bot?
+          votes[map_name] += 1
+          majority = pug(event).teamsize + 1
+          event.message.delete_reaction(event.user, emoji)
 
-            if votes[map_name] >= majority
-              should_end_voting_mutex.synchronize { should_end_voting = true }
-              announce_winner(event, [maps[emoji], votes[map_name]])
-            end
+          if votes[map_name] >= majority
+            should_end_voting_mutex.synchronize { should_end_voting = true }
+            announce_winner(event, [maps[emoji], votes[map_name]])
           end
         end
       end
