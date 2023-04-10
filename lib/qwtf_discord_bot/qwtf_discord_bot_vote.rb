@@ -214,9 +214,11 @@ class QwtfDiscordBotVote
       body.each do |teamsize, maps|
         if maps.any?
           embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
-        else
-          embed.description = "No maps set for this channel"
         end
+      end
+
+      if embed.fields.empty?
+        embed.description = "No maps set for this channel"
       end
 
       event.channel.send_embed(nil, embed).tap do
