@@ -2,8 +2,7 @@ require 'pug'
 
 class QwtfDiscordBotVote
   TIMER = 3 * 60
-  # REACTION_EMOJIS = ["🍏", "🍊", "🍋", "❌"]
-  REACTION_EMOJIS = ["🍏", "🍊", "🍋"]
+  REACTION_EMOJIS = ["🍏", "🍊", "🍋"] # "❌"
 
   COMMANDS = <<~MESSAGE
     `!map` Suggest a map
@@ -21,20 +20,13 @@ class QwtfDiscordBotVote
       prefix: '!'
     )
 
-    # bot.command(:help, description: 'Show a list of available commands') do |event|
-    #   event.respond "Available commands:\n" + bot.commands.map { |name, command| "#{PREFIX}#{name} - #{command.attributes[:description]}" }.join("\n")
-    # end
-
     # Map votes
     votes = Hash.new(0)
     vote_thread = nil
-
     should_end_voting_mutex = Mutex.new
     should_end_voting = false
-
     map_names_mutex = Mutex.new
     map_names = []
-
     embed_mutex = Mutex.new
     embed = nil
 
@@ -52,10 +44,9 @@ class QwtfDiscordBotVote
         if !event.user.current_bot?
           votes.each { |map_name, voters| voters.delete(event.user.name) }
           votes[map_name] << event.user.name
-          majority = pug(event).teamsize # first to half teamsize is enough to prevent draws
+          majority = pug(event).teamsize # first to teamsize is enough to prevent draws
           event.message.delete_reaction(event.user, emoji)
 
-          # Update the embed with the user's name
           embed_mutex.synchronize do
             map_field = embed.fields.each do |field|
               map_name = field.name.split(" ").last
@@ -108,8 +99,6 @@ class QwtfDiscordBotVote
         body = JSON.parse(res.body)
         map_names_mutex.synchronize { map_names = body }
         maps = REACTION_EMOJIS.zip(map_names).to_h
-
-        # Create the vote message with reaction options
         embed = Discordrb::Webhooks::Embed.new
 
         maps.map do |map|
@@ -121,13 +110,12 @@ class QwtfDiscordBotVote
         end
 
         embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
-
         message = "Joined players, choose your maps"
+
         @vote_message = event.channel.send_embed(message, embed).tap do
           puts(embed.description)
         end
 
-        # Voting process
         vote_thread = Thread.new do
           TIMER.times do |i|
             break if should_end_voting
