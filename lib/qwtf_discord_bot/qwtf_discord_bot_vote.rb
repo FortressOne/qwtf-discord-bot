@@ -187,6 +187,34 @@ class QwtfDiscordBotVote
       end
     end
 
+    bot.command :maps do |event, *args|
+      uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions'].join('/'))
+
+      uri.query = URI.encode_www_form(
+        "map_suggestion[discord_channel_id]" => event.channel.id
+      )
+
+      req = Net::HTTP::Get.new(uri)
+      is_https = uri.scheme == "https"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
+        http.request(req)
+      end
+
+      embed = Discordrb::Webhooks::Embed.new
+      body = JSON.parse(res.body)
+
+      body.each do |teamsize, maps|
+        if maps.any?
+          embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
+        end
+      end
+
+      event.channel.send_embed(nil, embed).tap do
+        puts(embed.description)
+      end
+    end
+
     def announce_winner(event, winner)
       event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
     end
