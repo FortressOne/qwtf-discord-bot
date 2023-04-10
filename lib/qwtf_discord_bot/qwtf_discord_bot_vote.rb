@@ -1,7 +1,7 @@
 require 'pug'
 
 class QwtfDiscordBotVote
-  TIMER = 10
+  TIMER = 3 * 60
   # REACTION_EMOJIS = ["🍏", "🍊", "🍋", "❌"]
   REACTION_EMOJIS = ["🍏", "🍊", "🍋"]
 
@@ -13,7 +13,6 @@ class QwtfDiscordBotVote
       prefix: '!'
     )
 
-    # Add a help command to the bot
     bot.command(:help, description: 'Show a list of available commands') do |event|
       event.respond "Available commands:\n" + bot.commands.map { |name, command| "#{PREFIX}#{name} - #{command.attributes[:description]}" }.join("\n")
     end
@@ -45,7 +44,7 @@ class QwtfDiscordBotVote
         if !event.user.current_bot?
           votes.each { |map_name, voters| voters.delete(event.user.name) }
           votes[map_name] << event.user.name
-          majority = pug(event).teamsize + 1
+          majority = pug(event).teamsize # first to half teamsize is enough to prevent draws
           event.message.delete_reaction(event.user, emoji)
 
           # Update the embed with the user's name
@@ -164,7 +163,7 @@ class QwtfDiscordBotVote
         map_suggestion: {
           discord_channel_id: event.channel.id,
           discord_player_id: event.user.id,
-          discord_player_name: evenr.user.nickname
+          for_teamsize: pug(event).teamsize,
         }
       }.to_json
 
@@ -175,17 +174,17 @@ class QwtfDiscordBotVote
       end
 
       body = JSON.parse(res.body)
+      embed = Discordrb::Webhooks::Embed.new
 
-      description = if body
+      embed.description = if body
                       "How about #{body}?"
                     else
                       "I'm out of ideas, you choose."
                     end
 
-      send_embedded_message(
-        description: description,
-        channel: event.channel
-      )
+      event.channel.send_embed(nil, embed).tap do
+        puts(embed.description)
+      end
     end
 
     def announce_winner(event, winner)
