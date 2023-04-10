@@ -31,35 +31,32 @@ class QwtfDiscordBotVote
     embed = nil
 
     bot.reaction_add do |event|
+      emoji = event.emoji.to_s
+      event.message.delete_reaction(event.user, emoji)
+
       next if !vote_thread&.alive?
       next if !pug(event).joined?(event.user.id)
       next if event.message.id != @vote_message.id
 
-      emoji = event.emoji.to_s
       map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
 
-      if votes.key?(map_name)
-        user_id = event.user.id
+      if !event.user.current_bot? && votes.key?(map_name)
+        votes.each { |map_name, voters| voters.delete(event.user.name) }
+        votes[map_name] << event.user.name
+        majority = pug(event).teamsize # first to teamsize is enough to prevent draws
 
-        if !event.user.current_bot?
-          votes.each { |map_name, voters| voters.delete(event.user.name) }
-          votes[map_name] << event.user.name
-          majority = pug(event).teamsize # first to teamsize is enough to prevent draws
-          event.message.delete_reaction(event.user, emoji)
-
-          embed_mutex.synchronize do
-            map_field = embed.fields.each do |field|
-              map_name = field.name.split(" ").last
-              field.value = votes[map_name].join("\n")
-            end
-
-            @vote_message.edit(nil, embed)
+        embed_mutex.synchronize do
+          map_field = embed.fields.each do |field|
+            map_name = field.name.split(" ").last
+            field.value = votes[map_name].join("\n")
           end
 
-          if votes[map_name].length >= majority
-            should_end_voting_mutex.synchronize { should_end_voting = true }
-            announce_winner(event, [maps[emoji], votes[map_name].length])
-          end
+          @vote_message.edit(nil, embed)
+        end
+
+        if votes[map_name].length >= majority
+          should_end_voting_mutex.synchronize { should_end_voting = true }
+          announce_winner(event, [maps[emoji], votes[map_name].length])
         end
       end
     end
@@ -184,10 +181,10 @@ class QwtfDiscordBotVote
       embed = Discordrb::Webhooks::Embed.new
 
       embed.description = if body
-                      "How about #{body}?"
-                    else
-                      "I'm out of ideas, you choose."
-                    end
+                            "How about #{body}?"
+                          else
+                            "I'm out of ideas, you choose."
+                          end
 
       event.channel.send_embed(nil, embed).tap do
         puts(embed.description)
