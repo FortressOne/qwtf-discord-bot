@@ -2,7 +2,8 @@ require 'pug'
 
 class QwtfDiscordBotVote
   TIMER = 10
-  REACTION_EMOJIS = ["🍏", "🍊", "🍋", "❌"]
+  # REACTION_EMOJIS = ["🍏", "🍊", "🍋", "❌"]
+  REACTION_EMOJIS = ["🍏", "🍊", "🍋"]
 
   def run
     bot = Discordrb::Commands::CommandBot.new(
@@ -28,6 +29,7 @@ class QwtfDiscordBotVote
     map_names = []
 
     embed_mutex = Mutex.new
+    embed = nil
 
     bot.reaction_add do |event|
       next if !vote_thread&.alive?
@@ -39,14 +41,26 @@ class QwtfDiscordBotVote
 
       if votes.key?(map_name)
         user_id = event.user.id
-        unless event.user.current_bot?
-          votes[map_name] += 1
+
+        if !event.user.current_bot?
+          votes.each { |map_name, voters| voters.delete(event.user.name) }
+          votes[map_name] << event.user.name
           majority = pug(event).teamsize + 1
           event.message.delete_reaction(event.user, emoji)
 
-          if votes[map_name] >= majority
+          # Update the embed with the user's name
+          embed_mutex.synchronize do
+            map_field = embed.fields.each do |field|
+              map_name = field.name.split(" ").last
+              field.value = votes[map_name].join("\n")
+            end
+
+            @vote_message.edit(nil, embed)
+          end
+
+          if votes[map_name].length >= majority
             should_end_voting_mutex.synchronize { should_end_voting = true }
-            announce_winner(event, [maps[emoji], votes[map_name]])
+            announce_winner(event, [maps[emoji], votes[map_name].length])
           end
         end
       end
@@ -74,12 +88,20 @@ class QwtfDiscordBotVote
         end
 
         body = JSON.parse(res.body)
-        map_names_mutex.synchronize { map_names = body << "Different maps" }
+        map_names_mutex.synchronize { map_names = body }
         maps = REACTION_EMOJIS.zip(map_names).to_h
 
         # Create the vote message with reaction options
         embed = Discordrb::Webhooks::Embed.new
-        embed.description = maps.map { |map| "#{map[0]} #{map[1]}" }.join("\n")
+
+        maps.map do |map|
+          embed.add_field(
+            inline: true,
+            name: "#{map[0]} #{map[1]}",
+            value: ""
+          )
+        end
+
         embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
 
         message = "Joined players, choose your maps"
@@ -112,15 +134,20 @@ class QwtfDiscordBotVote
 
             @vote_message.edit(message, embed)
 
-            # Voting time ended, announce the winner
-            winner = votes.max_by { |_, v| v }
-            announce_winner(event, winner)
+            winning_votes = votes.values.max
+            winners = votes.select { |_, v| v == winning_votes }
+
+            if winners.size > 1
+              announce_draw(event, winners)
+            else
+              announce_winner(event, winners.first)
+            end
           end
         end
 
         maps.each do |emoji, map_name|
           @vote_message.react(emoji)
-          votes[map_name] = 0
+          votes[map_name] = []
         end
       else
         event.respond('Voting is already in progress!')
@@ -161,10 +188,13 @@ class QwtfDiscordBotVote
       )
     end
 
-
-    # Function to announce the winner
     def announce_winner(event, winner)
-      event.respond("The winner is #{winner[0]} with #{winner[1]} votes.")
+      event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
+    end
+
+    def announce_draw(event, winners)
+      winner_maps = winners.keys.join(', ')
+      event.respond("It's a draw between: #{winner_maps}")
     end
 
     def pug(event)
