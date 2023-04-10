@@ -7,8 +7,8 @@ class QwtfDiscordBotVote
 
   COMMANDS = <<~MESSAGE
     `!map` Suggest a map
-    `!maps` See suggestion list for this channel
-    `!vote` Map vote
+    `!maps` See map suggestion list for this channel
+    `!vote` Map vote. Only !joined players can vote. Ends after three minutes, or when an option reaches teamsize.
   MESSAGE
 
   HELP = { commands: COMMANDS, footer: "!command <required> [optional]" }
