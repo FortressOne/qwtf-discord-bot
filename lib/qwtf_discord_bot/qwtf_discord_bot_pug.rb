@@ -23,8 +23,6 @@ class QwtfDiscordBotPug # :nodoc:
     `!choose [n]` Choose fair teams. Pass number for nth fairest team
     `!end` End PUG. Kicks all players
     `!teamsize <no_of_players>` Set number of players in a team
-    `!maps` Show map list
-    `!map` Suggest a map
     `!notify <@role>` Set @role for alerts
   MESSAGE
 
@@ -480,46 +478,6 @@ class QwtfDiscordBotPug # :nodoc:
 
         end_pug(pug, e)
       end
-    end
-
-    @bot.command :maps do |event, *args|
-      setup_pug(event) do |e, pug|
-        return send_embedded_message(
-          description: "Not yet implemented",
-          channel: e.channel
-        )
-      end
-    end
-
-    @bot.command :map do |event, *args|
-      uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions'].join('/'))
-      req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-
-      req.body = {
-        map_suggestion: {
-          discord_channel_id: event.channel.id,
-          discord_player_id: event.user.id
-        }
-      }.to_json
-
-      is_https = uri.scheme == "https"
-
-      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
-        http.request(req)
-      end
-
-      body = JSON.parse(res.body)
-
-      description = if body
-                      "How about #{body}?"
-                    else
-                      "I'm out of ideas, you choose."
-                    end
-
-      send_embedded_message(
-        description: description,
-        channel: event.channel
-      )
     end
 
     @bot.command :notify do |event, *args|

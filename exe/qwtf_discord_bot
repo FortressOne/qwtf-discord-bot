@@ -33,6 +33,12 @@ class QwtfDiscordBotExe < Thor
     dashboard_bot = QwtfDiscordBotDashboard.new
     dashboard_bot.run
   end
+
+  desc 'vote', 'A map voter'
+  def vote
+    vote_bot = QwtfDiscordBotVote.new
+    vote_bot.run
+  end
 end
 
 QwtfDiscordBotExe.start
