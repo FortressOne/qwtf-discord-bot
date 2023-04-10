@@ -5,6 +5,14 @@ class QwtfDiscordBotVote
   # REACTION_EMOJIS = ["🍏", "🍊", "🍋", "❌"]
   REACTION_EMOJIS = ["🍏", "🍊", "🍋"]
 
+  COMMANDS = <<~MESSAGE
+    `!map` Suggest a map
+    `!maps` See suggestion list for this channel
+    `!vote` Map vote
+  MESSAGE
+
+  HELP = { commands: COMMANDS, footer: "!command <required> [optional]" }
+
   def run
     bot = Discordrb::Commands::CommandBot.new(
       token: QwtfDiscordBot.config.token,
@@ -13,9 +21,9 @@ class QwtfDiscordBotVote
       prefix: '!'
     )
 
-    bot.command(:help, description: 'Show a list of available commands') do |event|
-      event.respond "Available commands:\n" + bot.commands.map { |name, command| "#{PREFIX}#{name} - #{command.attributes[:description]}" }.join("\n")
-    end
+    # bot.command(:help, description: 'Show a list of available commands') do |event|
+    #   event.respond "Available commands:\n" + bot.commands.map { |name, command| "#{PREFIX}#{name} - #{command.attributes[:description]}" }.join("\n")
+    # end
 
     # Map votes
     votes = Hash.new(0)
@@ -62,6 +70,17 @@ class QwtfDiscordBotVote
             announce_winner(event, [maps[emoji], votes[map_name].length])
           end
         end
+      end
+    end
+
+    bot.command :help do |event, *args|
+      send_embedded_message(
+        description: HELP[:commands],
+        channel: event.channel
+      ) do |embed|
+        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: HELP[:footer]
+        )
       end
     end
 
@@ -229,5 +248,24 @@ class QwtfDiscordBotVote
     end
 
     bot.run
+  end
+
+  private
+
+  # todo refactor (shared with qwtf_discord_bot_pug.rb)
+  def send_embedded_message(message: nil, description: nil, channel:, message_obj: nil)
+    embed = Discordrb::Webhooks::Embed.new
+    embed.description = description
+    yield(embed) if block_given?
+
+    if message_obj
+      message_obj.edit(message, embed).tap do
+        puts(message)
+      end
+    else
+      channel.send_embed(message, embed).tap do
+        puts(message)
+      end
+    end
   end
 end
