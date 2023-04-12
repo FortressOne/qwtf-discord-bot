@@ -31,12 +31,13 @@ class QwtfDiscordBotVote
     embed = nil
 
     bot.reaction_add do |event|
+      next if event.message.id != @vote_message&.id
+
       emoji = event.emoji.to_s
       event.message.delete_reaction(event.user, emoji)
 
       next if !vote_thread&.alive?
       next if !pug(event).joined?(event.user.id)
-      next if event.message.id != @vote_message.id
 
       map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
 

@@ -197,7 +197,6 @@ Build:
 
     docker build --tag=discord-bot .
 
-
 Push:
 
     docker tag discord-bot fortressone/discord-bot:latest \
