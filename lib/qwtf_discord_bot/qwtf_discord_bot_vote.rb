@@ -166,7 +166,7 @@ class QwtfDiscordBotVote
 
       req.body = {
         map_suggestion: {
-          discord_channel_id: event.channel.id,
+          channel_id: event.channel.id,
           discord_player_id: event.user.id,
           for_teamsize: pug(event).teamsize,
         }
