@@ -27,8 +27,8 @@ class QwtfDiscordBotVote
     should_end_voting = false
     map_names_mutex = Mutex.new
     map_names = []
-    embed_mutex = Mutex.new
-    embed = nil
+    vote_embed_mutex = Mutex.new
+    vote_embed = nil
 
     bot.reaction_add do |event|
       next if event.message.id != @vote_message&.id
@@ -46,13 +46,13 @@ class QwtfDiscordBotVote
         votes[map_name] << event.user.name
         majority = pug(event).teamsize # first to teamsize is enough to prevent draws
 
-        embed_mutex.synchronize do
-          map_field = embed.fields.each do |field|
+        vote_embed_mutex.synchronize do
+          map_field = vote_embed.fields.each do |field|
             map_name = field.name.split(" ").last
             field.value = votes[map_name].join("\n")
           end
 
-          @vote_message.edit(nil, embed)
+          @vote_message.edit(nil, vote_embed)
         end
 
         if votes[map_name].length >= majority
@@ -97,46 +97,46 @@ class QwtfDiscordBotVote
         body = JSON.parse(res.body)
         map_names_mutex.synchronize { map_names = body }
         maps = REACTION_EMOJIS.zip(map_names).to_h
-        embed = Discordrb::Webhooks::Embed.new
+        vote_embed = Discordrb::Webhooks::Embed.new
 
         maps.map do |map|
-          embed.add_field(
+          vote_embed.add_field(
             inline: true,
             name: "#{map[0]} #{map[1]}",
             value: ""
           )
         end
 
-        embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
+        vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
         message = "Joined players, choose your maps"
 
-        @vote_message = event.channel.send_embed(message, embed).tap do
-          puts(embed.description)
+        @vote_message = event.channel.send_embed(message, vote_embed).tap do
+          puts(vote_embed.description)
         end
 
         vote_thread = Thread.new do
           TIMER.times do |i|
             break if should_end_voting
 
-            embed_mutex.synchronize do
-              embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+            vote_embed_mutex.synchronize do
+              vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
                 text: "#{TIMER - i} seconds remaining"
               )
             end
 
-            @vote_message.edit(message, embed)
+            @vote_message.edit(message, vote_embed)
 
             sleep 1
           end
 
           if !should_end_voting
-            embed_mutex.synchronize do
-              embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+            vote_embed_mutex.synchronize do
+              vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
                 text: "0 seconds remaining"
               )
             end
 
-            @vote_message.edit(message, embed)
+            @vote_message.edit(message, vote_embed)
 
             winning_votes = votes.values.max
             winners = votes.select { |_, v| v == winning_votes }
@@ -179,16 +179,16 @@ class QwtfDiscordBotVote
       end
 
       body = JSON.parse(res.body)
-      embed = Discordrb::Webhooks::Embed.new
+      map_embed = Discordrb::Webhooks::Embed.new
 
-      embed.description = if body
+      map_embed.description = if body
                             "How about #{body}?"
                           else
                             "I'm out of ideas, you choose."
                           end
 
-      event.channel.send_embed(nil, embed).tap do
-        puts(embed.description)
+      event.channel.send_embed(nil, map_embed).tap do
+        puts(map_embed.description)
       end
     end
 
@@ -206,21 +206,21 @@ class QwtfDiscordBotVote
         http.request(req)
       end
 
-      embed = Discordrb::Webhooks::Embed.new
+      maps_embed = Discordrb::Webhooks::Embed.new
       body = JSON.parse(res.body)
 
       body.each do |teamsize, maps|
         if maps.any?
-          embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
+          maps_embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
         end
       end
 
-      if embed.fields.empty?
-        embed.description = "No maps set for this channel"
+      if maps_embed.fields.empty?
+        maps_embed.description = "No maps set for this channel"
       end
 
-      event.channel.send_embed(nil, embed).tap do
-        puts(embed.description)
+      event.channel.send_embed(nil, maps_embed).tap do
+        puts(maps_embed.description)
       end
     end
 
