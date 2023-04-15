@@ -1,7 +1,7 @@
 require 'pug'
 
 class QwtfDiscordBotVote
-  TIMER = 3 * 60
+  TIMER = 60
   REACTION_EMOJIS = ["🍏", "🍊", "🍋"] # "❌"
 
   COMMANDS = <<~MESSAGE
@@ -42,22 +42,29 @@ class QwtfDiscordBotVote
       map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
 
       if !event.user.current_bot? && votes.key?(map_name)
-        votes.each { |map_name, voters| voters.delete(event.user.name) }
-        votes[map_name] << event.user.name
-        majority = pug(event).teamsize # first to teamsize is enough to prevent draws
+        # Remove player's vote from all maps
+        votes.each { |_map_name, voters| voters.delete(event.user.name) }
 
+        # Add player's vote to selected map
+        votes[map_name] << event.user.name
+
+        # Update embedded message
         vote_embed_mutex.synchronize do
           map_field = vote_embed.fields.each do |field|
             map_name = field.name.split(" ").last
             field.value = votes[map_name].join("\n")
           end
-
-          @vote_message.edit(nil, vote_embed)
         end
 
-        if votes[map_name].length >= majority
+        @vote_message.edit(nil, vote_embed)
+
+        # First map to reach teamsize votes is enough to prevent draws
+        teamsize = pug(event).teamsize
+
+        # If majority reached, or all players have voted
+        if votes[map_name].length >= teamsize || votes.values.sum(&:count) >= (teamsize * 2)
           should_end_voting_mutex.synchronize { should_end_voting = true }
-          announce_winner(event, [maps[emoji], votes[map_name].length])
+          announce_result(event, votes)
         end
       end
     end
@@ -96,7 +103,7 @@ class QwtfDiscordBotVote
 
         body = JSON.parse(res.body)
         map_names_mutex.synchronize { map_names = body }
-        maps = REACTION_EMOJIS.zip(map_names).to_h
+        maps = REACTION_EMOJIS.zip(map_names).select { |emoji, map_name| !map_name.nil? }.to_h
         vote_embed = Discordrb::Webhooks::Embed.new
 
         maps.map do |map|
@@ -137,15 +144,7 @@ class QwtfDiscordBotVote
             end
 
             @vote_message.edit(message, vote_embed)
-
-            winning_votes = votes.values.max
-            winners = votes.select { |_, v| v == winning_votes }
-
-            if winners.size > 1
-              announce_draw(event, winners)
-            else
-              announce_winner(event, winners.first)
-            end
+            announce_result(event, votes)
           end
         end
 
@@ -182,10 +181,10 @@ class QwtfDiscordBotVote
       map_embed = Discordrb::Webhooks::Embed.new
 
       map_embed.description = if body
-                            "How about #{body}?"
-                          else
-                            "I'm out of ideas, you choose."
-                          end
+                                "How about #{body}?"
+                              else
+                                "I'm out of ideas, you choose."
+                              end
 
       event.channel.send_embed(nil, map_embed).tap do
         puts(map_embed.description)
@@ -224,25 +223,16 @@ class QwtfDiscordBotVote
       end
     end
 
-    def announce_winner(event, winner)
-      event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
-    end
-
-    def announce_draw(event, winners)
-      winner_maps = winners.keys.join(', ')
-      event.respond("It's a draw between: #{winner_maps}")
-    end
-
-    def pug(event)
-      Pug.for(event.channel.id)
-    end
-
     bot.run
   end
 
   private
 
   # todo refactor (shared with qwtf_discord_bot_pug.rb)
+  def pug(event)
+    Pug.for(event.channel.id)
+  end
+
   def send_embedded_message(message: nil, description: nil, channel:, message_obj: nil)
     embed = Discordrb::Webhooks::Embed.new
     embed.description = description
@@ -257,5 +247,25 @@ class QwtfDiscordBotVote
         puts(message)
       end
     end
+  end
+
+  def announce_result(event, votes)
+    max_votes = votes.values.map(&:size).max
+    winners = votes.select { |_, v| v.size == max_votes }
+
+    if winners.size > 1
+      announce_draw(event, winners)
+    else
+      announce_winner(event, winners.first)
+    end
+  end
+
+  def announce_winner(event, winner)
+    event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
+  end
+
+  def announce_draw(event, winners)
+    winner_maps = winners.keys.join(', ')
+    event.respond("It's a draw between: #{winner_maps}")
   end
 end
