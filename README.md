@@ -253,8 +253,10 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Todo
 - [x] Fix !map
-- [ ] Show still to vote
+- [x] Show still to vote
 - [x] Finish vote when teamsizex2 have voted
 - [x] Fix possible bug editing wrong message
 - [ ] Click x for 'none of these'
 - [ ] Add maps
+- [ ] Handle multiple channels voting at same time
+- [ ] Refactor

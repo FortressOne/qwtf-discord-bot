@@ -1,4 +1,5 @@
 require 'pug'
+require 'event_decorator'
 
 class QwtfDiscordBotVote
   TIMER = 60
@@ -43,20 +44,35 @@ class QwtfDiscordBotVote
 
       if !event.user.current_bot? && votes.key?(map_name)
         # Remove player's vote from all maps
-        votes.each { |_map_name, voters| voters.delete(event.user.name) }
+        votes.each { |_map_name, voters| voters.delete(event.user) }
 
         # Add player's vote to selected map
-        votes[map_name] << event.user.name
+        votes[map_name] << event.user
 
         # Update embedded message
         vote_embed_mutex.synchronize do
           map_field = vote_embed.fields.each do |field|
             map_name = field.name.split(" ").last
-            field.value = votes[map_name].join("\n")
+            field.value = votes[map_name].map(&:display_name).join("\n")
+
+            users = pug(event).up_now_players.map do |discord_id|
+              event.server.member(discord_id)
+            end
+
+            users -= votes.inject([]) { |users, vote| users += vote[1] }
+
+            footer_lines = vote_embed.footer.text.split("\n")
+
+            footer_text = [
+              "#{users.map(&:display_name).join(", ")} still to vote",
+              footer_lines[1]
+            ].join("\n")
+
+            vote_embed.footer.text = footer_text
           end
         end
 
-        @vote_message.edit(nil, vote_embed)
+        @vote_message.edit(event.message, vote_embed)
 
         # First map to reach teamsize votes is enough to prevent draws
         teamsize = pug(event).teamsize
@@ -114,8 +130,17 @@ class QwtfDiscordBotVote
           )
         end
 
-        vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
-        message = "Joined players, choose your maps"
+        users = pug(event).up_now_players.map do |discord_id|
+          event.server.member(discord_id)
+        end
+
+        users -= votes.inject([]) { |users, vote| users += vote[1] }
+
+        vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: "#{users.map(&:display_name).join(", ")} still to vote\n#{TIMER} seconds remaining",
+        )
+
+        message = "#{users.map(&:display_name).join(", ")} choose your maps"
 
         @vote_message = event.channel.send_embed(message, vote_embed).tap do
           puts(vote_embed.description)
@@ -125,10 +150,21 @@ class QwtfDiscordBotVote
           TIMER.times do |i|
             break if should_end_voting
 
+              users = pug(event).up_now_players.map do |discord_id|
+                event.server.member(discord_id)
+              end
+
+              users -= votes.inject([]) { |users, vote| users += vote[1] }
+
+              footer_lines = vote_embed.footer.text.split("\n")
+
+              footer_text = [
+                "#{users.map(&:display_name).join(", ")} still to vote",
+                "#{TIMER - i} seconds remaining"
+              ].join("\n")
+
             vote_embed_mutex.synchronize do
-              vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-                text: "#{TIMER - i} seconds remaining"
-              )
+              vote_embed.footer.text = footer_text
             end
 
             @vote_message.edit(message, vote_embed)
