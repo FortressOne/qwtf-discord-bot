@@ -17,6 +17,7 @@ class QwtfDiscordBotPug # :nodoc:
     `!join [@player1] [@player2]` Join PUG. Can also join other players
     `!leave` Leave PUG
     `!kick <@player> [@player2]` Kick one or more other players
+    `!queue <@player> [@player2]` Move to back of queue
     `!team <team_no> [@player1] [@player2]` Join team
     `!unteam [@player1] [@player2]` Leave team and go to front of queue
     `!choose` Choose a bit fair a bit random teams.
@@ -317,6 +318,65 @@ class QwtfDiscordBotPug # :nodoc:
         )
 
         end_pug(pug, e) if pug.empty?
+      end
+    end
+
+    @bot.command :queue do |event, *args|
+      setup_pug(event) do |e, pug|
+        unless args.any?
+          return send_embedded_message(
+            description: "Queue who? e.g. `!queue @#{e.display_name}`",
+            channel: e.channel
+          )
+        end
+
+        unless pug.active?
+          return send_embedded_message(
+            description: no_active_pug_message,
+            channel: e.channel
+          )
+        end
+
+        errors = []
+        queuees = []
+
+        args.each do |mention|
+          if !mention.match(VALID_MENTION)
+            errors << "#{mention} isn't a valid mention"
+            next
+          end
+
+          user_id = mention_to_user_id(mention)
+          display_name = e.display_name_for(user_id) || mention
+
+          unless pug.joined?(user_id)
+            errors << "#{display_name} isn't in the PUG"
+            next
+          end
+
+          pug.leave(user_id)
+          pug.join(user_id)
+          queuees << display_name
+        end
+
+        message = ""
+        description = []
+
+        if queuees.any?
+          description << [
+            queuees.to_sentence,
+            queuees.count == 1 ? "is" : "are",
+            "returned to the back of the queue"
+          ].join(" ")
+        end
+
+        description = [errors, description.join(MSG_SNIPPET_DELIMITER)].join("\n")
+
+        send_embedded_message(
+          message: message,
+          description: description,
+          channel: e.channel
+        )
       end
     end
 
