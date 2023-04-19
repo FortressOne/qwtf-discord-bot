@@ -1,8 +1,9 @@
 require 'pug'
 
 class QwtfDiscordBotVote
-  TIMER = 3 * 60
-  REACTION_EMOJIS = ["🍏", "🍊", "🍋"] # "❌"
+  TIMER = 60
+  REACTION_EMOJIS = ["🍏", "🍊", "🍋"]
+  NEW_MAPS_EMOJI = "❌"
 
   COMMANDS = <<~MESSAGE
     `!map` Suggest a map
@@ -155,6 +156,9 @@ class QwtfDiscordBotVote
           @vote_message.react(emoji)
           votes[map_name] = []
         end
+
+        @vote_message.react(NEW_MAPS_EMOJI)
+        votes[:new_maps] = []
       else
         event.respond('Voting is already in progress!')
       end
