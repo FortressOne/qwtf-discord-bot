@@ -1,4 +1,5 @@
 require 'pug'
+require 'event_decorator'
 
 class QwtfDiscordBotVote
   TIMER = 60
@@ -28,39 +29,59 @@ class QwtfDiscordBotVote
     should_end_voting = false
     map_names_mutex = Mutex.new
     map_names = []
-    embed_mutex = Mutex.new
-    embed = nil
+    vote_embed_mutex = Mutex.new
+    vote_embed = nil
 
     bot.reaction_add do |event|
-      next if !vote_thread&.alive?
-      next if !pug(event).joined?(event.user.id)
-      next if event.message.id != @vote_message.id
+      next if event.message.id != @vote_message&.id
 
       emoji = event.emoji.to_s
+      event.message.delete_reaction(event.user, emoji)
+
+      next if !vote_thread&.alive?
+      next if !pug(event).joined?(event.user.id)
+
       map_name = REACTION_EMOJIS.zip(map_names).to_h[emoji]
 
-      if votes.key?(map_name)
-        user_id = event.user.id
+      if !event.user.current_bot? && votes.key?(map_name)
+        # Remove player's vote from all maps
+        votes.each { |_map_name, voters| voters.delete(event.user) }
 
-        if !event.user.current_bot?
-          votes.each { |map_name, voters| voters.delete(event.user.name) }
-          votes[map_name] << event.user.name
-          majority = pug(event).teamsize # first to teamsize is enough to prevent draws
-          event.message.delete_reaction(event.user, emoji)
+        # Add player's vote to selected map
+        votes[map_name] << event.user
 
-          embed_mutex.synchronize do
-            map_field = embed.fields.each do |field|
-              map_name = field.name.split(" ").last
-              field.value = votes[map_name].join("\n")
+        # Update embedded message
+        vote_embed_mutex.synchronize do
+          map_field = vote_embed.fields.each do |field|
+            map_name = field.name.split(" ").last
+            field.value = votes[map_name].map(&:display_name).join("\n")
+
+            users = pug(event).up_now_players.map do |discord_id|
+              event.server.member(discord_id)
             end
 
-            @vote_message.edit(nil, embed)
-          end
+            users -= votes.inject([]) { |users, vote| users += vote[1] }
 
-          if votes[map_name].length >= majority
-            should_end_voting_mutex.synchronize { should_end_voting = true }
-            announce_winner(event, [maps[emoji], votes[map_name].length])
+            footer_lines = vote_embed.footer.text.split("\n")
+
+            footer_text = [
+              "#{users.map(&:display_name).join(", ")} still to vote",
+              footer_lines[1]
+            ].join("\n")
+
+            vote_embed.footer.text = footer_text
           end
+        end
+
+        @vote_message.edit(event.message, vote_embed)
+
+        # First map to reach teamsize votes is enough to prevent draws
+        teamsize = pug(event).teamsize
+
+        # If majority reached, or all players have voted
+        if votes[map_name].length >= teamsize || votes.values.sum(&:count) >= (teamsize * 2)
+          should_end_voting_mutex.synchronize { should_end_voting = true }
+          announce_result(event, votes)
         end
       end
     end
@@ -99,56 +120,68 @@ class QwtfDiscordBotVote
 
         body = JSON.parse(res.body)
         map_names_mutex.synchronize { map_names = body }
-        maps = REACTION_EMOJIS.zip(map_names).to_h
-        embed = Discordrb::Webhooks::Embed.new
+        maps = REACTION_EMOJIS.zip(map_names).select { |emoji, map_name| !map_name.nil? }.to_h
+        vote_embed = Discordrb::Webhooks::Embed.new
 
         maps.map do |map|
-          embed.add_field(
+          vote_embed.add_field(
             inline: true,
             name: "#{map[0]} #{map[1]}",
             value: ""
           )
         end
 
-        embed.footer = Discordrb::Webhooks::EmbedFooter.new(text: "")
-        message = "Joined players, choose your maps"
+        users = pug(event).up_now_players.map do |discord_id|
+          event.server.member(discord_id)
+        end
 
-        @vote_message = event.channel.send_embed(message, embed).tap do
-          puts(embed.description)
+        users -= votes.inject([]) { |users, vote| users += vote[1] }
+
+        vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: "#{users.map(&:display_name).join(", ")} still to vote\n#{TIMER} seconds remaining",
+        )
+
+        message = "#{users.map(&:display_name).join(", ")} choose your maps"
+
+        @vote_message = event.channel.send_embed(message, vote_embed).tap do
+          puts(vote_embed.description)
         end
 
         vote_thread = Thread.new do
           TIMER.times do |i|
             break if should_end_voting
 
-            embed_mutex.synchronize do
-              embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-                text: "#{TIMER - i} seconds remaining"
-              )
+              users = pug(event).up_now_players.map do |discord_id|
+                event.server.member(discord_id)
+              end
+
+              users -= votes.inject([]) { |users, vote| users += vote[1] }
+
+              footer_lines = vote_embed.footer.text.split("\n")
+
+              footer_text = [
+                "#{users.map(&:display_name).join(", ")} still to vote",
+                "#{TIMER - i} seconds remaining"
+              ].join("\n")
+
+            vote_embed_mutex.synchronize do
+              vote_embed.footer.text = footer_text
             end
 
-            @vote_message.edit(message, embed)
+            @vote_message.edit(message, vote_embed)
 
             sleep 1
           end
 
           if !should_end_voting
-            embed_mutex.synchronize do
-              embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+            vote_embed_mutex.synchronize do
+              vote_embed.footer = Discordrb::Webhooks::EmbedFooter.new(
                 text: "0 seconds remaining"
               )
             end
 
-            @vote_message.edit(message, embed)
-
-            winning_votes = votes.values.max
-            winners = votes.select { |_, v| v == winning_votes }
-
-            if winners.size > 1
-              announce_draw(event, winners)
-            else
-              announce_winner(event, winners.first)
-            end
+            @vote_message.edit(message, vote_embed)
+            announce_result(event, votes)
           end
         end
 
@@ -172,7 +205,7 @@ class QwtfDiscordBotVote
 
       req.body = {
         map_suggestion: {
-          discord_channel_id: event.channel.id,
+          channel_id: event.channel.id,
           discord_player_id: event.user.id,
           for_teamsize: pug(event).teamsize,
         }
@@ -185,16 +218,16 @@ class QwtfDiscordBotVote
       end
 
       body = JSON.parse(res.body)
-      embed = Discordrb::Webhooks::Embed.new
+      map_embed = Discordrb::Webhooks::Embed.new
 
-      embed.description = if body
-                      "How about #{body}?"
-                    else
-                      "I'm out of ideas, you choose."
-                    end
+      map_embed.description = if body
+                                "How about #{body}?"
+                              else
+                                "I'm out of ideas, you choose."
+                              end
 
-      event.channel.send_embed(nil, embed).tap do
-        puts(embed.description)
+      event.channel.send_embed(nil, map_embed).tap do
+        puts(map_embed.description)
       end
     end
 
@@ -212,33 +245,22 @@ class QwtfDiscordBotVote
         http.request(req)
       end
 
-      embed = Discordrb::Webhooks::Embed.new
+      maps_embed = Discordrb::Webhooks::Embed.new
       body = JSON.parse(res.body)
 
       body.each do |teamsize, maps|
         if maps.any?
-          embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
-        else
-          embed.description = "No maps set for this channel"
+          maps_embed.add_field(name: "#{teamsize}v#{teamsize}", value: maps.join(", "))
         end
       end
 
-      event.channel.send_embed(nil, embed).tap do
-        puts(embed.description)
+      if maps_embed.fields.empty?
+        maps_embed.description = "No maps set for this channel"
       end
-    end
 
-    def announce_winner(event, winner)
-      event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
-    end
-
-    def announce_draw(event, winners)
-      winner_maps = winners.keys.join(', ')
-      event.respond("It's a draw between: #{winner_maps}")
-    end
-
-    def pug(event)
-      Pug.for(event.channel.id)
+      event.channel.send_embed(nil, maps_embed).tap do
+        puts(maps_embed.description)
+      end
     end
 
     bot.run
@@ -247,6 +269,10 @@ class QwtfDiscordBotVote
   private
 
   # todo refactor (shared with qwtf_discord_bot_pug.rb)
+  def pug(event)
+    Pug.for(event.channel.id)
+  end
+
   def send_embedded_message(message: nil, description: nil, channel:, message_obj: nil)
     embed = Discordrb::Webhooks::Embed.new
     embed.description = description
@@ -261,5 +287,25 @@ class QwtfDiscordBotVote
         puts(message)
       end
     end
+  end
+
+  def announce_result(event, votes)
+    max_votes = votes.values.map(&:size).max
+    winners = votes.select { |_, v| v.size == max_votes }
+
+    if winners.size > 1
+      announce_draw(event, winners)
+    else
+      announce_winner(event, winners.first)
+    end
+  end
+
+  def announce_winner(event, winner)
+    event.respond("The winner is #{winner[0]} with #{winner[1].length} votes.")
+  end
+
+  def announce_draw(event, winners)
+    winner_maps = winners.keys.join(', ')
+    event.respond("It's a draw between: #{winner_maps}")
   end
 end

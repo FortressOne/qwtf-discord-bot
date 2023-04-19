@@ -197,7 +197,6 @@ Build:
 
     docker build --tag=discord-bot .
 
-
 Push:
 
     docker tag discord-bot fortressone/discord-bot:latest \
@@ -225,8 +224,12 @@ Push image to dockerhub then:
 source .env.discord-bot
 eval $(docker-machine env discord-bot)
 docker-compose pull
-docker restart qwtf-discord-bot_discord-dashboard-bot_1
-docker-compose up -d discord-command-bot discord-dashboard-bot discord-pug-bot discord-watcher-bot discord-vote-bot
+docker-compose up -d \
+  discord-command-bot \
+  discord-dashboard-bot \
+  discord-pug-bot \
+  discord-watcher-bot \
+  discord-vote-bot
 ```
 
 
@@ -245,3 +248,15 @@ docker restart qwtf-discord-bot_discord-dashboard-bot_1
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+
+
+## Todo
+- [x] Fix !map
+- [x] Show still to vote
+- [x] Finish vote when teamsizex2 have voted
+- [x] Fix possible bug editing wrong message
+- [ ] Click x for 'none of these'
+- [ ] Add maps
+- [ ] Handle multiple channels voting at same time
+- [ ] Refactor
