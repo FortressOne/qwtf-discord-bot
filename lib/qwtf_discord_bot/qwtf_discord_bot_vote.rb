@@ -54,6 +54,10 @@ class QwtfDiscordBotVote
         end
       end
 
+      current_state[:choices].except(emoji).keys.each do |emoji|
+        event.message.delete_reaction(event.user, emoji)
+      end
+
       # First map to reach teamsize votes is enough to prevent draws
       teamsize = pug(event).teamsize
 
@@ -144,8 +148,10 @@ class QwtfDiscordBotVote
           end
         end
 
-        CHOICE_EMOJIS.each do |emoji|
-          vote_message.react(emoji)
+        Thread.new do
+          CHOICE_EMOJIS.each do |emoji|
+            vote_message.react(emoji)
+          end
         end
 
         vote_threads[channel_id] = Thread.new do
