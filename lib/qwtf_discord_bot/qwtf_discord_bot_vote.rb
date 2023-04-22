@@ -2,7 +2,7 @@ require 'pug'
 require 'event_decorator'
 
 class QwtfDiscordBotVote
-  TIMER = 10
+  TIMER = 60
   NEW_MAP_EMOJI = "❌"
   CHOICE_EMOJIS = ["🍏", "🍊", "🍋", NEW_MAP_EMOJI]
 
