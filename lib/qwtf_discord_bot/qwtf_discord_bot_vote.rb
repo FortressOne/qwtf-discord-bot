@@ -32,13 +32,14 @@ class QwtfDiscordBotVote
       current_state = state_mutex.synchronize { state[channel_id] }
       next if event.message.id != current_state[:vote_message]&.id
 
+      emoji = event.emoji.to_s
+
       reasons_to_abort = [
         !vote_threads[channel_id]&.alive?,
         !pug(event).joined?(event.user.id),
+        !CHOICE_EMOJIS.include?(emoji),
         event.user.current_bot?
       ]
-
-      emoji = event.emoji.to_s
 
       if reasons_to_abort.any?
         event.message.delete_reaction(event.user, emoji)
