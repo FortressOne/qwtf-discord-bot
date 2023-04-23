@@ -140,7 +140,7 @@ class QwtfDiscordBotVote
           text: footer_text(current_state[:footer])
         )
 
-        message = "#{players.map(&:display_name).to_sentence}; choose your maps"
+        message = ""
         vote_message = event.channel.send_embed(message, embed)
 
         current_state = state_mutex.synchronize do
@@ -156,9 +156,11 @@ class QwtfDiscordBotVote
         end
 
         vote_threads[channel_id] = Thread.new do
-          sleep(1) # Don't start countdown until all reactions available
+          sleep(2) # Don't start countdown until all reactions available
 
           TIMER.times do |i|
+            sleep(1)
+
             current_state = state_mutex.synchronize do
               state[channel_id][:footer][:seconds_remaining] = TIMER - 1 - i
               state[channel_id]
@@ -181,8 +183,10 @@ class QwtfDiscordBotVote
             )
 
             current_state[:vote_message].edit(message, embed)
-            sleep(1)
-            announce_result(event, current_state[:choices]) if i == (TIMER - 1)
+
+            if i == (TIMER - 1)
+              announce_result(event, current_state[:choices])
+            end
           end
         end
 
