@@ -2,7 +2,7 @@ require 'pug'
 require 'event_decorator'
 
 class QwtfDiscordBotVote
-  TIMER = 60
+  TIMER = 5
   NEW_MAP_EMOJI = "❌"
   CHOICE_EMOJIS = ["🍏", "🍊", "🍋", NEW_MAP_EMOJI]
 
@@ -295,7 +295,9 @@ class QwtfDiscordBotVote
   end
 
   def announce_winner(event, winner)
-    event.respond("The winner is #{winner[:map]} with #{winner[:voters].length} votes.")
+    number_of_winning_votes = winner[:voters].length
+    vote_s = number_of_winning_votes == 1 ? "vote" : "votes"
+    event.respond("The winner is #{winner[:map]} with #{number_of_winning_votes} #{vote_s}.")
   end
 
   def announce_draw(event, winners)
@@ -304,9 +306,11 @@ class QwtfDiscordBotVote
   end
 
   def footer_text(footer)
+    second_s = footer[:seconds_remaining] == 1 ? "second" : "seconds"
+
     <<~STRING
       #{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote
-      #{footer[:seconds_remaining]} seconds remaining
+      #{footer[:seconds_remaining]} #{second_s} remaining
       #{CHOICE_EMOJIS.last * footer[:crosses]}
     STRING
   end
