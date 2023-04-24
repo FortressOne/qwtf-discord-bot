@@ -217,6 +217,12 @@ class QwtfDiscordBotVote
   end
 
   def footer_text(footer)
+    status = if footer[:still_to_vote].empty?
+               "Everyone has voted"
+             else
+               "#{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote"
+             end
+
     second_s = footer[:seconds_remaining] == 1 ? "second" : "seconds"
 
     new_maps_indicator = [
@@ -225,7 +231,7 @@ class QwtfDiscordBotVote
     ].join
 
     <<~STRING
-      #{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote
+      #{status}
       #{footer[:seconds_remaining]} #{second_s} remaining
       #{new_maps_indicator}
     STRING

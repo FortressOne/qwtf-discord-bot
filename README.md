@@ -248,15 +248,3 @@ docker restart qwtf-discord-bot_discord-dashboard-bot_1
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-
-
-## Todo
-- [x] Fix !map
-- [x] Show still to vote
-- [x] Finish vote when teamsizex2 have voted
-- [x] Fix possible bug editing wrong message
-- [ ] Click x for 'none of these'
-- [ ] Add maps
-- [ ] Handle multiple channels voting at same time
-- [ ] Refactor
