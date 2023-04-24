@@ -2,9 +2,9 @@ require 'pug'
 require 'event_decorator'
 
 class QwtfDiscordBotVote
-  TIMER = 5
-  NEW_MAP_EMOJI = "❌"
-  CHOICE_EMOJIS = ["🍏", "🍊", "🍋", NEW_MAP_EMOJI]
+  TIMER = 60
+  NEW_MAPS_EMOJI = "❌"
+  CHOICE_EMOJIS = ["🍏", "🍊", "🍋", NEW_MAPS_EMOJI]
 
   COMMANDS = <<~MESSAGE
     `!map` Suggest a map
@@ -23,19 +23,17 @@ class QwtfDiscordBotVote
     )
 
     # Map votes
-    vote_threads = {}
-    state_mutex = Mutex.new
-    state = {}
+    @state_mutex = Mutex.new
+    @state = {}
 
     bot.reaction_add do |event|
       channel_id = event.channel.id
-      current_state = state_mutex.synchronize { state[channel_id] }
+      current_state = @state_mutex.synchronize { @state[channel_id] }
       next if event.message.id != current_state[:vote_message]&.id
 
       emoji = event.emoji.to_s
 
       reasons_to_abort = [
-        !vote_threads[channel_id]&.alive?,
         !pug(event).joined?(event.user.id),
         !CHOICE_EMOJIS.include?(emoji),
         event.user.current_bot?
@@ -46,12 +44,12 @@ class QwtfDiscordBotVote
         next
       end
 
-      current_state = state_mutex.synchronize do
-        state[channel_id].tap do |channel_state|
+      current_state = @state_mutex.synchronize do
+        @state[channel_id].tap do |channel_state|
           channel_state[:choices].each { |_emoji, hash| hash[:voters].delete(event.user) }
           channel_state[:choices][emoji][:voters] << event.user
           channel_state[:footer][:still_to_vote] = still_to_vote(event: event, choices: channel_state[:choices])
-          channel_state[:footer][:crosses] = channel_state[:choices][NEW_MAP_EMOJI][:voters].count
+          channel_state[:footer][:crosses] = channel_state[:choices][NEW_MAPS_EMOJI][:voters].count
         end
       end
 
@@ -68,8 +66,8 @@ class QwtfDiscordBotVote
       ]
 
       if reasons_to_end_vote.any?
-        current_state = state_mutex.synchronize do
-          state[channel_id].merge(should_end_voting: true)
+        current_state = @state_mutex.synchronize do
+          @state[channel_id].merge!(should_end_voting: true)
         end
 
         announce_result(event, current_state[:choices])
@@ -88,110 +86,7 @@ class QwtfDiscordBotVote
     end
 
     bot.command(:vote, description: 'Start the voting process') do |event|
-      channel_id = event.channel.id
-
-      if vote_threads[channel_id].nil? || !vote_threads[channel_id].alive?
-        uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
-        req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-
-        req.body = {
-          map_suggestion: {
-            channel_id: channel_id,
-            for_teamsize: pug(event).teamsize,
-          }
-        }.to_json
-
-        is_https = uri.scheme == "https"
-
-        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
-          http.request(req)
-        end
-
-        maps = JSON.parse(res.body) << nil # nil for the ❌ new maps option
-        players = up_now_players(event)
-
-        choices = CHOICE_EMOJIS.zip(maps).inject({}) do |hash, (emoji, map)|
-          hash.merge(emoji => { map: map, voters: [] })
-        end
-
-        current_state = state_mutex.synchronize do
-          state[channel_id] = {
-            should_end_voting: false,
-            choices: choices,
-            footer: {
-              seconds_remaining: TIMER,
-              still_to_vote: players,
-              crosses: 0
-            },
-          }
-        end
-
-        embed = Discordrb::Webhooks::Embed.new
-
-        choices.except(NEW_MAP_EMOJI).each do |emoji, attrs|
-          embed.add_field(
-            inline: true,
-            name: "#{emoji} #{attrs[:map]}",
-            value: attrs[:voters].map(&:display_name).join("\n")
-          )
-        end
-
-        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-          text: footer_text(current_state[:footer])
-        )
-
-        message = ""
-        vote_message = event.channel.send_embed(message, embed)
-
-        current_state = state_mutex.synchronize do
-          state[channel_id].tap do |channel_state|
-            channel_state[:vote_message] = vote_message
-          end
-        end
-
-        Thread.new do
-          CHOICE_EMOJIS.each do |emoji|
-            vote_message.react(emoji)
-          end
-        end
-
-        vote_threads[channel_id] = Thread.new do
-          sleep(2) # Don't start countdown until all reactions available
-
-          TIMER.times do |i|
-            sleep(1)
-
-            current_state = state_mutex.synchronize do
-              state[channel_id][:footer][:seconds_remaining] = TIMER - 1 - i
-              state[channel_id]
-            end
-
-            break if current_state[:should_end_voting]
-
-            embed = Discordrb::Webhooks::Embed.new
-
-            current_state[:choices].except(NEW_MAP_EMOJI).each do |emoji, attrs|
-              embed.add_field(
-                inline: true,
-                name: "#{emoji} #{attrs[:map]}",
-                value: attrs[:voters].map(&:display_name).join("\n")
-              )
-            end
-
-            embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-              text: footer_text(current_state[:footer])
-            )
-
-            current_state[:vote_message].edit(message, embed)
-
-            if i == (TIMER - 1)
-              announce_result(event, current_state[:choices])
-            end
-          end
-        end
-
-        nil
-      end
+      run_vote(event, "Time to vote")
     end
 
     bot.command :map do |event, *args|
@@ -291,10 +186,22 @@ class QwtfDiscordBotVote
       .values
       .select { |hash| hash[:voters].size == max_votes }
 
-    if winners.size > 1
-      announce_draw(event, winners)
+    if max_votes == 0
+      event.channel.send_message("No votes casted, aborting vote.")
+    elsif winners.size > 1
+      if winners.map { |winner| winner[:map] }.include?(nil)
+        run_vote(event, "No clear winner, revote.")
+      else
+        announce_draw(event, winners)
+      end
     else
-      announce_winner(event, winners.first)
+      winner = winners.first
+
+      if winner[:map] == nil
+        run_vote(event, "New maps chosen!")
+      else
+        announce_winner(event, winner)
+      end
     end
   end
 
@@ -312,10 +219,15 @@ class QwtfDiscordBotVote
   def footer_text(footer)
     second_s = footer[:seconds_remaining] == 1 ? "second" : "seconds"
 
+    new_maps_indicator = [
+      NEW_MAPS_EMOJI * footer[:crosses],
+      "🔳" * (footer[:new_maps_threshold] - footer[:crosses])
+    ].join
+
     <<~STRING
       #{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote
       #{footer[:seconds_remaining]} #{second_s} remaining
-      #{CHOICE_EMOJIS.last * footer[:crosses]}
+      #{new_maps_indicator}
     STRING
   end
 
@@ -327,5 +239,116 @@ class QwtfDiscordBotVote
 
   def still_to_vote(event:, choices:)
     up_now_players(event) - choices.values.map { |hash| hash[:voters] }.flatten
+  end
+
+  def run_vote(event, message)
+    channel_id = event.channel.id
+
+    uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
+    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+
+    teamsize = pug(event).teamsize
+
+    req.body = {
+      map_suggestion: {
+        channel_id: channel_id,
+        for_teamsize: teamsize,
+      }
+    }.to_json
+
+    is_https = uri.scheme == "https"
+
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
+      http.request(req)
+    end
+
+    maps = JSON.parse(res.body) << nil # nil for the ❌ new maps option
+    players = up_now_players(event)
+
+    choices = CHOICE_EMOJIS.zip(maps).inject({}) do |hash, (emoji, map)|
+      hash.merge(emoji => { map: map, voters: [] })
+    end
+
+    current_state = @state_mutex.synchronize do
+      @state[channel_id] = {
+        should_end_voting: false,
+        choices: choices,
+        footer: {
+          seconds_remaining: TIMER,
+          still_to_vote: players,
+          crosses: 0,
+          new_maps_threshold: teamsize / 2
+        },
+      }
+    end
+
+    embed = Discordrb::Webhooks::Embed.new
+
+    choices.except(NEW_MAPS_EMOJI).each do |emoji, attrs|
+      embed.add_field(
+        inline: true,
+        name: "#{emoji} #{attrs[:map]}",
+        value: attrs[:voters].map(&:display_name).join("\n")
+      )
+    end
+
+    embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+      text: footer_text(current_state[:footer])
+    )
+
+    vote_message = event.channel.send_embed(message, embed)
+
+    current_state = @state_mutex.synchronize do
+      @state[channel_id].tap do |channel_state|
+        channel_state[:vote_message] = vote_message
+      end
+    end
+
+    Thread.new do
+      CHOICE_EMOJIS.each do |emoji|
+        vote_message.react(emoji)
+      end
+    end
+
+    @vote_threads[channel_id] = Thread.new do
+      sleep(2) # Don't start countdown until all reactions available
+
+      TIMER.times do |i|
+        current_state = @state_mutex.synchronize do
+          @state[channel_id][:footer][:seconds_remaining] = TIMER - 1 - i
+          @state[channel_id]
+        end
+
+        break if current_state[:should_end_voting]
+
+        sleep(1)
+
+        embed = Discordrb::Webhooks::Embed.new
+
+        current_state[:choices].except(NEW_MAPS_EMOJI).each do |emoji, attrs|
+          embed.add_field(
+            inline: true,
+            name: "#{emoji} #{attrs[:map]}",
+            value: attrs[:voters].map(&:display_name).join("\n")
+          )
+        end
+
+        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: footer_text(current_state[:footer])
+        )
+
+        current_state[:vote_message].edit(message, embed)
+
+        if i == (TIMER - 1)
+          current_state = @state_mutex.synchronize do
+            @state[channel_id].merge!(should_end_voting: true)
+          end
+
+          announce_result(event, current_state[:choices])
+        end
+      end
+    end
+
+    nil
   end
 end
