@@ -56,7 +56,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    @bot.command :join do |event, *args|
+    @bot.command :join, aliases: [:tpg, :juan] do |event, *args|
       setup_pug(event) do |e, pug|
         if args.empty?
           if pug.joined?(e.user_id)
@@ -214,7 +214,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    @bot.command :leave do |event, *args|
+    @bot.command :leave, aliases: [:ntpg] do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
@@ -527,7 +527,7 @@ class QwtfDiscordBotPug # :nodoc:
       end
     end
 
-    @bot.command :end do |event, *args|
+    @bot.command :end, aliases: [:fim] do |event, *args|
       setup_pug(event) do |e, pug|
         unless pug.active?
           return send_embedded_message(
