@@ -709,8 +709,8 @@ class QwtfDiscordBotPug # :nodoc:
   end
 
   def end_pug(pug, event)
-    event.find_users(pug.players).map do |player|
-      player.remove_role(ENV['READY_ROLE'])
+    event.find_users(pug.players).each do |player|
+      player && player.remove_role(ENV['READY_ROLE'])
     end
 
     pug.end_pug
