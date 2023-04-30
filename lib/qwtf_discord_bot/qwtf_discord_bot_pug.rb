@@ -655,7 +655,6 @@ class QwtfDiscordBotPug # :nodoc:
 
   def status(pug:, event:, message_obj: nil)
     footer = [
-      pug.game_map || "No map selected",
       "#{pug.player_slots} joined",
     ].compact.join(MSG_SNIPPET_DELIMITER)
 
