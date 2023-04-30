@@ -33,15 +33,16 @@ class QwtfDiscordBotVote
 
       emoji = event.emoji.to_s
 
-      reasons_to_abort = [
+      reasons_to_remove_reaction = [
         !pug(event).joined?(event.user.id),
         !CHOICE_EMOJIS.include?(emoji),
-        event.user.current_bot?
+        event.user.current_bot?,
+        current_state[:should_end_voting]
       ]
 
-      if reasons_to_abort.any?
+      if reasons_to_remove_reaction.any?
         event.message.delete_reaction(event.user, emoji)
-        next
+        break
       end
 
       current_state = @state_mutex.synchronize do
@@ -62,6 +63,7 @@ class QwtfDiscordBotVote
 
       reasons_to_end_vote = [
         current_state[:choices][emoji][:voters].length >= teamsize,
+        current_state[:footer][:crosses] >= current_state[:footer][:new_maps_threshold],
         current_state[:footer][:still_to_vote].empty?
       ]
 
@@ -69,8 +71,6 @@ class QwtfDiscordBotVote
         current_state = @state_mutex.synchronize do
           @state[channel_id].merge!(should_end_voting: true)
         end
-
-        announce_result(event, current_state[:choices])
       end
     end
 
@@ -249,11 +249,23 @@ class QwtfDiscordBotVote
 
   def run_vote(event, message)
     channel_id = event.channel.id
+    players = up_now_players(event)
+    teamsize = pug(event).teamsize
+
+    current_state = @state_mutex.synchronize do
+      @state[channel_id] = {
+        should_end_voting: false,
+        footer: {
+          seconds_remaining: TIMER,
+          still_to_vote: players,
+          crosses: 0,
+          new_maps_threshold: teamsize / 2
+        }
+      }
+    end
 
     uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-
-    teamsize = pug(event).teamsize
 
     req.body = {
       map_suggestion: {
@@ -269,23 +281,13 @@ class QwtfDiscordBotVote
     end
 
     maps = JSON.parse(res.body) << nil # nil for the ❌ new maps option
-    players = up_now_players(event)
 
     choices = CHOICE_EMOJIS.zip(maps).inject({}) do |hash, (emoji, map)|
       hash.merge(emoji => { map: map, voters: [] })
     end
 
     current_state = @state_mutex.synchronize do
-      @state[channel_id] = {
-        should_end_voting: false,
-        choices: choices,
-        footer: {
-          seconds_remaining: TIMER,
-          still_to_vote: players,
-          crosses: 0,
-          new_maps_threshold: teamsize / 2
-        },
-      }
+      @state[channel_id].merge!(choices: choices)
     end
 
     embed = Discordrb::Webhooks::Embed.new
@@ -312,20 +314,20 @@ class QwtfDiscordBotVote
 
     Thread.new do
       CHOICE_EMOJIS.each do |emoji|
-        vote_message.react(emoji)
+        vote_message.react(emoji) # discordrb rate limits these to 250ms a pop
       end
     end
 
-    @vote_threads[channel_id] = Thread.new do
+    Thread.new do
       sleep(2) # Don't start countdown until all reactions available
 
       TIMER.times do |i|
+        break if current_state[:should_end_voting]
+
         current_state = @state_mutex.synchronize do
           @state[channel_id][:footer][:seconds_remaining] = TIMER - 1 - i
           @state[channel_id]
         end
-
-        break if current_state[:should_end_voting]
 
         sleep(1)
 
@@ -349,10 +351,10 @@ class QwtfDiscordBotVote
           current_state = @state_mutex.synchronize do
             @state[channel_id].merge!(should_end_voting: true)
           end
-
-          announce_result(event, current_state[:choices])
         end
       end
+
+      announce_result(event, current_state[:choices])
     end
 
     nil
