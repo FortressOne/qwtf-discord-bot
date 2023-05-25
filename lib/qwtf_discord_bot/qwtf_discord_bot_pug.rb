@@ -323,13 +323,6 @@ class QwtfDiscordBotPug # :nodoc:
 
     @bot.command :queue do |event, *args|
       setup_pug(event) do |e, pug|
-        if args.empty?
-          return send_embedded_message(
-            description: "Queue who? e.g. `!queue @#{e.display_name}`",
-            channel: e.channel
-          )
-        end
-
         if !pug.active?
           return send_embedded_message(
             description: no_active_pug_message,
@@ -340,18 +333,27 @@ class QwtfDiscordBotPug # :nodoc:
         errors = []
         queuees = []
 
-        args.each do |mention|
-          if !mention.match(VALID_MENTION)
-            errors << "#{mention} isn't a valid mention"
-            next
-          end
-
-          user_id = mention_to_user_id(mention)
-          display_name = e.display_name_for(user_id) || mention
+        if args.empty?
+          user_id = e.user_id
+          display_name = e.display_name_for(user_id)
 
           pug.leave(user_id)
           pug.join(user_id)
           queuees << display_name
+        else
+          args.each do |mention|
+            if !mention.match(VALID_MENTION)
+              errors << "#{mention} isn't a valid mention"
+              next
+            end
+
+            user_id = mention_to_user_id(mention)
+            display_name = e.display_name_for(user_id) || mention
+
+            pug.leave(user_id)
+            pug.join(user_id)
+            queuees << display_name
+          end
         end
 
         message = ""
