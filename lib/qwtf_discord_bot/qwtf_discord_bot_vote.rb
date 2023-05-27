@@ -308,8 +308,17 @@ class QwtfDiscordBotVote
       message = "No votes casted, aborting vote"
       state[:footer][:status] = message
       update_embed(state)
-      event.channel.send_message(message)
-    elsif winners.size > 1
+      return event.channel.send_message(message)
+    end
+
+    if state[:footer][:crosses] >= state[:footer][:new_maps_threshold]
+      message = "New maps chosen!"
+      state[:footer][:status] = message
+      update_embed(state)
+      return run_vote(event, message)
+    end
+
+    if winners.size > 1
       if winners.map { |winner| winner[:map] }.include?(nil)
         message = "No clear winner, revote"
         state[:footer][:status] = message
@@ -325,30 +334,22 @@ class QwtfDiscordBotVote
       end
     else
       winner = winners.first
-
-      if winner[:map] == nil
-        message = "New maps chosen!"
-        state[:footer][:status] = message
-        update_embed(state)
-        run_vote(event, message)
-      else
-        # announce winner
-        number_of_winning_votes = winner[:voters].length
-        vote_s = number_of_winning_votes == 1 ? "vote" : "votes"
-        message = "The winner is #{winner[:map]} with #{number_of_winning_votes} #{vote_s}"
-        state[:footer][:status] = message
-        update_embed(state)
-        event.respond(message)
-      end
+      # announce winner
+      number_of_winning_votes = winner[:voters].length
+      vote_s = number_of_winning_votes == 1 ? "vote" : "votes"
+      message = "The winner is #{winner[:map]} with #{number_of_winning_votes} #{vote_s}"
+      state[:footer][:status] = message
+      update_embed(state)
+      event.respond(message)
     end
   end
 
   def footer_text(footer)
     still_to_vote = if footer[:still_to_vote].empty?
-               "Everyone has voted"
-             else
-               "#{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote"
-             end
+                      "Everyone has voted"
+                    else
+                      "#{footer[:still_to_vote].map(&:display_name).to_sentence} still to vote"
+                    end
 
     second_s = footer[:seconds_remaining] == 1 ? "second" : "seconds"
     status = footer[:status] || "#{footer[:seconds_remaining]} #{second_s} remaining"
