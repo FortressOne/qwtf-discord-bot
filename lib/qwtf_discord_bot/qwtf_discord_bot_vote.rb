@@ -168,19 +168,17 @@ class QwtfDiscordBotVote
 
   def run_vote(event, message)
     channel_id = event.channel.id
+
+    if @state[channel_id] && !@state[channel_id][:should_end_voting]
+      event.channel.send_message("Vote already in progress")
+      return
+    end
+
     players = up_now_players(event)
     teamsize = pug(event).teamsize
 
     current_state = @state_mutex.synchronize do
-      @state[channel_id] = {
-        should_end_voting: false,
-        footer: {
-          seconds_remaining: TIMER,
-          still_to_vote: players,
-          crosses: 0,
-          new_maps_threshold: teamsize / 2
-        }
-      }
+      @state[channel_id] = initial_state(players: players, teamsize: teamsize) 
     end
 
     uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
@@ -254,7 +252,33 @@ class QwtfDiscordBotVote
         end
       end
 
-      announce_result(event: event, state: current_state)
+      # announce result
+      maps = current_state[:choices].values
+      max_votes = maps.map { |hash| hash[:voters].size }.max
+      winners = maps.select { |hash| hash[:voters].size == max_votes }
+
+      message = if max_votes <= 0
+                  "No votes casted, aborting vote"
+                elsif current_state[:footer][:crosses] >= current_state[:footer][:new_maps_threshold]
+                  "Maps vetoed, !vote again"
+                elsif winners.size > 1
+                  if winners.map { |winner| winner[:map] }.include?(nil)
+                    "No clear winner, !vote again"
+                  else
+                    winner_maps = winners.map { |hash| hash[:map] }.compact.to_sentence
+                    "It's a draw between: #{winner_maps}"
+                  end
+                else
+                  winner = winners.first
+                  number_of_winning_votes = winner[:voters].length
+                  vote_s = number_of_winning_votes == 1 ? "vote" : "votes"
+                  "The winner is #{winner[:map]} with #{number_of_winning_votes} #{vote_s}"
+                end
+
+      current_state[:footer][:status] = message
+      update_embed(current_state)
+      event.channel.send_message(message)
+      @state_mutex.synchronize { @state[channel_id].merge!(should_end_voting: true) }
     end
 
     nil
@@ -300,48 +324,6 @@ class QwtfDiscordBotVote
   end
 
   def announce_result(event:, state:)
-    maps = state[:choices].values
-    max_votes = maps.map { |hash| hash[:voters].size }.max
-    winners = maps.select { |hash| hash[:voters].size == max_votes }
-
-    if max_votes <= 0
-      message = "No votes casted, aborting vote"
-      state[:footer][:status] = message
-      update_embed(state)
-      return event.channel.send_message(message)
-    end
-
-    if state[:footer][:crosses] >= state[:footer][:new_maps_threshold]
-      message = "New maps chosen!"
-      state[:footer][:status] = message
-      update_embed(state)
-      return run_vote(event, message)
-    end
-
-    if winners.size > 1
-      if winners.map { |winner| winner[:map] }.include?(nil)
-        message = "No clear winner, revote"
-        state[:footer][:status] = message
-        update_embed(state)
-        run_vote(event, message)
-      else
-        # announce draw
-        winner_maps = winners.map { |hash| hash[:map] }.compact.to_sentence
-        message = "It's a draw between: #{winner_maps}"
-        state[:footer][:status] = message
-        update_embed(state)
-        event.respond(message)
-      end
-    else
-      winner = winners.first
-      # announce winner
-      number_of_winning_votes = winner[:voters].length
-      vote_s = number_of_winning_votes == 1 ? "vote" : "votes"
-      message = "The winner is #{winner[:map]} with #{number_of_winning_votes} #{vote_s}"
-      state[:footer][:status] = message
-      update_embed(state)
-      event.respond(message)
-    end
   end
 
   def footer_text(footer)
@@ -374,5 +356,20 @@ class QwtfDiscordBotVote
 
   def still_to_vote(event:, choices:)
     up_now_players(event) - choices.values.map { |hash| hash[:voters] }.flatten
+  end
+
+  def initial_state(players:, teamsize:)
+    {
+      choices: {},
+      should_end_voting: false,
+      vote_message: nil,
+      footer: {
+        status: nil,
+        seconds_remaining: TIMER,
+        still_to_vote: players,
+        crosses: 0,
+        new_maps_threshold: [1, teamsize / 2].max
+      }
+    }
   end
 end
