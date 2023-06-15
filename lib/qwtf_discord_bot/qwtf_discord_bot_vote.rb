@@ -368,7 +368,7 @@ class QwtfDiscordBotVote
         seconds_remaining: TIMER,
         still_to_vote: players,
         crosses: 0,
-        new_maps_threshold: [1, teamsize / 2].max
+        new_maps_threshold: [1, teamsize * 3 / 4].max
       }
     }
   end
