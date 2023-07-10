@@ -7,6 +7,7 @@ gem 'discordrb', github: 'shardlab/discordrb', branch: 'main'
 gem 'redis'
 gem 'thor'
 gem 'activesupport'
+gem 'sentry-ruby'
 
 group :development do
   gem 'pry'

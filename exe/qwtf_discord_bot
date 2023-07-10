@@ -4,6 +4,13 @@ require 'dotenv/load'
 require 'qwtf_discord_bot'
 require 'thor'
 require 'pry'
+require 'sentry-ruby'
+
+Sentry.init do |config|
+  config.dsn = 'https://1ab037e07cb7457793ba34803812ba40@o4504933082923008.ingest.sentry.io/4504933083906048'
+  config.breadcrumbs_logger = [:sentry_logger, :http_logger]
+  config.traces_sample_rate = 1.0
+end
 
 class QwtfDiscordBotExe < Thor
   def self.exit_on_failure?

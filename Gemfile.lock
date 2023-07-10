@@ -71,6 +71,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-support (3.10.2)
+    sentry-ruby (5.10.0)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
     thor (1.1.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
@@ -97,6 +99,7 @@ DEPENDENCIES
   qwtf_discord_bot!
   redis
   rspec
+  sentry-ruby
   thor
 
 BUNDLED WITH
