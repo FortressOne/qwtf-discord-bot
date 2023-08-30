@@ -93,8 +93,8 @@ class QwtfDiscordBotVote
       end
     end
 
-    bot.command(:vote, description: 'Start the voting process') do |event|
-      run_vote(event, "Time to vote")
+    bot.command(:vote, description: 'Start the voting process') do |event, *args|
+      run_vote(event, "Time to vote", *args)
     end
 
     bot.command :map do |event, *args|
@@ -166,7 +166,7 @@ class QwtfDiscordBotVote
 
   private
 
-  def run_vote(event, message)
+  def run_vote(event, message, *args)
     channel_id = event.channel.id
 
     if @state[channel_id] && !@state[channel_id][:should_end_voting]
@@ -181,23 +181,31 @@ class QwtfDiscordBotVote
       @state[channel_id] = initial_state(players: players, teamsize: teamsize) 
     end
 
-    uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
-    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+    suggestions_needed = 3 - args.size
+    suggestions = []
 
-    req.body = {
-      map_suggestion: {
-        channel_id: channel_id,
-        for_teamsize: teamsize,
-      }
-    }.to_json
+    if suggestions_needed > 0
+      uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
+      req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
 
-    is_https = uri.scheme == "https"
+      req.body = {
+        map_suggestion: {
+          channel_id: channel_id,
+          for_teamsize: teamsize,
+        },
+        size: suggestions_needed
+      }.to_json
 
-    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
-      http.request(req)
+      is_https = uri.scheme == "https"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_https) do |http|
+        http.request(req)
+      end
+
+      suggestions.concat(JSON.parse(res.body))
     end
 
-    maps = JSON.parse(res.body) << nil # nil for the ❌ new maps option
+    maps = (args | suggestions) << nil # nil for the ❌ new maps option
 
     choices = CHOICE_EMOJIS.zip(maps).inject({}) do |hash, (emoji, map)|
       hash.merge(emoji => { map: map, voters: [] })
