@@ -181,8 +181,10 @@ class QwtfDiscordBotVote
       @state[channel_id] = initial_state(players: players, teamsize: teamsize) 
     end
 
-    suggestions_needed = 3 - args.size
-    suggestions = []
+    user_suggestions = args.uniq
+    event.channel.send_message("Nice try") if user_suggestions.size < args.size
+    suggestions_needed = 3 - user_suggestions.size
+    bot_suggestions = []
 
     if suggestions_needed > 0
       uri = URI([ENV['RESULTS_API_URL'], 'map_suggestions', 'vote'].join('/'))
@@ -193,7 +195,8 @@ class QwtfDiscordBotVote
           channel_id: channel_id,
           for_teamsize: teamsize,
         },
-        size: suggestions_needed
+        size: suggestions_needed,
+        except: user_suggestions
       }.to_json
 
       is_https = uri.scheme == "https"
@@ -202,12 +205,12 @@ class QwtfDiscordBotVote
         http.request(req)
       end
 
-      suggestions.concat(JSON.parse(res.body))
+      bot_suggestions.concat(JSON.parse(res.body))
     end
 
-    maps = (args | suggestions) << nil # nil for the ❌ new maps option
+    suggestions = user_suggestions + bot_suggestions << nil # nil for the ❌ new maps option
 
-    choices = CHOICE_EMOJIS.zip(maps).inject({}) do |hash, (emoji, map)|
+    choices = CHOICE_EMOJIS.zip(suggestions).inject({}) do |hash, (emoji, map)|
       hash.merge(emoji => { map: map, voters: [] })
     end
 
