@@ -221,11 +221,22 @@ class QwtfDiscordBotVote
     embed = Discordrb::Webhooks::Embed.new
 
     choices.except(NEW_MAPS_EMOJI).each do |emoji, attrs|
-      embed.add_field(
-        inline: true,
-        name: "#{emoji} #{attrs[:map]}",
-        value: attrs[:voters].map(&:display_name).join("\n")
-      )
+      # edited by odwn here idk if this works
+      # VVV
+      if attrs[:map] == "pineapple_b3"
+        embed.add_field(
+          inline: true,
+          name: "#{':pineapple:'} #{attrs[:map]}",
+          value: attrs[:voters].map(&:display_name).join("\n")
+        )
+      else
+        embed.add_field(
+          inline: true,
+          name: "#{emoji} #{attrs[:map]}",
+          value: attrs[:voters].map(&:display_name).join("\n")
+        )
+      end
+      # ^^^
     end
 
     embed.footer = Discordrb::Webhooks::EmbedFooter.new(
