@@ -95,10 +95,10 @@ class QwtfDiscordBotPug # :nodoc:
           description = []
 
           if pug.total_player_count == 0
-            message = "#{pug.notify_roles} PUG started"
+            message = "#{e.notify_roles} PUG started"
             description << "#{e.display_name} creates a PUG"
           elsif pug.slots_left.between?(1, 3)
-            message = "#{pug.slots_left} more #{pug.notify_roles}"
+            message = "#{pug.slots_left} more #{e.notify_roles}"
           end
 
           if joiners.any?
@@ -238,7 +238,7 @@ class QwtfDiscordBotPug # :nodoc:
           "#{pug.player_slots} remain"
         ]
 
-        message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left == 1
+        message = "#{pug.slots_left} more #{e.notify_roles}" if pug.slots_left == 1
 
         send_embedded_message(
           message: message,
@@ -293,7 +293,7 @@ class QwtfDiscordBotPug # :nodoc:
         description = []
 
         if pug.slots_left == 1
-          message = "#{pug.slots_left} more #{pug.notify_roles}"
+          message = "#{pug.slots_left} more #{e.notify_roles}"
         end
 
         if kickees.any?
@@ -576,10 +576,10 @@ class QwtfDiscordBotPug # :nodoc:
 
     if pug.total_player_count == 1
       snippets = ["#{e.display_name} creates a PUG", "#{pug.player_slots} joined"]
-      message = "#{pug.notify_roles} PUG started"
+      message = "#{e.notify_roles} PUG started"
     else
       snippets = ["#{e.display_name} joins the PUG", "#{pug.player_slots} joined"]
-      message = "#{pug.slots_left} more #{pug.notify_roles}" if pug.slots_left.between?(1, 3)
+      message = "#{pug.slots_left} more #{e.notify_roles}" if pug.slots_left.between?(1, 3)
     end
 
     send_embedded_message(
