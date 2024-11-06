@@ -771,6 +771,8 @@ class QwtfDiscordBotPug # :nodoc:
       http.request(req)
     end
 
+    puts res.body
+
     JSON.parse(res.body).map(&:to_h)
   end
 
