@@ -1,4 +1,13 @@
 class EventDecorator
+  NOTIFY_ROLES = {
+    813663438994669590 => "<@&812486174156390400>", # @trueskill bot
+    513699536846323712 => "<@&533995292975038479>", # @europe
+    504171613793681408 => "<@&522695282887229440>", # @north-america
+    542237808895459338 => "<@&427655970177548288>", # @oceania
+    593421408558645258 => "<@&543039259133739028>", # @asia
+    531050292003995648 => "<@&531050407246561280>"  # @brazil
+  }
+
   attr_accessor :event
 
   def initialize(event)
@@ -54,16 +63,7 @@ class EventDecorator
   end
 
   def notify_roles
-    case channel_id
-    when 813663438994669590 then "@trueskill bot"
-    when 513699536846323712 then "@europe"
-    when 504171613793681408 then "@north-america"
-    when 542237808895459338 then "@oceania"
-    when 593421408558645258 then "@asia"
-    when 531050292003995648 then "@south-america"
-    else
-      "@here"
-    end
+    NOTIFY_ROLES[channel_id]
   end
 
   def find_users(user_ids)
